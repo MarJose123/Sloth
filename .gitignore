@@ -41,3 +41,14 @@ example
 # generated native folders
 /ios
 /android
+
+# IDE
+.idea
+
+#AI
+.claude/cache/*
+.claude/history/*
+.ai/cache/*
+.ai/logs/*
+.ai/tmp/*
+
