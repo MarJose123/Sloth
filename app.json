@@ -2,6 +2,7 @@
   "expo": {
     "name": "Sloth",
     "slug": "sloth",
+    "icon": "./assets/icons/icon.png",
     "scheme": "sloth",
     "userInterfaceStyle": "dark",
     "plugins": [
@@ -23,7 +24,16 @@
     ],
     "android": {
       "package": "marjose.sloth.app",
-      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"]
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icons/adaptive-icon-foreground.png",
+        "monochromeImage": "./assets/icons/adaptive-icon-monochrome.png",
+        "backgroundColor": "#1B1F1A"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "marjose.sloth.app",
+      "icon": "./assets/icons/icon.png"
     }
   }
 }
