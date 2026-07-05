@@ -45,19 +45,36 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', 'bun.lock') }}
           restore-keys: gradle-${{ runner.os }}-
 
-      - name: Build Standalone APK
+      - name: Build Standalone APKs
         run: |
           bunx expo prebuild --platform android --clean
           cp keystores/debug.keystore android/app/debug.keystore 
           
-          cd android && ./gradlew assembleDebug --no-daemon    
-          mkdir -p ../dist
-          cp app/build/outputs/apk/debug/app-debug.apk ../dist/sloth-debug-${{ github.run_number }}.apk
+          cd android
+          
+          # Build debug APK
+          ./gradlew assembleDebug --no-daemon
+          
+          # Build release APK (signed with debug keystore for internal testing)
+          ./gradlew assembleRelease --no-daemon
+          
+          cd ..
+          mkdir -p dist
+          
+          # Extract version info for naming
+          VERSION=$(node -p "require('./package.json').version")
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          BUILD_DATE=$(date +%Y%m%d)
+          
+          cp android/app/build/outputs/apk/debug/app-debug.apk \
+            dist/sloth-debug-v${VERSION}-build${{ github.run_number }}-${BUILD_DATE}-${SHORT_SHA}.apk
+          cp android/app/build/outputs/apk/release/app-release.apk \
+            dist/sloth-release-v${VERSION}-build${{ github.run_number }}-${BUILD_DATE}-${SHORT_SHA}.apk
         env:
           EAS_NO_VCS: 1
 
-      - name: Upload APK artifact
+      - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: sloth-debug-apk
+          name: sloth-apks
           path: dist/*.apk
