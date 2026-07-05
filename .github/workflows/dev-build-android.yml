@@ -37,31 +37,22 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Generate yarn lock
-        run: bun install --yarn
+      - name: 📦 Get bun cache directory path
+        id: bun-cache-dir-path
+        run: echo "dir=$(bun pm cache)" >> $GITHUB_OUTPUT
 
-      - name: 🏗 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "yarn"
-
-      - name: 📦 Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-
-      - name: 📦 Setup yarn cache
+      - name: 📦 Setup bun cache
         uses: actions/cache@v3
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          path: ${{ steps.bun-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-bun-
 
       - name: 📦 Install eas-cli dependencies
         run: |
-          npm install
-          npm install -g eas-cli@latest
+          bun install
+          bun add --global eas-cli
 
       - name: 🔄 Verify EAS CLI installation
         run: |
