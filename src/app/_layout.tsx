@@ -1,47 +1,42 @@
-import { useEffect } from "react";
-import { Stack } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { useFonts } from "expo-font";
-import {
-    Fraunces_400Regular,
-    Fraunces_500Medium,
-    Fraunces_600SemiBold,
-} from "@expo-google-fonts/fraunces";
-import {
-    Manrope_400Regular,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    Manrope_700Bold,
-    Manrope_800ExtraBold,
-} from "@expo-google-fonts/manrope";
-import {
-    IBMPlexMono_400Regular,
-    IBMPlexMono_500Medium,
-} from "@expo-google-fonts/ibm-plex-mono";
+import { useEffect, useCallback } from 'react';
+import { View } from 'react-native';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useAppFonts } from '@/hooks/useAppFonts';
+import "../global.css"
 
-import "../global.css";
-
-SplashScreen.preventAutoHideAsync();
+// Keep the native splash mounted until fonts are ready; our custom
+// SplashScreen component (with the sloth mark + tagline) then owns the UI
+// during the async onboarding-status check performed in app/index.tsx.
+SplashScreen.preventAutoHideAsync().catch(() => {
+    /* no-op: safe to ignore if already hidden */
+});
 
 export default function RootLayout() {
-    const [fontsLoaded] = useFonts({
-        Fraunces_400Regular,
-        Fraunces_500Medium,
-        Fraunces_600SemiBold,
-        Manrope_400Regular,
-        Manrope_500Medium,
-        Manrope_600SemiBold,
-        Manrope_700Bold,
-        Manrope_800ExtraBold,
-        IBMPlexMono_400Regular,
-        IBMPlexMono_500Medium,
-    });
+    const fontsLoaded = useAppFonts();
+
+    const onLayoutRootView = useCallback(async () => {
+        if (fontsLoaded) {
+            await SplashScreen.hideAsync();
+        }
+    }, [fontsLoaded]);
 
     useEffect(() => {
-        if (fontsLoaded) SplashScreen.hideAsync();
-    }, [fontsLoaded]);
+        onLayoutRootView();
+    }, [onLayoutRootView]);
 
     if (!fontsLoaded) return null;
 
-    return <Stack screenOptions={{ headerShown: false }} />;
+    return (
+        <SafeAreaProvider>
+            <View className="flex-1 bg-ink">
+                <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="onboarding" />
+                    <Stack.Screen name="(app)" />
+                </Stack>
+            </View>
+        </SafeAreaProvider>
+    );
 }

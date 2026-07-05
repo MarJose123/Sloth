@@ -10,9 +10,9 @@
       "expo-secure-store",
       "expo-font",
       [
-        "@op-engineering/op-sqlite",
+        "expo-local-authentication",
         {
-          "sqlcipher": true
+          "faceIDPermission": "Sloth uses Face ID to unlock your data locally."
         }
       ],
       [
