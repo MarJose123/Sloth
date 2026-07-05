@@ -1,56 +1,44 @@
-# Welcome to your Expo app 👋
+# Sloth
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A private, fully offline personal finance tracker.
 
-## Get started
+No cloud. No sync. No bank credential sharing. No account to create anywhere but on your own device. Sloth stores everything locally in an encrypted SQLite database and never talks to a server — because it doesn't have one.
 
-1. Install dependencies
+## Why
 
-   ```bash
-   npm install
-   ```
+Most finance apps ask you to hand over your bank login to a third party so they can "aggregate" your data — which really means it now lives on someone else's servers, subject to someone else's breach history, business model, and terms of service. Sloth takes the opposite approach: your transactions never leave your phone.
 
-2. Start the app
+## Features
 
-   ```bash
-   npx expo start
-   ```
+- **Manual entry, receipt scan, or file import** — never bank-login aggregation
+- **On-device OCR** for receipt scanning (no cloud vision API)
+- **Local categorization** via a lightweight keyword/Bayesian classifier — no data leaves the device to "learn" from your spending
+- **Encrypted at rest** — SQLite via op-sqlite + SQLCipher
+- **Biometric lock** (Face/Touch ID) with a 6-digit PIN fallback
+- **Multi-account support** — checking, savings, credit, cash, with custom logos/colors
+- **CSV / XSLX import** for bulk-loading bank exports, parsed entirely on-device
+- **Manual export** — your data, your backup, on your terms
 
-In the output, you'll find options to open the app in a
+## Tech stack
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- [React Native](https://reactnative.dev/) + [Expo](https://expo.dev/)
+- [op-sqlite](https://github.com/OP-Engineering/op-sqlite) with SQLCipher for encrypted local storage
+- [NativeWind](https://www.nativewind.dev/) for styling
+- [lottie-react-native](https://github.com/lottie-react-native/lottie-react-native) for onboarding and key-screen animations
+- [Bun](https://bun.sh/) as the package manager / runtime
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Currently developed **Android-first**; iOS support is a future target.
 
-## Get a fresh project
+## Project status
 
-When you're ready, run:
+Sloth is in active development. A full 16-screen mockup covering onboarding, dashboard, accounts, transactions, categories, settings, receipt scanning, and CSV/OFX import has been designed and approved; implementation is ongoing.
 
-```bash
-npm run reset-project
-```
+## Contributing
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Bug reports and feature requests are welcome via [GitHub Issues](https://github.com/MarJose123/sloth/issues). See [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a PR — it covers the project's non-negotiables (no network calls, on-device-only processing, encryption must stay intact) and what the license means for contributions.
 
-### Other setup steps
+## License
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Sloth is licensed under the **GNU General Public License v3.0 (GPLv3)** — see [LICENSE](./LICENSE).
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+In short: you're free to use, study, modify, and share Sloth. If you distribute a modified version — a fork, a rebrand, a build with your own features — you must also make your source available under GPLv3. Forks stay open. That's intentional: a tool built around financial privacy shouldn't itself be a closed box, and we want that to hold for anything built on top of it too.
