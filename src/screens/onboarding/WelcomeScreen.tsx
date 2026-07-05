@@ -1,4 +1,5 @@
-import { View, Text, SafeAreaView } from 'react-native';
+import { View, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { DialFrame } from '@/components/DialFrame';
 import { SlothMark } from '@/components/SlothMark';
 import { StepDots } from '@/components/StepDots';
