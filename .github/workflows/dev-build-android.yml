@@ -32,27 +32,31 @@ jobs:
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Generate yarn lock
+        run: bun install --yarn
+
       - name: 🏗 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
+          cache: "yarn"
 
-      - name: 📦 Install Generate Package lock JSON
-        run: |
-          npm install
+      - name: 📦 Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
-      - name: 📦 Get npm cache directory path
-        id: npm-cache-dir-path
-        run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
-
-      - name: 📦 Setup npm cache
+      - name: 📦 Setup yarn cache
         uses: actions/cache@v3
         with:
-          path: ${{ steps.npm-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-npm-
+            ${{ runner.os }}-yarn-
 
       - name: 📦 Install eas-cli dependencies
         run: |
