@@ -24,7 +24,12 @@
     ],
     "android": {
       "package": "marjose.sloth.app",
-      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"],
+      "permissions": [
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/icons/adaptive-icon-foreground.png",
         "monochromeImage": "./assets/icons/adaptive-icon-monochrome.png",
@@ -34,6 +39,12 @@
     "ios": {
       "bundleIdentifier": "marjose.sloth.app",
       "icon": "./assets/icons/icon.png"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bb35ddc3-4946-4972-b72a-f292d8570d81"
+      }
     }
   }
 }
