@@ -86,7 +86,7 @@ jobs:
           export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
           eas build --platform android --profile preview --local --non-interactive --output=./app-dev.apk
         env:
-          NODE_ENV: preview
+          NODE_ENV: development
 
       - name: 📦 Upload build artifacts to GitHub
         uses: actions/upload-artifact@v7
