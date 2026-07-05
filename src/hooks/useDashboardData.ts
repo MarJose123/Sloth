@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import {
   listAccountsWithBalances,
@@ -28,69 +28,87 @@ export interface DashboardData {
 export type DashboardState =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; data: DashboardData };
+  | { status: "ready"; data: DashboardData; isRefreshing: boolean };
+
+async function fetchDashboardData(
+  selectedAccountId: string | null,
+): Promise<DashboardData> {
+  const range = currentMonthRange();
+  const accountId = selectedAccountId ?? undefined;
+
+  const [accounts, categories, totalExpenseCents, recentTransactions] =
+    await Promise.all([
+      listAccountsWithBalances(),
+      listTopExpenseCategories(range, TOP_CATEGORIES_LIMIT, accountId),
+      getTotalExpenseCents(range, accountId),
+      listRecentTransactions(RECENT_TRANSACTIONS_LIMIT, accountId),
+    ]);
+
+  return { accounts, categories, totalExpenseCents, recentTransactions };
+}
 
 /**
  * Loads dashboard data for the given account filter (null = all accounts).
- * Refetches every time the dashboard tab regains focus, so balances stay
- * correct after adding a transaction elsewhere — there's no cross-screen
- * cache to invalidate since everything reads straight from SQLite.
+ *
+ * Refetches whenever the dashboard tab regains focus, so balances stay
+ * correct after adding a transaction elsewhere. Once data has loaded once,
+ * later refetches flip `isRefreshing` on an otherwise-`ready` state instead
+ * of reverting to a bare `loading` state, so the screen never has to blank
+ * out previously-loaded content just to show a spinner.
  */
 export function useDashboardData(selectedAccountId: string | null) {
   const [state, setState] = useState<DashboardState>({ status: "loading" });
-  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Mirrors `state` for reads inside `load` without making `load` (and thus
+  // the focus-effect callback) depend on `state` itself, which would
+  // otherwise refetch on every state change instead of only on focus /
+  // account-filter changes. Writing to a ref is only safe outside of
+  // render, hence the effect — writing it inline during the render body
+  // trips react-hooks/refs.
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  const mountedRef = useRef(true);
+  useEffect(
+    () => () => {
+      mountedRef.current = false;
+    },
+    [],
+  );
+
+  const load = useCallback(async () => {
+    const previous = stateRef.current;
+    setState(
+      previous.status === "ready"
+        ? { ...previous, isRefreshing: true }
+        : { status: "loading" },
+    );
+
+    try {
+      const data = await fetchDashboardData(selectedAccountId);
+      if (mountedRef.current) {
+        setState({ status: "ready", data, isRefreshing: false });
+      }
+    } catch (err) {
+      if (mountedRef.current) {
+        setState({
+          status: "error",
+          message:
+            err instanceof Error
+              ? err.message
+              : "Failed to load dashboard data",
+        });
+      }
+    }
+  }, [selectedAccountId]);
 
   useFocusEffect(
     useCallback(() => {
-      let cancelled = false;
-
-      async function load() {
-        setState((prev) =>
-          prev.status === "ready" ? prev : { status: "loading" },
-        );
-        try {
-          const range = currentMonthRange();
-          const accountId = selectedAccountId ?? undefined;
-
-          const [accounts, categories, totalExpenseCents, recentTransactions] =
-            await Promise.all([
-              listAccountsWithBalances(),
-              listTopExpenseCategories(range, TOP_CATEGORIES_LIMIT, accountId),
-              getTotalExpenseCents(range, accountId),
-              listRecentTransactions(RECENT_TRANSACTIONS_LIMIT, accountId),
-            ]);
-
-          if (cancelled) return;
-          setState({
-            status: "ready",
-            data: {
-              accounts,
-              categories,
-              totalExpenseCents,
-              recentTransactions,
-            },
-          });
-        } catch (err) {
-          if (cancelled) return;
-          setState({
-            status: "error",
-            message:
-              err instanceof Error
-                ? err.message
-                : "Failed to load dashboard data",
-          });
-        }
-      }
-
       load();
-      return () => {
-        cancelled = true;
-      };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedAccountId, refreshKey]),
+    }, [load]),
   );
 
-  const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
-
-  return { state, refresh };
+  return { state, refresh: load };
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Pressable,
   RefreshControl,
@@ -20,21 +20,12 @@ export default function DashboardScreen() {
     null,
   );
   const { state, refresh } = useDashboardData(selectedAccountId);
-  const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
     refresh();
   }, [refresh]);
 
-  // Drop the pull-to-refresh spinner once a fresh load resolves.
-  useEffect(() => {
-    if (refreshing && state.status !== "loading") {
-      setRefreshing(false);
-    }
-  }, [refreshing, state.status]);
-
-  if (state.status === "loading" && !refreshing) {
+  if (state.status === "loading") {
     return (
       <SafeAreaView
         edges={["top", "left", "right"]}
@@ -59,14 +50,7 @@ export default function DashboardScreen() {
   }
 
   const { accounts, categories, totalExpenseCents, recentTransactions } =
-    state.status === "ready"
-      ? state.data
-      : {
-          accounts: [],
-          categories: [],
-          totalExpenseCents: 0,
-          recentTransactions: [],
-        };
+    state.data;
 
   const hasAccounts = accounts.length > 0;
   const selectedAccount =
@@ -82,7 +66,7 @@ export default function DashboardScreen() {
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 28 }}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
+            refreshing={state.isRefreshing}
             onRefresh={onRefresh}
             tintColor="#C87B54"
           />
