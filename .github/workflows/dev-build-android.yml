@@ -13,7 +13,7 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
@@ -36,6 +36,21 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Cache NDK + CMake
+        id: cache-ndk
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.ANDROID_HOME }}/ndk/27.1.12297006
+            ${{ env.ANDROID_HOME }}/cmake/3.22.1
+          key: android-ndk-27.1.12297006-cmake-3.22.1
+
+      - name: Install Android NDK + CMake
+        if: steps.cache-ndk.outputs.cache-hit != 'true'
+        run: |
+          yes | sdkmanager --licenses > /dev/null
+          sdkmanager --install "ndk;27.1.12297006" "cmake;3.22.1"
+
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -45,36 +60,33 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', 'bun.lock') }}
           restore-keys: gradle-${{ runner.os }}-
 
-      - name: Build Standalone APKs
+      - name: Build standalone-testable APK
         run: |
           bunx expo prebuild --platform android --clean
-          cp keystores/debug.keystore android/app/debug.keystore 
-          
+          cp keystores/debug.keystore android/app/debug.keystore
+
           cd android
-          
-          # Build debug APK
-          ./gradlew assembleDebug --no-daemon
-          
-          # Build release APK (signed with debug keystore for internal testing)
-          ./gradlew assembleRelease --no-daemon
-          
+
+          # Single ABI (arm64-v8a covers virtually all physical test devices sold since ~2017)
+          # and a single variant: release-type build is the one that embeds the JS bundle
+          # and actually runs without Metro attached. Plain `assembleDebug` expects a live
+          # Metro server and is not useful to hand to an external tester.
+          ./gradlew assembleRelease \
+            -PreactNativeArchitectures=arm64-v8a \
+            --no-daemon --parallel --build-cache
+
           cd ..
           mkdir -p dist
-          
-          # Extract version info for naming
+
           VERSION=$(node -p "require('./package.json').version")
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           BUILD_DATE=$(date +%Y%m%d)
-          
-          cp android/app/build/outputs/apk/debug/app-debug.apk \
-            dist/sloth-debug-v${VERSION}-build${{ github.run_number }}-${BUILD_DATE}-${SHORT_SHA}.apk
-          cp android/app/build/outputs/apk/release/app-release.apk \
-            dist/sloth-release-v${VERSION}-build${{ github.run_number }}-${BUILD_DATE}-${SHORT_SHA}.apk
-        env:
-          EAS_NO_VCS: 1
 
-      - name: Upload APK artifacts
+          cp android/app/build/outputs/apk/release/app-release.apk \
+            dist/sloth-v${VERSION}-build${{ github.run_number }}-${BUILD_DATE}-${SHORT_SHA}-arm64.apk
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sloth-apks
+          name: sloth-apk
           path: dist/*.apk
