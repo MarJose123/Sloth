@@ -1,99 +1,98 @@
 name: Android Debug Build
 
 on:
-  workflow_dispatch: {}
   push:
     branches: [main]
     paths:
-      - "package.json"
-      - "app.json"
-      - "bun.lock"
-      - ".github/workflows/dev-build-android.yml"
+      - 'package.json'
+      - 'app.json'
+      - 'bun.lock'
+      - '.github/workflows/dev-build-android.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+env:
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+  NODE_OPTIONS: --openssl-legacy-provider
 
 jobs:
-  build-android:
+  check-skip:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
-
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7.0.0
+      - name: Skip CI check
+        run: echo "Proceeding with workflow"
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+  build-and-deploy:
+    needs: check-skip
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: latest
+          node-version: "20"
+          cache: "npm"
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - name: 📦 Get npm cache directory path
+        id: npm-cache-dir-path
+        run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
 
-      - name: Cache Bun installed package
-        uses: actions/cache@v6.1.0
+      - name: 📦 Setup npm cache
+        uses: actions/cache@v3
         with:
-          path: |
-            node_modules
-            ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          path: ${{ steps.npm-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
-      - name: Setup JDK 17
-        uses: actions/setup-java@v5.4.0
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
-
-      - name: Cache NDK + CMake
-        id: cache-ndk
-        uses: actions/cache@v6.1.0
-        with:
-          path: |
-            ${{ env.ANDROID_HOME }}/ndk/27.1.12297006
-            ${{ env.ANDROID_HOME }}/cmake/3.22.1
-            ${{ env.ANDROID_HOME }}/build-tools
-            ${{ env.ANDROID_HOME }}/platforms
-            ${{ env.ANDROID_HOME }}/platform-tools
-          key: android-ndk-27.1.12297006-cmake-3.22.1
-
-      - name: Install Android NDK + CMake
-        if: steps.cache-ndk.outputs.cache-hit != 'true'
+      - name: 📦 Install dependencies
         run: |
-          yes | sdkmanager --licenses > /dev/null
-          sdkmanager --install "ndk;27.1.12297006" "cmake;3.22.1"
+          npm install
+          npm install -g eas-cli@latest
 
-      - name: Cache Gradle
-        uses: gradle/actions/setup-gradle@v6.2.0
+      - name: 🔄 Verify EAS CLI installation
+        run: |
+          echo "EAS CLI version:"
+          eas --version
 
-      - name: Build standalone-testable APK
+      - name: 📋 Fix package.json main entry
+        run: |
+          # Check if jq is installed, if not install it
+          if ! command -v jq &> /dev/null; then
+            echo "Installing jq..."
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
+
+          # Fix the main entry in package.json
+          if [ -f ./package.json ]; then
+            # Create a backup
+            cp package.json package.json.bak
+            # Update the package.json
+            jq '.main = "node_modules/expo/AppEntry.js"' package.json > package.json.tmp && mv package.json.tmp package.json
+            echo "Updated package.json main entry"
+            cat package.json | grep "main"
+          else
+            echo "package.json not found"
+            exit 1
+          fi
+
+      - name: 📱 Build Development APK
+        run: |
+          # Build with increased memory limit
+          export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
+          eas build --platform android --profile development --local --non-interactive --output=./app-dev.apk
         env:
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx8192m -XX:MaxMetaspaceSize=1536m -Dorg.gradle.daemon=false"
-        run: |
-          bunx expo prebuild --platform android
-          cp keystores/debug.keystore android/app/debug.keystore
+          NODE_ENV: development
 
-          cd android
-
-          # Single ABI (arm64-v8a covers virtually all physical test devices sold since ~2017)
-          # and a single variant: release-type build is the one that embeds the JS bundle
-          # and actually runs without Metro attached. Plain `assembleDebug` expects a live
-          # Metro server and is not useful to hand to an external tester.
-          ./gradlew assembleRelease \
-            -PreactNativeArchitectures=arm64-v8a \
-            --no-daemon --parallel --build-cache --max-workers=4
-
-          cd ..
-          mkdir -p dist
-
-          VERSION=$(node -p "require('./package.json').version")
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          BUILD_DATE=$(date +%Y%m%d)
-
-          cp android/app/build/outputs/apk/release/app-release.apk \
-            dist/sloth-v${VERSION}-build${{ github.run_number }}-${BUILD_DATE}-${SHORT_SHA}-arm64.apk
-
-      - name: Upload APK artifact
+      - name: 📦 Upload build artifacts to GitHub
         uses: actions/upload-artifact@v4
         with:
-          name: sloth-apk
-          path: dist/*.apk
+          name: app-builds
+          path: |
+            ./app-dev.apk
+          retention-days: 7
