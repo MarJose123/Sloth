@@ -42,8 +42,13 @@
     "@types/react": "~19.2.2",
     "babel-preset-expo": "^57.0.1",
     "eas-cli": "^20.5.1",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~57.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "prettier": "^3.9.4",
     "prettier-plugin-tailwindcss": "^0.5.11",
-    "tailwindcss": "^3.4.0bun",
+    "tailwindcss": "^3.4.0",
     "typescript": "~6.0.3"
   },
   "op-sqlite": {
@@ -54,6 +59,7 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "prettier": "prettier --write .",
     "lint": "expo lint"
   },
   "private": true

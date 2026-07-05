@@ -1,5 +1,5 @@
 export const SCHEMA_STATEMENTS = [
-    `CREATE TABLE IF NOT EXISTS accounts (
+  `CREATE TABLE IF NOT EXISTS accounts (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     type TEXT NOT NULL CHECK (type IN ('checking','savings','credit','cash')),
@@ -10,7 +10,7 @@ export const SCHEMA_STATEMENTS = [
     archived_at INTEGER
   ) STRICT;`,
 
-    `CREATE TABLE IF NOT EXISTS categories (
+  `CREATE TABLE IF NOT EXISTS categories (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     icon TEXT NOT NULL,
@@ -20,7 +20,7 @@ export const SCHEMA_STATEMENTS = [
     archived_at INTEGER
   ) STRICT;`,
 
-    `CREATE TABLE IF NOT EXISTS transactions (
+  `CREATE TABLE IF NOT EXISTS transactions (
     id TEXT PRIMARY KEY NOT NULL,
     account_id TEXT NOT NULL REFERENCES accounts(id),
     category_id TEXT REFERENCES categories(id),
@@ -32,12 +32,12 @@ export const SCHEMA_STATEMENTS = [
     created_at INTEGER NOT NULL
   ) STRICT;`,
 
-    `CREATE INDEX IF NOT EXISTS idx_transactions_account
+  `CREATE INDEX IF NOT EXISTS idx_transactions_account
     ON transactions(account_id);`,
 
-    `CREATE INDEX IF NOT EXISTS idx_transactions_category
+  `CREATE INDEX IF NOT EXISTS idx_transactions_category
     ON transactions(category_id);`,
 
-    `CREATE INDEX IF NOT EXISTS idx_transactions_occurred_at
+  `CREATE INDEX IF NOT EXISTS idx_transactions_occurred_at
     ON transactions(occurred_at);`,
 ] as const;

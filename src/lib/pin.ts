@@ -1,4 +1,4 @@
-import * as Crypto from 'expo-crypto';
+import * as Crypto from "expo-crypto";
 
 /**
  * SHA-256 hash of the PIN, salted with a fixed app-level string.
@@ -7,12 +7,12 @@ import * as Crypto from 'expo-crypto';
  * it in SecureStore under its own key, unlocked after this check passes.
  */
 export async function hashPin(pin: string): Promise<string> {
-    return Crypto.digestStringAsync(
-        Crypto.CryptoDigestAlgorithm.SHA256,
-        `sloth-pin-salt:${pin}`
-    );
+  return Crypto.digestStringAsync(
+    Crypto.CryptoDigestAlgorithm.SHA256,
+    `sloth-pin-salt:${pin}`,
+  );
 }
 
 export function isValidPinFormat(pin: string): boolean {
-    return /^\d{6}$/.test(pin);
+  return /^\d{6}$/.test(pin);
 }

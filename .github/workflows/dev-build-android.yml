@@ -5,10 +5,10 @@ on:
   push:
     branches: [main]
     paths:
-      - 'package.json'
-      - 'app.json'
-      - 'bun.lock'
-      - '.github/workflows/dev-build-android.yml'
+      - "package.json"
+      - "app.json"
+      - "bun.lock"
+      - ".github/workflows/dev-build-android.yml"
 
 jobs:
   build-android:
@@ -39,7 +39,7 @@ jobs:
         uses: actions/setup-java@v5.4.0
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4

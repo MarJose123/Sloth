@@ -1,7 +1,7 @@
-import * as SecureStore from 'expo-secure-store';
-import * as Crypto from 'expo-crypto';
+import * as SecureStore from "expo-secure-store";
+import * as Crypto from "expo-crypto";
 
-const DB_KEY_STORAGE_KEY = 'sloth.db_encryption_key';
+const DB_KEY_STORAGE_KEY = "sloth.db_encryption_key";
 
 /**
  * The SQLCipher encryption key is independent of PIN/biometric auth.
@@ -13,21 +13,21 @@ const DB_KEY_STORAGE_KEY = 'sloth.db_encryption_key';
  * disabling biometrics, never requires re-encrypting the database.
  */
 export async function getOrCreateDbEncryptionKey(): Promise<string> {
-    const existing = await SecureStore.getItemAsync(DB_KEY_STORAGE_KEY);
-    if (existing) return existing;
+  const existing = await SecureStore.getItemAsync(DB_KEY_STORAGE_KEY);
+  if (existing) return existing;
 
-    const key = await generateRandomHexKey(32); // 256-bit
-    await SecureStore.setItemAsync(DB_KEY_STORAGE_KEY, key, {
-        keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-    });
-    return key;
+  const key = await generateRandomHexKey(32); // 256-bit
+  await SecureStore.setItemAsync(DB_KEY_STORAGE_KEY, key, {
+    keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  });
+  return key;
 }
 
 async function generateRandomHexKey(byteLength: number): Promise<string> {
-    const randomBytes = await Crypto.getRandomBytesAsync(byteLength);
-    return Array.from(randomBytes)
-        .map((byte) => byte.toString(16).padStart(2, '0'))
-        .join('');
+  const randomBytes = await Crypto.getRandomBytesAsync(byteLength);
+  return Array.from(randomBytes)
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 /**
@@ -36,5 +36,5 @@ async function generateRandomHexKey(byteLength: number): Promise<string> {
  * unopenable, permanently encrypted file on disk.
  */
 export async function destroyDbEncryptionKey(): Promise<void> {
-    await SecureStore.deleteItemAsync(DB_KEY_STORAGE_KEY);
+  await SecureStore.deleteItemAsync(DB_KEY_STORAGE_KEY);
 }
