@@ -47,8 +47,12 @@ jobs:
 
       - name: Build Standalone APK
         run: |
-          mkdir -p dist
-          bunx eas build --platform android --profile preview --local --non-interactive --output=dist/sloth-dev-${{ github.run_number }}.apk
+          bunx expo prebuild --platform android --clean
+          cp keystores/debug.keystore android/app/debug.keystore 
+          
+          cd android && ./gradlew assembleDebug --no-daemon    
+          mkdir -p ../dist
+          cp app/build/outputs/apk/release/app-release.apk ../dist/sloth-dev-${{ github.run_number }}.apk
         env:
           EAS_NO_VCS: 1
 
