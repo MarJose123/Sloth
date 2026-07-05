@@ -38,6 +38,10 @@ jobs:
           node-version: "20"
           cache: "npm"
 
+      - name: 📦 Install Generate Package lock JSON
+        run: |
+          npm install
+
       - name: 📦 Get npm cache directory path
         id: npm-cache-dir-path
         run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
@@ -50,7 +54,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-
 
-      - name: 📦 Install dependencies
+      - name: 📦 Install eas-cli dependencies
         run: |
           npm install
           npm install -g eas-cli@latest
