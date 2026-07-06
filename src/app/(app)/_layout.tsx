@@ -21,8 +21,8 @@ export default function AppLayout() {
           flexDirection: "row",
           alignItems: "flex-start",
           paddingTop: 12,
-          paddingBottom: insets.bottom || 12,
-          backgroundColor: "rgba(18,20,28,0.94)",
+          paddingBottom: (insets.bottom || 0) + 25,
+          backgroundColor: "rgba(18,20,28,0.92)",
           borderTopWidth: 1,
           borderTopColor: "rgba(243,238,225,0.09)",
         }}

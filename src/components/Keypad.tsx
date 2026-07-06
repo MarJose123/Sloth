@@ -38,7 +38,7 @@ function KeypadKey({
         muted ? "bg-transparent" : "border border-hairline bg-ink-2"
       }`}
     >
-      <Text className="font-serif text-xl text-parchment">{label}</Text>
+      <Text className="font-fraunces text-xl text-parchment">{label}</Text>
     </Pressable>
   );
 }

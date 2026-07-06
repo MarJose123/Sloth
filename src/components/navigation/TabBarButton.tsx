@@ -28,7 +28,7 @@ export function TabBarButton({
       {...props}
       accessibilityRole="button"
       accessibilityState={{ selected: isFocused }}
-      className="flex-1 items-center gap-1"
+      className="flex-1 items-center gap-[5px]"
     >
       <View className="h-[22px] w-[22px] items-center justify-center">
         <Icon size={18} color={color} />

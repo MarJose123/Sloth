@@ -14,7 +14,7 @@ export default function WelcomeScreen() {
           Sloth
         </Text>
 
-        <DialFrame size={132} innerSize={56}>
+        <DialFrame>
           <SlothMark size={34} />
         </DialFrame>
 

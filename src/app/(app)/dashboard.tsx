@@ -76,7 +76,7 @@ export default function DashboardScreen() {
           {getGreeting()}
         </Text>
 
-        <View className="mb-5.5 flex-row items-center gap-1.5 self-start rounded-full border border-sage/35 px-2.5 py-1">
+        <View className="mb-[22px] flex-row items-center gap-1.5 self-start rounded-full border border-sage/35 px-2.5 py-1">
           <View className="h-1.5 w-1.5 rounded-full bg-sage" />
           <Text className="font-mono text-[10px] tracking-[0.6px] text-sage uppercase">
             Local Processing
@@ -98,12 +98,12 @@ export default function DashboardScreen() {
                 ? `${selectedAccount.name} balance`
                 : "Total balance"}
             </Text>
-            <Text className="mb-6.5 font-fraunces-medium text-[44px] leading-[48px] text-parchment">
+            <Text className="mb-[26px] font-fraunces-medium text-[44px] leading-[48px] text-parchment">
               {formatCurrency(totalBalanceCents)}
             </Text>
 
             {categories.length > 0 && (
-              <View className="mb-6.5 flex-row gap-3.5">
+              <View className="mb-[26px] flex-row gap-3.5">
                 {categories.map((category) => (
                   <CategoryRingCard
                     key={category.id}

@@ -196,7 +196,7 @@ export default function SettingsScreen() {
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="mb-5.5 font-fraunces-medium text-[22px] text-parchment">
+        <Text className="mb-[22px] font-fraunces-medium text-[22px] text-parchment">
           Settings
         </Text>
 

@@ -57,11 +57,11 @@ export default function BiometricSetupScreen() {
           passcode and never leaves your phone.
         </Text>
 
-        <DialFrame size={150} innerSize={78}>
+        <DialFrame size={150} innerSize={78} variant="brass">
           <FingerprintIcon size={30} />
         </DialFrame>
 
-        <Text className="mb-auto mt-3.5 text-center font-mono text-xs uppercase tracking-[1px] text-brass">
+        <Text className="mb-auto mt-4 text-center font-mono text-xs uppercase tracking-[0.05em] text-brass">
           Touch the sensor to continue
         </Text>
       </View>

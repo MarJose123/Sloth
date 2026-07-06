@@ -24,7 +24,10 @@ export function CategoryRingCard({
       >
         <Text className="font-mono text-[10px] text-parchment">{percent}%</Text>
       </View>
-      <Text className="text-[11px] text-parchment-dim" numberOfLines={1}>
+      <Text
+        className="text-[11px] font-mono uppercase text-parchment-dim"
+        numberOfLines={1}
+      >
         {category.name}
       </Text>
     </View>

@@ -29,7 +29,7 @@ export function AddTabButton({ isFocused, ref, ...props }: AddTabButtonProps) {
           borderColor: "rgba(200,123,84,0.15)",
         }}
       >
-        <PlusIcon size={22} color={colors.ink} />
+        <PlusIcon size={20} color={colors.ink} />
       </View>
     </Pressable>
   );

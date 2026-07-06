@@ -269,7 +269,7 @@ export default function AddScreen() {
         className="flex-1"
       >
         {/* ── header ── */}
-        <View className="flex-row items-center justify-between px-5 pb-3 pt-2">
+        <View className="flex-row items-center justify-between px-5 pb-[30px] pt-2">
           <Pressable onPress={handleCancel} className="py-1 active:opacity-60">
             <Text className="text-[13px] text-parchment-dim">Cancel</Text>
           </Pressable>
@@ -300,7 +300,7 @@ export default function AddScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* ── amount entry ── */}
-          <View className="mb-5 flex-row items-baseline justify-center pt-2">
+          <View className="mb-[30px] flex-row items-baseline justify-center pt-2">
             <Text
               style={{
                 fontFamily: "Fraunces_450",
@@ -321,7 +321,7 @@ export default function AddScreen() {
               returnKeyType="done"
               style={{
                 fontFamily: "Fraunces_450",
-                fontSize: 44,
+                fontSize: 46,
                 lineHeight: 52,
                 color: amountCents > 0 ? colors.parchment : colors.parchmentDim,
                 minWidth: 80,
@@ -363,7 +363,7 @@ export default function AddScreen() {
           )}
 
           {/* ── entry method pills ── */}
-          <View className="mb-5 flex-row gap-2">
+          <View className="mb-[22px] flex-row gap-2">
             {ENTRY_METHODS.map((m) => (
               <Pressable
                 key={m}

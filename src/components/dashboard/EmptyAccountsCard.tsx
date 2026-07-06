@@ -7,7 +7,7 @@ export function EmptyAccountsCard({
 }) {
   return (
     <View className="mt-6 items-center rounded-2xl border border-dashed border-white/20 px-6 py-10">
-      <Text className="mb-2 text-center font-serif text-xl text-parchment">
+      <Text className="mb-2 text-center font-fraunces-medium text-xl text-parchment">
         No accounts yet
       </Text>
       <Text className="mb-6 text-center text-[13px] leading-[19px] text-parchment-dim">
@@ -18,7 +18,7 @@ export function EmptyAccountsCard({
         onPress={onAddAccount}
         className="rounded-2xl bg-brass px-5 py-3.5 active:opacity-80"
       >
-        <Text className="font-sans-bold text-[14px] text-ink">
+        <Text className="font-manrope-bold text-[14px] text-ink">
           + Add your first account
         </Text>
       </Pressable>

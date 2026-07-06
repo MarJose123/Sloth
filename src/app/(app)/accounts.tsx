@@ -70,7 +70,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
         >
           {account.name}
         </Text>
-        <Text className="mt-0.5 font-mono text-[11px] text-parchment-dim">
+        <Text className="mt-0.5 font-mono text-[11.5px] text-parchment-dim">
           {typeLabel}
         </Text>
       </View>
