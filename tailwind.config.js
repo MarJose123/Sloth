@@ -20,6 +20,7 @@ module.exports = {
         rust: "#9C4A3D",
         "dusty-blue": "#6E8FB0",
         ochre: "#C9A227",
+        hairline: "rgba(243,238,225,0.09)",
       },
       fontFamily: {
         serif: ["Fraunces_500Medium"],
