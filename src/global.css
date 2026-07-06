@@ -1,3 +1,74 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* src/global.css */
+@import "tailwindcss";
+@import "uniwind";
+
+/* ─────────────────────────────────────────────────────────────────
+   SLOTH DESIGN TOKENS
+   Previously in tailwind.config.js → theme.extend
+   In Tailwind v4, custom tokens live here under @theme.
+   Naming: --color-{name} generates bg-{name}, text-{name}, etc.
+   ───────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Background surfaces */
+  --color-ink: #1b1f1a;
+  --color-ink-2: #242920;
+  --color-ink-3: #2e3428;
+
+  /* Text */
+  --color-parchment: #f3eee1;
+  --color-parchment-dim: #a79f8c;
+
+  /* Accents */
+  --color-brass: #c87b54;
+  --color-brass-soft: #8f5636;
+  --color-sage: #7fa06b;
+  --color-rust: #9c4a3d;
+
+  /* Category ring extras */
+  --color-dusty-blue: #6e8fb0;
+  --color-ochre: #c9a227;
+
+  /* ── Typography ────────────────────────────────────────────────
+       React Native does not support font fallbacks.
+       Each weight must be a single exact font-file name.
+       Generates: font-fraunces, font-manrope, font-mono
+    ─────────────────────────────────────────────────────────────── */
+  --font-fraunces: "Fraunces_9pt-Light";
+  --font-fraunces-medium: "Fraunces_9pt-Regular";
+  --font-fraunces-semibold: "Fraunces_9pt-SemiBold";
+
+  --font-manrope: "Manrope-Regular";
+  --font-manrope-medium: "Manrope-Medium";
+  --font-manrope-semibold: "Manrope-SemiBold";
+  --font-manrope-bold: "Manrope-Bold";
+  --font-manrope-extrabold: "Manrope-ExtraBold";
+
+  --font-mono: "IBMPlexMono-Regular";
+  --font-mono-medium: "IBMPlexMono-Medium";
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   GLOBAL BASE STYLES
+   Previously set via cssInterop or global component overrides.
+   Sloth is dark-only — set the root background statically.
+   ───────────────────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    background-color: var(--color-ink);
+    color: var(--color-parchment);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   CUSTOM UTILITIES
+   Add project-specific one-off utilities that don't map to Tailwind
+   primitives (e.g. hairline border, brass glow).
+   ───────────────────────────────────────────────────────────────── */
+@utility hairline {
+  border-color: rgba(243, 238, 225, 0.09);
+}
+
+@utility brass-glow {
+  box-shadow: 0 10px 24px -6px rgba(200, 123, 84, 0.5);
+}

@@ -1,10 +1,11 @@
+import "../global.css";
 import { useEffect, useCallback } from "react";
 import { View } from "react-native";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaListener } from "react-native-safe-area-context";
 import { useAppFonts } from "@/hooks/useAppFonts";
-import "../global.css";
+import { Uniwind } from "uniwind";
 
 // Keep the native splash mounted until fonts are ready; our custom
 // SplashScreen component (with the sloth mark + tagline) then owns the UI
@@ -29,7 +30,12 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaListener
+      onChange={({ insets }) => {
+        // Forward device safe-area insets to Uniwind so p-safe / m-safe work
+        Uniwind.updateInsets(insets);
+      }}
+    >
       <View className="flex-1 bg-ink">
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
@@ -37,6 +43,6 @@ export default function RootLayout() {
           <Stack.Screen name="(app)" />
         </Stack>
       </View>
-    </SafeAreaProvider>
+    </SafeAreaListener>
   );
 }

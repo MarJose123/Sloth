@@ -1,5 +1,16 @@
 import { getDb } from "../client";
 
+export type CategoryKind = "expense" | "income";
+
+/** A bare category row — used by the Add Transaction picker. */
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  colorHex: string;
+  kind: CategoryKind;
+}
+
 export interface CategorySpend {
   id: string;
   name: string;
@@ -17,6 +28,14 @@ export interface MonthRange {
   end: number;
 }
 
+interface CategoryRow {
+  id: string;
+  name: string;
+  icon: string;
+  color_hex: string;
+  kind: CategoryKind;
+}
+
 interface CategorySpendRow {
   id: string;
   name: string;
@@ -26,7 +45,7 @@ interface CategorySpendRow {
   transaction_count: number | string;
 }
 
-/** The current calendar month, in the device's local timezone. */
+/** The current calendar month in the device's local timezone. */
 export function currentMonthRange(reference: Date = new Date()): MonthRange {
   const start = new Date(
     reference.getFullYear(),
@@ -39,6 +58,29 @@ export function currentMonthRange(reference: Date = new Date()): MonthRange {
     1,
   ).getTime();
   return { start, end };
+}
+
+/**
+ * All non-archived categories ordered by kind then name.
+ * Used to populate the category picker in the Add Transaction form.
+ */
+export async function listAllCategories(): Promise<Category[]> {
+  const db = await getDb();
+
+  const { rows } = await db.execute(
+    `SELECT id, name, icon, color_hex, kind
+       FROM categories
+      WHERE archived_at IS NULL
+      ORDER BY kind, name;`,
+  );
+
+  return (rows as unknown as CategoryRow[]).map((row) => ({
+    id: row.id,
+    name: row.name,
+    icon: row.icon,
+    colorHex: row.color_hex,
+    kind: row.kind,
+  }));
 }
 
 /**
@@ -82,7 +124,7 @@ export async function listTopExpenseCategories(
   }));
 }
 
-/** Total expense spend within `range`, used as the denominator for share-of-spend rings. */
+/** Total expense spend within `range`, used as the ring denominator on the dashboard. */
 export async function getTotalExpenseCents(
   range: MonthRange,
   accountId?: string,
