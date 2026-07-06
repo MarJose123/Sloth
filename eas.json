@@ -9,10 +9,13 @@
       "distribution": "internal"
     },
     "staging": {
+      "bun": "1.3.14",
       "env": {
-        "ENVIRONMENT": "staging"
+        "ENVIRONMENT": "staging",
+        "ENTRY_FILE": "node_modules/expo/AppEntry.js"
       },
       "distribution": "internal",
+      "resourceClass": "large",
       "android": {
         "buildType": "apk"
       }

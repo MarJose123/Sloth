@@ -58,6 +58,9 @@
       "eas": {
         "projectId": "bb35ddc3-4946-4972-b72a-f292d8570d81"
       }
+    },
+    "web": {
+      "bundler": "metro"
     }
   }
 }
