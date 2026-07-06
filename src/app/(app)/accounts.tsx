@@ -64,7 +64,10 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
       </View>
 
       <View className="flex-1">
-        <Text className="text-sm font-bold text-parchment" numberOfLines={1}>
+        <Text
+          className="text-sm font-manrope-semibold text-parchment"
+          numberOfLines={1}
+        >
           {account.name}
         </Text>
         <Text className="mt-0.5 font-mono text-[11px] text-parchment-dim">
@@ -127,11 +130,13 @@ export default function AccountsScreen() {
       >
         {/* ── header ── */}
         <View className="mb-5 flex-row items-center justify-between">
-          <Text className="font-serif text-[20px] text-parchment">
+          <Text className="font-fraunces-medium text-[20px] text-parchment">
             Accounts
           </Text>
           <Pressable onPress={handleAddAccount} className="active:opacity-60">
-            <Text className="text-[13px] font-bold text-brass">+ Add</Text>
+            <Text className="text-[13px] font-manrope-bold text-brass">
+              + Add
+            </Text>
           </Pressable>
         </View>
 
@@ -147,7 +152,7 @@ export default function AccountsScreen() {
         {/* ── empty state ── */}
         {!isLoading && accounts.length === 0 && (
           <View className="items-center rounded-2xl border border-white/[0.09] bg-ink-2 px-6 py-10">
-            <Text className="mb-2 font-serif text-xl text-parchment">
+            <Text className="mb-2 font-fraunces-medium text-xl text-parchment">
               No accounts yet
             </Text>
             <Text className="mb-6 text-center text-sm leading-[1.55] text-parchment-dim">
@@ -158,7 +163,7 @@ export default function AccountsScreen() {
               onPress={handleAddAccount}
               className="rounded-2xl bg-brass px-6 py-3.5 active:opacity-80"
             >
-              <Text className="font-sans-bold text-sm text-ink">
+              <Text className="font-manrope-bold text-sm text-ink">
                 Add account
               </Text>
             </Pressable>

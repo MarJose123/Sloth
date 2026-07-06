@@ -31,7 +31,7 @@ export default function PrivacyExplainerScreen() {
           How it works
         </Text>
 
-        <Text className="mb-1 font-serif text-[25px] leading-[31px] text-parchment">
+        <Text className="mb-1 font-fraunces-medium text-[25px] leading-[31px] text-parchment">
           Three ways Sloth keeps this yours.
         </Text>
 

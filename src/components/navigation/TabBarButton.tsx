@@ -33,7 +33,7 @@ export function TabBarButton({
       <View className="h-[22px] w-[22px] items-center justify-center">
         <Icon size={18} color={color} />
       </View>
-      <Text style={{ color }} className="text-[9.5px] font-bold">
+      <Text style={{ color }} className="text-[9.5px] font-manrope-semibold">
         {label}
       </Text>
     </Pressable>

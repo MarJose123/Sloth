@@ -18,7 +18,7 @@ export function AddTabButton({ isFocused, ref, ...props }: AddTabButtonProps) {
       className="flex-1 items-center"
     >
       <View
-        className="-mt-5 h-11 w-11 items-center justify-center rounded-full bg-brass"
+        className="-mt-5 h-10 w-10 items-center justify-center rounded-full bg-brass"
         style={{
           shadowColor: colors.brass,
           shadowOpacity: 0.5,

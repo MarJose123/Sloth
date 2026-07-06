@@ -34,18 +34,18 @@
        Each weight must be a single exact font-file name.
        Generates: font-fraunces, font-manrope, font-mono
     ─────────────────────────────────────────────────────────────── */
-  --font-fraunces: "Fraunces_9pt-Light";
-  --font-fraunces-medium: "Fraunces_9pt-Regular";
-  --font-fraunces-semibold: "Fraunces_9pt-SemiBold";
+  --font-fraunces: "Fraunces_400Regular";
+  --font-fraunces-medium: "Fraunces_450";
+  --font-fraunces-semibold: "Fraunces_450";
 
-  --font-manrope: "Manrope-Regular";
-  --font-manrope-medium: "Manrope-Medium";
-  --font-manrope-semibold: "Manrope-SemiBold";
-  --font-manrope-bold: "Manrope-Bold";
-  --font-manrope-extrabold: "Manrope-ExtraBold";
+  --font-manrope: "Manrope_400";
+  --font-manrope-medium: "Manrope_400";
+  --font-manrope-semibold: "Manrope_600SemiBold";
+  --font-manrope-bold: "Manrope_700Bold";
+  --font-manrope-extrabold: "Manrope_800ExtraBold";
 
-  --font-mono: "IBMPlexMono-Regular";
-  --font-mono-medium: "IBMPlexMono-Medium";
+  --font-mono: "IBMPlexMono_400";
+  --font-mono-medium: "IBMPlexMono_500Medium";
 }
 
 /* ─────────────────────────────────────────────────────────────────

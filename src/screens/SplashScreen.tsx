@@ -9,7 +9,9 @@ export function SplashScreen() {
         <SlothMark size={28} />
       </DialFrame>
 
-      <Text className="mt-1 font-serif text-2xl text-parchment">Sloth</Text>
+      <Text className="font-fraunces-medium mt-1 text-[26px] text-parchment">
+        Sloth
+      </Text>
       <Text className="mt-1.5 font-mono text-[10.5px] uppercase tracking-[2px] text-parchment-dim">
         Private by default
       </Text>

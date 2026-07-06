@@ -62,7 +62,7 @@ export default function PinSetupScreen() {
       <Text className="text-center font-mono text-[11px] uppercase tracking-[2px] text-parchment-dim">
         Sloth setup
       </Text>
-      <Text className="mb-7 mt-2.5 text-center font-serif text-xl text-parchment">
+      <Text className="mb-7 mt-2.5 text-center font-fraunces-medium text-xl text-parchment">
         {stage === "enter" ? "Create a 6-digit PIN" : "Confirm your PIN"}
       </Text>
 

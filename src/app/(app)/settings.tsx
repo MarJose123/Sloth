@@ -31,12 +31,12 @@ function SegmentedThemeControl({
         <Pressable
           key={option}
           onPress={() => onChange(option)}
-          className={`rounded-lg px-2.5 py-1.5 active:opacity-80 ${
+          className={`rounded-lg px-[10px] py-[5px] active:opacity-80 ${
             option === value ? "bg-brass" : ""
           }`}
         >
           <Text
-            className={`text-[10.5px] font-bold capitalize ${
+            className={`text-[10.5px] font-manrope-bold capitalize ${
               option === value ? "text-ink" : "text-parchment-dim"
             }`}
           >
@@ -50,7 +50,7 @@ function SegmentedThemeControl({
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <Text className="mb-2 mt-5 font-mono text-[10.5px] uppercase tracking-[1.5px] text-brass">
+    <Text className="mb-2 mt-[18px] font-mono text-[10.5px] uppercase tracking-[0.08em] text-brass">
       {label}
     </Text>
   );
@@ -80,7 +80,7 @@ function SettingsRow({
   onPress,
 }: SettingsRowProps) {
   const content = (
-    <View className="flex-row items-center border-b border-white/[0.09] py-3">
+    <View className="flex-row items-center border-b border-white/[0.09] py-[13px]">
       {/* left: icon + label block */}
       <View className="mr-3 flex-1 flex-row items-center gap-3">
         <View className="h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[9px] bg-ink-3">
@@ -88,14 +88,14 @@ function SettingsRow({
         </View>
         <View className="flex-1">
           <Text
-            className="text-[13.5px] font-bold text-parchment"
+            className="text-[13.5px] font-manrope-semibold text-parchment"
             numberOfLines={1}
           >
             {title}
           </Text>
           {description !== undefined && (
             <Text
-              className="mt-0.5 text-[11px] text-parchment-dim"
+              className="mt-[1px] text-[11px] text-parchment-dim"
               numberOfLines={2}
             >
               {description}
@@ -196,7 +196,7 @@ export default function SettingsScreen() {
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="mb-1 font-serif text-[22px] text-parchment">
+        <Text className="mb-5.5 font-fraunces-medium text-[22px] text-parchment">
           Settings
         </Text>
 

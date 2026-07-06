@@ -70,7 +70,10 @@ function AccountPickerItem({
         </Text>
       </View>
       <View className="flex-1">
-        <Text className="text-sm font-bold text-parchment" numberOfLines={1}>
+        <Text
+          className="text-sm font-manrope-semibold text-parchment"
+          numberOfLines={1}
+        >
           {account.name}
         </Text>
         <Text className="font-mono text-[11px] text-parchment-dim">
@@ -111,7 +114,10 @@ function CategoryPickerItem({
         <Text style={{ fontSize: 20 }}>{category.icon}</Text>
       </View>
       <View className="flex-1">
-        <Text className="text-sm font-bold text-parchment" numberOfLines={1}>
+        <Text
+          className="text-sm font-manrope-semibold text-parchment"
+          numberOfLines={1}
+        >
           {category.name}
         </Text>
         <Text className="font-mono text-[11px] uppercase text-parchment-dim">
@@ -268,7 +274,7 @@ export default function AddScreen() {
             <Text className="text-[13px] text-parchment-dim">Cancel</Text>
           </Pressable>
 
-          <Text className="text-sm font-bold capitalize text-parchment">
+          <Text className="text-sm font-manrope-bold capitalize text-parchment">
             New {transactionKind}
           </Text>
 
@@ -278,7 +284,7 @@ export default function AddScreen() {
             className="py-1 active:opacity-60"
           >
             <Text
-              className={`text-[13px] font-bold ${
+              className={`text-[13px] font-manrope-bold ${
                 canSave ? "text-brass" : "text-parchment-dim"
               }`}
             >
@@ -297,7 +303,7 @@ export default function AddScreen() {
           <View className="mb-5 flex-row items-baseline justify-center pt-2">
             <Text
               style={{
-                fontFamily: "Fraunces_500Medium",
+                fontFamily: "Fraunces_450",
                 fontSize: 28,
                 lineHeight: 52,
                 color: colors.parchmentDim,
@@ -314,7 +320,7 @@ export default function AddScreen() {
               maxLength={12}
               returnKeyType="done"
               style={{
-                fontFamily: "Fraunces_500Medium",
+                fontFamily: "Fraunces_450",
                 fontSize: 44,
                 lineHeight: 52,
                 color: amountCents > 0 ? colors.parchment : colors.parchmentDim,
@@ -369,7 +375,7 @@ export default function AddScreen() {
                 }`}
               >
                 <Text
-                  className={`text-[11.5px] font-bold ${
+                  className={`text-[11.5px] font-manrope-bold ${
                     m === entryMethod ? "text-brass" : "text-parchment-dim"
                   }`}
                 >
@@ -458,12 +464,8 @@ export default function AddScreen() {
 
           {/* ── privacy hint ── */}
           <View className="flex-row items-center gap-2">
-            <View
-              className="h-1.5 w-1.5 flex-shrink-0 rounded-full"
-              style={{ backgroundColor: colors.sage }}
-            />
             <Text className="text-[11.5px] text-sage">
-              Processed on this device — nothing uploaded
+              ◎ Processed on this device — nothing uploaded
             </Text>
           </View>
         </ScrollView>
@@ -481,14 +483,14 @@ export default function AddScreen() {
           className="flex-1 bg-ink"
         >
           <View className="flex-row items-center justify-between border-b border-white/[0.09] px-5 py-4">
-            <Text className="font-serif text-xl text-parchment">
+            <Text className="font-fraunces-medium text-xl text-parchment">
               Select account
             </Text>
             <Pressable
               onPress={() => setPickerOpen(null)}
               className="active:opacity-60"
             >
-              <Text className="font-bold text-brass">Done</Text>
+              <Text className="font-manrope-bold text-brass">Done</Text>
             </Pressable>
           </View>
           <ScrollView
@@ -528,14 +530,14 @@ export default function AddScreen() {
           className="flex-1 bg-ink"
         >
           <View className="flex-row items-center justify-between border-b border-white/[0.09] px-5 py-4">
-            <Text className="font-serif text-xl text-parchment">
+            <Text className="font-fraunces-medium text-xl text-parchment">
               Select category
             </Text>
             <Pressable
               onPress={() => setPickerOpen(null)}
               className="active:opacity-60"
             >
-              <Text className="font-bold text-brass">Done</Text>
+              <Text className="font-manrope-bold text-brass">Done</Text>
             </Pressable>
           </View>
           <ScrollView
@@ -558,7 +560,9 @@ export default function AddScreen() {
                 <Text className="text-lg text-parchment-dim">○</Text>
               </View>
               <View className="flex-1">
-                <Text className="text-sm font-bold text-parchment">None</Text>
+                <Text className="text-sm font-manrope-semibold text-parchment">
+                  None
+                </Text>
                 <Text className="font-mono text-[11px] text-parchment-dim">
                   Skip categorisation
                 </Text>

@@ -11,10 +11,10 @@ export function TransactionRow({
     transaction.categoryKind === "income" || transaction.amountCents > 0;
 
   return (
-    <View className="flex-row items-center justify-between border-t border-white/[0.09] py-2.5">
+    <View className="flex-row items-center justify-between border-t border-white/[0.09] py-[11px]">
       <View className="flex-1 pr-3">
         <Text
-          className="text-[13.5px] font-bold text-parchment"
+          className="text-[13.5px] font-manrope-semibold text-parchment"
           numberOfLines={1}
         >
           {transaction.merchant}

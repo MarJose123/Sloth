@@ -49,7 +49,7 @@ export default function BiometricSetupScreen() {
           Step 3 of 3
         </Text>
 
-        <Text className="mb-2 mt-2.5 font-serif text-[26px] leading-[32px] text-parchment">
+        <Text className="mb-2 mt-2.5 font-fraunces-medium text-[26px] leading-[32px] text-parchment">
           Lock Sloth to your face or fingerprint.
         </Text>
         <Text className="mb-8 text-[13.5px] leading-[20px] text-parchment-dim">

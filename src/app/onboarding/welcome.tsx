@@ -18,7 +18,7 @@ export default function WelcomeScreen() {
           <SlothMark size={34} />
         </DialFrame>
 
-        <Text className="mt-8 text-center font-serif text-[30px] leading-[36px] text-parchment">
+        <Text className="mt-8 text-center font-fraunces-medium text-[30px] leading-[36px] text-parchment">
           Your money.{"\n"}Your device.{"\n"}Nobody else&apos;s.
         </Text>
 

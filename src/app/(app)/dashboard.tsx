@@ -72,9 +72,16 @@ export default function DashboardScreen() {
           />
         }
       >
-        <Text className="mb-0.5 text-xs text-parchment-dim">
+        <Text className="mb-0.5 text-[12.5px] text-parchment-dim">
           {getGreeting()}
         </Text>
+
+        <View className="mb-5.5 flex-row items-center gap-1.5 self-start rounded-full border border-sage/35 px-2.5 py-1">
+          <View className="h-1.5 w-1.5 rounded-full bg-sage" />
+          <Text className="font-mono text-[10px] tracking-[0.6px] text-sage uppercase">
+            Local Processing
+          </Text>
+        </View>
 
         {hasAccounts ? (
           <>
@@ -91,7 +98,7 @@ export default function DashboardScreen() {
                 ? `${selectedAccount.name} balance`
                 : "Total balance"}
             </Text>
-            <Text className="mb-6.5 font-serif text-[44px] leading-[48px] text-parchment">
+            <Text className="mb-6.5 font-fraunces-medium text-[44px] leading-[48px] text-parchment">
               {formatCurrency(totalBalanceCents)}
             </Text>
 
@@ -115,7 +122,7 @@ export default function DashboardScreen() {
                 onPress={() => router.push("/(app)/add")}
                 className="rounded-full bg-brass px-3 py-1.5 active:opacity-80"
               >
-                <Text className="font-sans-bold text-[11px] text-ink">
+                <Text className="font-manrope-bold text-[11px] text-ink">
                   + Add
                 </Text>
               </Pressable>
