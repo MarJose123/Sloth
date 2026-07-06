@@ -5,6 +5,7 @@
   },
   "build": {
     "staging": {
+      "autoIncrement": true,
       "bun": "1.3.14",
       "env": {
         "ENVIRONMENT": "staging"
@@ -16,13 +17,13 @@
       }
     },
     "production": {
+      "autoIncrement": true,
       "bun": "1.3.14",
       "env": {
         "ENVIRONMENT": "production"
       },
       "resourceClass": "large",
       "android": {
-        "autoIncrement": true,
         "buildType": "apk"
       }
     }

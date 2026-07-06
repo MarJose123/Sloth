@@ -10,9 +10,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import Constants from "expo-constants";
 import { storage, type ThemePreference } from "@/lib/storage";
 import { Toggle } from "@/components/ui/Toggle";
+import * as Application from "expo-application";
 
 // ─── local primitives ────────────────────────────────────────────────────────
 
@@ -121,7 +121,8 @@ function SettingsRow({
 
 // ─── screen ───────────────────────────────────────────────────────────────────
 
-const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
+const APP_VERSION = Application.nativeApplicationVersion ?? "1.0.0";
+const APP_BUILD_NUMBER = Application.nativeBuildVersion ?? "1";
 
 export default function SettingsScreen() {
   const [biometricEnabled, setBiometricEnabled] = useState(false);
@@ -314,7 +315,7 @@ export default function SettingsScreen() {
         <SettingsRow
           icon="🦥"
           title="About Sloth"
-          description={`Version ${APP_VERSION} · license, source code`}
+          description={`Version ${APP_VERSION} Build ${APP_BUILD_NUMBER} · license, source code`}
           onPress={() => comingSoon("About screen")}
           right={<Chevron />}
         />
