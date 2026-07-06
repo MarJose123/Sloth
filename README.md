@@ -31,7 +31,7 @@ Currently developed **Android-first**; iOS support is a future target.
 
 ## Project status
 
-Sloth is in active development. A full 16-screen mockup covering onboarding, dashboard, accounts, transactions, categories, settings, receipt scanning, and CSV/OFX import has been designed and approved; implementation is ongoing.
+Sloth is in active development. Implementation is ongoing.
 
 ## Contributing
 
