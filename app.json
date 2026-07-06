@@ -5,6 +5,8 @@
     "icon": "./assets/icons/icon.png",
     "scheme": "sloth",
     "userInterfaceStyle": "dark",
+    "githubUrl": "https://github.com/MarJose123/Sloth",
+    "orientation": "portrait",
     "plugins": [
       "expo-router",
       "expo-secure-store",
