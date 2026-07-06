@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -153,22 +153,18 @@ export default function AddScreen() {
   // ── stable date display (captured at mount, not on every re-render) ─────────
   const dateDisplay = useMemo(() => formatTimeDisplay(new Date()), []);
 
-  // ── auto-select first account once reference data loads ─────────────────────
-  useEffect(() => {
-    if (
-      dataState.status === "ready" &&
-      !selectedAccountId &&
-      dataState.data.accounts.length > 0
-    ) {
-      setSelectedAccountId(dataState.data.accounts[0]!.id);
-    }
-  }, [dataState, selectedAccountId]);
-
-  // ── derived values ───────────────────────────────────────────────────────────
   const data = dataState.status === "ready" ? dataState.data : null;
 
+  /**
+   * The effective account ID is either the one explicitly chosen by the user
+   * or, if they haven't picked one yet, the first account from the loaded data.
+   * This avoids a "cascading render" lint warning by deriving the default
+   * instead of setting it in a useEffect.
+   */
+  const effectiveAccountId = selectedAccountId ?? data?.accounts[0]?.id ?? null;
+
   const selectedAccount =
-    data?.accounts.find((a) => a.id === selectedAccountId) ?? null;
+    data?.accounts.find((a) => a.id === effectiveAccountId) ?? null;
 
   const selectedCategory =
     data?.categories.find((c) => c.id === selectedCategoryId) ?? null;
@@ -192,7 +188,7 @@ export default function AddScreen() {
 
   const canSave =
     amountCents > 0 &&
-    !!selectedAccountId &&
+    !!effectiveAccountId &&
     merchant.trim().length > 0 &&
     !saving;
 
@@ -225,12 +221,12 @@ export default function AddScreen() {
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!canSave || !selectedAccountId) return;
+    if (!canSave || !effectiveAccountId) return;
 
     setSaving(true);
     try {
       await insertTransaction({
-        accountId: selectedAccountId,
+        accountId: effectiveAccountId,
         categoryId: selectedCategoryId,
         merchant: merchant.trim(),
         amountCents: signedAmountCents,
@@ -248,7 +244,7 @@ export default function AddScreen() {
     }
   }, [
     canSave,
-    selectedAccountId,
+    effectiveAccountId,
     selectedCategoryId,
     merchant,
     signedAmountCents,
@@ -508,7 +504,7 @@ export default function AddScreen() {
                 <AccountPickerItem
                   key={account.id}
                   account={account}
-                  selected={selectedAccountId === account.id}
+                  selected={effectiveAccountId === account.id}
                   onSelect={() => {
                     setSelectedAccountId(account.id);
                     setPickerOpen(null);

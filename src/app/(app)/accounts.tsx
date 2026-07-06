@@ -182,10 +182,9 @@ export default function AccountsScreen() {
               </Text>
             </Pressable>
 
-            {/* ── privacy note ── */}
             <Text className="mt-5 text-center text-[11px] leading-[1.5] text-parchment-dim">
-              Every account's balance and history is stored only on this device
-              — nothing is uploaded, ever.
+              Every account&apos;s balance and history is stored only on this
+              device — nothing is uploaded, ever.
             </Text>
           </>
         )}
