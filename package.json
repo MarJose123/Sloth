@@ -58,5 +58,6 @@
     "ios": "expo run:ios",
     "lint": "prettier --write . && expo lint"
   },
+  "packageManager": "bun@1.3.14",
   "private": true
 }
