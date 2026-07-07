@@ -26,16 +26,16 @@ function getInitials(name: string): string {
 
 const TYPE_LABELS: Record<string, string> = {
   checking: "CHECKING",
-  savings:  "SAVINGS",
-  credit:   "CREDIT",
-  cash:     "CASH",
+  savings: "SAVINGS",
+  credit: "CREDIT",
+  cash: "CASH",
 };
 
 // ─── AccountCard ──────────────────────────────────────────────────────────────
 
 function AccountCard({ account }: { account: AccountWithBalance }) {
-  const initials   = getInitials(account.name);
-  const typeLabel  = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
+  const initials = getInitials(account.name);
+  const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
 
   const balanceColor: string =
     account.type === "credit"
@@ -97,9 +97,9 @@ export default function AccountsScreen() {
     );
   }
 
-  const accounts     = state.status === "ready" ? state.accounts : [];
+  const accounts = state.status === "ready" ? state.accounts : [];
   const isRefreshing = state.status === "ready" ? state.isRefreshing : false;
-  const isLoading    = state.status === "loading";
+  const isLoading = state.status === "loading";
 
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-ink">

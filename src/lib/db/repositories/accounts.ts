@@ -35,7 +35,9 @@ interface AccountRow {
  * starting_balance + the sum of their transactions. There is no cached
  * "balance" column by design — it's always derived so it can never drift.
  */
-export async function listAccountsWithBalances(): Promise<AccountWithBalance[]> {
+export async function listAccountsWithBalances(): Promise<
+  AccountWithBalance[]
+> {
   const db = await getDb();
 
   const { rows } = await db.execute(

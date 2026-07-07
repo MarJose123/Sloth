@@ -20,10 +20,10 @@ import { colors } from "@/theme/colors";
 // ─── constants ────────────────────────────────────────────────────────────────
 
 const ACCOUNT_TYPES: { type: AccountType; label: string; icon: string }[] = [
-  { type: "checking", label: "Checking",    icon: "▢" },
-  { type: "savings",  label: "Savings",     icon: "◑" },
-  { type: "credit",   label: "Credit card", icon: "▤" },
-  { type: "cash",     label: "Cash",        icon: "¢" },
+  { type: "checking", label: "Checking", icon: "▢" },
+  { type: "savings", label: "Savings", icon: "◑" },
+  { type: "credit", label: "Credit card", icon: "▤" },
+  { type: "cash", label: "Cash", icon: "¢" },
 ];
 
 const BADGE_COLORS = [
@@ -54,10 +54,10 @@ function parseBalanceCents(text: string): number {
 // ─── color swatch ─────────────────────────────────────────────────────────────
 
 function ColorSwatch({
-                       color,
-                       selected,
-                       onPress,
-                     }: {
+  color,
+  selected,
+  onPress,
+}: {
   color: string;
   selected: boolean;
   onPress: () => void;
@@ -88,14 +88,14 @@ function ColorSwatch({
 // ─── screen ───────────────────────────────────────────────────────────────────
 
 export default function AddAccountScreen() {
-  const [name, setName]                     = useState("");
-  const [selectedType, setSelectedType]     = useState<AccountType>("checking");
+  const [name, setName] = useState("");
+  const [selectedType, setSelectedType] = useState<AccountType>("checking");
   const [selectedColorIdx, setSelectedColorIdx] = useState(0);
-  const [balanceText, setBalanceText]       = useState("0.00");
-  const [isSaving, setIsSaving]             = useState(false);
+  const [balanceText, setBalanceText] = useState("0.00");
+  const [isSaving, setIsSaving] = useState(false);
 
   const selectedColor = BADGE_COLORS[selectedColorIdx] ?? colors.brass;
-  const initials      = getInitials(name) || "·";
+  const initials = getInitials(name) || "·";
 
   const handleSave = useCallback(async () => {
     const trimmedName = name.trim();
@@ -107,9 +107,9 @@ export default function AddAccountScreen() {
     setIsSaving(true);
     try {
       await insertAccount({
-        name:                 trimmedName,
-        type:                 selectedType,
-        colorHex:             selectedColor,
+        name: trimmedName,
+        type: selectedType,
+        colorHex: selectedColor,
         startingBalanceCents: parseBalanceCents(balanceText),
       });
       router.back();
@@ -138,7 +138,10 @@ export default function AddAccountScreen() {
         >
           {/* ── Header ── */}
           <View className="mb-8 flex-row items-center justify-between">
-            <Pressable onPress={() => router.back()} className="active:opacity-60">
+            <Pressable
+              onPress={() => router.back()}
+              className="active:opacity-60"
+            >
               <Text className="text-[13px] text-parchment-dim">Cancel</Text>
             </Pressable>
             <Text className="font-fraunces-medium text-[20px] text-parchment">

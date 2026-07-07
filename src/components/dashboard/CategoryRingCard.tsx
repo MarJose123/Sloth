@@ -14,18 +14,21 @@ const RING_SIZE = 46;
 const RING_RADIUS = 20;
 const INNER_SIZE = 34;
 const INNER_OFFSET = (RING_SIZE - INNER_SIZE) / 2; // 6px
-const CENTER = RING_SIZE / 2;                       // 23
-const CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;   // ≈125.66
+const CENTER = RING_SIZE / 2; // 23
+const CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS; // ≈125.66
 
 // ─── component ────────────────────────────────────────────────────────────────
 
 export function CategoryRingCard({
-                                   category,
-                                   totalExpenseCents,
-                                 }: CategoryRingCardProps) {
+  category,
+  totalExpenseCents,
+}: CategoryRingCardProps) {
   const percent =
     totalExpenseCents > 0
-      ? Math.min(100, Math.round((category.spendCents / totalExpenseCents) * 100))
+      ? Math.min(
+          100,
+          Math.round((category.spendCents / totalExpenseCents) * 100),
+        )
       : 0;
 
   // strokeDashoffset shrinks from CIRCUMFERENCE (0%) toward 0 (100%)

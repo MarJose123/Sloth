@@ -34,16 +34,16 @@
        Keys here must match what useAppFonts.tsx registers in its map.
     ─────────────────────────────────────────────────────────────── */
   --font-fraunces: "Fraunces_400Regular";
-  --font-fraunces-medium: "Fraunces_450";           /* hook alias → 500Medium */
+  --font-fraunces-medium: "Fraunces_450"; /* hook alias → 500Medium */
   --font-fraunces-semibold: "Fraunces_600SemiBold"; /* was "Fraunces_450" — fixed */
 
-  --font-manrope: "Manrope_400";                    /* hook alias → 400Regular */
-  --font-manrope-medium: "Manrope_500Medium";       /* was "Manrope_400" — fixed */
+  --font-manrope: "Manrope_400"; /* hook alias → 400Regular */
+  --font-manrope-medium: "Manrope_500Medium"; /* was "Manrope_400" — fixed */
   --font-manrope-semibold: "Manrope_600SemiBold";
   --font-manrope-bold: "Manrope_700Bold";
   --font-manrope-extrabold: "Manrope_800ExtraBold";
 
-  --font-mono: "IBMPlexMono_400";                   /* hook alias → 400Regular */
+  --font-mono: "IBMPlexMono_400"; /* hook alias → 400Regular */
   --font-mono-medium: "IBMPlexMono_500Medium";
 }
 

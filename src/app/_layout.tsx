@@ -7,9 +7,6 @@ import { SafeAreaListener } from "react-native-safe-area-context";
 import { useAppFonts } from "@/hooks/useAppFonts";
 import { Uniwind } from "uniwind";
 
-// Keep the native splash mounted until fonts are ready; our custom
-// SplashScreen component (with the sloth mark + tagline) then owns the UI
-// during the async onboarding-status check performed in app/index.tsx.
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* no-op: safe to ignore if already hidden */
 });
@@ -32,15 +29,25 @@ export default function RootLayout() {
   return (
     <SafeAreaListener
       onChange={({ insets }) => {
-        // Forward device safe-area insets to Uniwind so p-safe / m-safe work
         Uniwind.updateInsets(insets);
       }}
     >
       <View className="flex-1 bg-ink">
         <Stack screenOptions={{ headerShown: false }}>
+          {/* ── Core groups ── */}
           <Stack.Screen name="index" />
           <Stack.Screen name="onboarding" />
           <Stack.Screen name="(app)" />
+
+          {/* ── Root-level push screens (no tab bar) ── */}
+          {/* Navigated to via router.push("/add-account") etc. from    */}
+          {/* within (app) tabs; renders outside the tab layout so the  */}
+          {/* tab bar is not visible on these screens.                  */}
+          <Stack.Screen name="add-account" />
+          <Stack.Screen name="category-editor" />
+          <Stack.Screen name="about" />
+          <Stack.Screen name="receipt-scan" />
+          <Stack.Screen name="import" />
         </Stack>
       </View>
     </SafeAreaListener>

@@ -24,10 +24,28 @@ import { colors } from "@/theme/colors";
 // ─── icon library ─────────────────────────────────────────────────────────────
 
 const ICONS = [
-  "🛒", "🍽", "🚈", "🏠", "💊", "🎬",
-  "✈",  "📱", "🐾", "👕", "💡", "⚽",
-  "📚", "🎮", "💇", "🚗", "💰", "🎁",
-  "🏋", "🧘", "☕", "🎵",
+  "🛒",
+  "🍽",
+  "🚈",
+  "🏠",
+  "💊",
+  "🎬",
+  "✈",
+  "📱",
+  "🐾",
+  "👕",
+  "💡",
+  "⚽",
+  "📚",
+  "🎮",
+  "💇",
+  "🚗",
+  "💰",
+  "🎁",
+  "🏋",
+  "🧘",
+  "☕",
+  "🎵",
 ] as const;
 
 // ─── color palette ────────────────────────────────────────────────────────────
@@ -43,10 +61,10 @@ const RING_COLORS = [
 // ─── color swatch ─────────────────────────────────────────────────────────────
 
 function ColorSwatch({
-                       color,
-                       selected,
-                       onPress,
-                     }: {
+  color,
+  selected,
+  onPress,
+}: {
   color: string;
   selected: boolean;
   onPress: () => void;
@@ -77,16 +95,12 @@ function ColorSwatch({
 // ─── ring preview (full circle, 58px) ────────────────────────────────────────
 
 function PreviewRing({ icon, color }: { icon: string; color: string }) {
-  const SIZE   = 58;
+  const SIZE = 58;
   const RADIUS = 26;
   const CENTER = SIZE / 2;
   return (
     <View style={styles.previewContainer}>
-      <Svg
-        width={SIZE}
-        height={SIZE}
-        style={StyleSheet.absoluteFill}
-      >
+      <Svg width={SIZE} height={SIZE} style={StyleSheet.absoluteFill}>
         <Circle
           cx={CENTER}
           cy={CENTER}
@@ -96,12 +110,7 @@ function PreviewRing({ icon, color }: { icon: string; color: string }) {
           strokeWidth={3}
         />
       </Svg>
-      <View
-        style={[
-          styles.previewInner,
-          { backgroundColor: color },
-        ]}
-      >
+      <View style={[styles.previewInner, { backgroundColor: color }]}>
         <Text style={styles.previewIcon}>{icon}</Text>
       </View>
     </View>
@@ -111,16 +120,16 @@ function PreviewRing({ icon, color }: { icon: string; color: string }) {
 // ─── screen ───────────────────────────────────────────────────────────────────
 
 export default function CategoryEditorScreen() {
-  const params     = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string }>();
   const categoryId = params.id;
-  const isEditing  = !!categoryId;
+  const isEditing = !!categoryId;
 
-  const [name, setName]               = useState("");
+  const [name, setName] = useState("");
   const [selectedIcon, setSelectedIcon] = useState<string>("🛒");
   const [selectedColor, setSelectedColor] = useState<string>(colors.brass);
   const [selectedKind, setSelectedKind] = useState<CategoryKind>("expense");
   const [isLoadingData, setIsLoadingData] = useState(isEditing);
-  const [isSaving, setIsSaving]         = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Pre-populate fields when editing an existing category
   useEffect(() => {
@@ -156,17 +165,17 @@ export default function CategoryEditorScreen() {
     try {
       if (isEditing && categoryId) {
         await updateCategory(categoryId, {
-          name:     trimmedName,
-          icon:     selectedIcon,
+          name: trimmedName,
+          icon: selectedIcon,
           colorHex: selectedColor,
-          kind:     selectedKind,
+          kind: selectedKind,
         });
       } else {
         await insertCategory({
-          name:     trimmedName,
-          icon:     selectedIcon,
+          name: trimmedName,
+          icon: selectedIcon,
           colorHex: selectedColor,
-          kind:     selectedKind,
+          kind: selectedKind,
         });
       }
       router.back();

@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { storage, type ThemePreference } from "@/lib/storage";
 import { Toggle } from "@/components/ui/Toggle";
+import { DonateQRModal } from "@/components/modals/DonateQRModal";
 import * as Application from "expo-application";
 
 // ─── local primitives ────────────────────────────────────────────────────────
@@ -81,7 +82,6 @@ function SettingsRow({
 }: SettingsRowProps) {
   const content = (
     <View className="flex-row items-center border-b border-white/[0.09] py-[13px]">
-      {/* left: icon + label block */}
       <View className="mr-3 flex-1 flex-row items-center gap-3">
         <View className="h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[9px] bg-ink-3">
           <Text className="text-[13px] text-brass">{icon}</Text>
@@ -103,7 +103,6 @@ function SettingsRow({
           )}
         </View>
       </View>
-      {/* right: control */}
       {right}
     </View>
   );
@@ -129,8 +128,8 @@ export default function SettingsScreen() {
   const [screenshotsEnabled, setScreenshotsEnabled] = useState(false);
   const [theme, setTheme] = useState<ThemePreference>("auto");
   const [prefsLoaded, setPrefsLoaded] = useState(false);
+  const [showDonate, setShowDonate] = useState(false);
 
-  // Load all stored preferences in one parallel batch on mount.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -150,7 +149,7 @@ export default function SettingsScreen() {
     };
   }, []);
 
-  // ── preference handlers ─────────────────────────────────────────────────────
+  // ── preference handlers ──────────────────────────────────────────────────────
 
   const handleBiometricToggle = async (value: boolean) => {
     setBiometricEnabled(value);
@@ -167,7 +166,7 @@ export default function SettingsScreen() {
     await storage.setThemePreference(value);
   };
 
-  // ── navigation / action helpers ─────────────────────────────────────────────
+  // ── navigation / action helpers ──────────────────────────────────────────────
 
   const openUrl = (url: string) => {
     Linking.openURL(url).catch(() =>
@@ -187,7 +186,7 @@ export default function SettingsScreen() {
     );
   };
 
-  // ── render ──────────────────────────────────────────────────────────────────
+  // ── render ───────────────────────────────────────────────────────────────────
 
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-ink">
@@ -200,7 +199,7 @@ export default function SettingsScreen() {
           Settings
         </Text>
 
-        {/* ── Appearance ─────────────────────────────────────────────────── */}
+        {/* ── Appearance ──────────────────────────────────────────────────── */}
         <SectionLabel label="Appearance" />
         <SettingsRow
           icon="◑"
@@ -216,7 +215,7 @@ export default function SettingsScreen() {
           }
         />
 
-        {/* ── Security ───────────────────────────────────────────────────── */}
+        {/* ── Security ────────────────────────────────────────────────────── */}
         <SectionLabel label="Security" />
         <SettingsRow
           icon="◎"
@@ -256,7 +255,7 @@ export default function SettingsScreen() {
           }
         />
 
-        {/* ── Data ───────────────────────────────────────────────────────── */}
+        {/* ── Data ────────────────────────────────────────────────────────── */}
         <SectionLabel label="Data" />
         <SettingsRow
           icon="▤"
@@ -269,7 +268,7 @@ export default function SettingsScreen() {
           icon="◐"
           title="Categories"
           description="Manage expense types"
-          onPress={() => comingSoon("Categories")}
+          onPress={() => router.push("/(app)/categories")}
           right={<Chevron />}
         />
         <SettingsRow
@@ -280,13 +279,13 @@ export default function SettingsScreen() {
           right={<Chevron />}
         />
 
-        {/* ── Support ────────────────────────────────────────────────────── */}
+        {/* ── Support ─────────────────────────────────────────────────────── */}
         <SectionLabel label="Support" />
         <SettingsRow
           icon="♥"
           title="Donate"
           description="Support development directly"
-          onPress={() => comingSoon("Donations")}
+          onPress={() => setShowDonate(true)}
           right={<Chevron />}
         />
         <SettingsRow
@@ -310,13 +309,13 @@ export default function SettingsScreen() {
           right={<Chevron />}
         />
 
-        {/* ── About ──────────────────────────────────────────────────────── */}
+        {/* ── About ───────────────────────────────────────────────────────── */}
         <SectionLabel label="About" />
         <SettingsRow
           icon="🦥"
           title="About Sloth"
-          description={`Version ${APP_VERSION} Build ${APP_BUILD_NUMBER} · license, source code`}
-          onPress={() => comingSoon("About screen")}
+          description={`Version ${APP_VERSION} · license, source code`}
+          onPress={() => router.push("/about")}
           right={<Chevron />}
         />
         <SettingsRow
@@ -327,11 +326,17 @@ export default function SettingsScreen() {
           right={<Chevron />}
         />
 
-        {/* ── build stamp ── */}
+        {/* ── Build stamp ── */}
         <Text className="mt-8 text-center font-mono text-[10.5px] text-parchment-dim">
-          Sloth {APP_VERSION} · GPLv3
+          Sloth {APP_VERSION} ({APP_BUILD_NUMBER}) · GPLv3
         </Text>
       </ScrollView>
+
+      {/* ── Donate modal ── */}
+      <DonateQRModal
+        visible={showDonate}
+        onClose={() => setShowDonate(false)}
+      />
     </SafeAreaView>
   );
 }

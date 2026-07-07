@@ -17,19 +17,19 @@ import { colors } from "@/theme/colors";
 
 // ─── ring geometry ────────────────────────────────────────────────────────────
 
-const RING_SIZE    = 44;
-const RING_RADIUS  = 19;
-const INNER_SIZE   = 34;
+const RING_SIZE = 44;
+const RING_RADIUS = 19;
+const INNER_SIZE = 34;
 const INNER_OFFSET = (RING_SIZE - INNER_SIZE) / 2; // 5
-const CENTER       = RING_SIZE / 2;                 // 22
-const CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;   // ≈119.38
+const CENTER = RING_SIZE / 2; // 22
+const CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS; // ≈119.38
 
 // ─── list ring icon ───────────────────────────────────────────────────────────
 
 function CategoryListRing({
-                            category,
-                            totalExpenseCents,
-                          }: {
+  category,
+  totalExpenseCents,
+}: {
   category: CategorySpend;
   totalExpenseCents: number;
 }) {
@@ -39,20 +39,16 @@ function CategoryListRing({
       ? 100
       : totalExpenseCents > 0
         ? Math.min(
-          100,
-          Math.round((category.spendCents / totalExpenseCents) * 100),
-        )
+            100,
+            Math.round((category.spendCents / totalExpenseCents) * 100),
+          )
         : 0;
 
   const strokeDashoffset = CIRCUMFERENCE * (1 - percent / 100);
 
   return (
     <View style={styles.ringContainer}>
-      <Svg
-        width={RING_SIZE}
-        height={RING_SIZE}
-        style={StyleSheet.absoluteFill}
-      >
+      <Svg width={RING_SIZE} height={RING_SIZE} style={StyleSheet.absoluteFill}>
         <Circle
           cx={CENTER}
           cy={CENTER}
@@ -78,10 +74,7 @@ function CategoryListRing({
         )}
       </Svg>
       <View
-        style={[
-          styles.innerCircle,
-          { top: INNER_OFFSET, left: INNER_OFFSET },
-        ]}
+        style={[styles.innerCircle, { top: INNER_OFFSET, left: INNER_OFFSET }]}
       >
         <Text style={styles.icon}>{category.icon}</Text>
       </View>
@@ -92,10 +85,10 @@ function CategoryListRing({
 // ─── category row ─────────────────────────────────────────────────────────────
 
 function CategoryRow({
-                       category,
-                       totalExpenseCents,
-                       onPress,
-                     }: {
+  category,
+  totalExpenseCents,
+  onPress,
+}: {
   category: CategorySpend;
   totalExpenseCents: number;
   onPress: () => void;
@@ -141,9 +134,9 @@ export default function CategoriesScreen() {
     refresh();
   }, [refresh]);
 
-  const isLoading       = state.status === "loading";
-  const isRefreshing    = state.status === "ready" ? state.isRefreshing : false;
-  const categories      = state.status === "ready" ? state.data.categories : [];
+  const isLoading = state.status === "loading";
+  const isRefreshing = state.status === "ready" ? state.isRefreshing : false;
+  const categories = state.status === "ready" ? state.data.categories : [];
   const totalExpenseCents =
     state.status === "ready" ? state.data.totalExpenseCents : 0;
 
