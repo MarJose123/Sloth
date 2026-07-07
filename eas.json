@@ -5,7 +5,8 @@
   },
   "build": {
     "base": {
-      "bun": "1.3.14"
+      "bun": "1.3.14",
+      "resourceClass": "medium"
     },
     "development": {
       "extends": "base",
@@ -21,18 +22,16 @@
         "ENVIRONMENT": "staging"
       },
       "distribution": "internal",
-      "resourceClass": "large",
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
+      "extends": "base",
       "autoIncrement": true,
-      "bun": "1.3.14",
       "env": {
         "ENVIRONMENT": "production"
       },
-      "resourceClass": "large",
       "android": {
         "buildType": "apk"
       }
