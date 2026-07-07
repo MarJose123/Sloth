@@ -1,6 +1,5 @@
 import { useCallback } from "react";
 import {
-  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -8,6 +7,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { formatCurrency } from "@/lib/format";
@@ -26,22 +26,17 @@ function getInitials(name: string): string {
 
 const TYPE_LABELS: Record<string, string> = {
   checking: "CHECKING",
-  savings: "SAVINGS",
-  credit: "CREDIT",
-  cash: "CASH",
+  savings:  "SAVINGS",
+  credit:   "CREDIT",
+  cash:     "CASH",
 };
 
 // ─── AccountCard ──────────────────────────────────────────────────────────────
 
 function AccountCard({ account }: { account: AccountWithBalance }) {
-  const initials = getInitials(account.name);
-  const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
+  const initials   = getInitials(account.name);
+  const typeLabel  = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
 
-  /**
-   * Credit balances are negative when money is owed (standard accounting sign
-   * convention used throughout the schema). Show the balance in rust when
-   * it's negative for a credit account — it visually signals "you owe this".
-   */
   const balanceColor: string =
     account.type === "credit"
       ? account.balanceCents < 0
@@ -84,14 +79,6 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
 
 // ─── screen ───────────────────────────────────────────────────────────────────
 
-function handleAddAccount() {
-  Alert.alert(
-    "Coming soon",
-    "Add account will be available in the next update.",
-    [{ text: "OK" }],
-  );
-}
-
 export default function AccountsScreen() {
   const { state, refresh } = useAccountsData();
 
@@ -110,9 +97,9 @@ export default function AccountsScreen() {
     );
   }
 
-  const accounts = state.status === "ready" ? state.accounts : [];
+  const accounts     = state.status === "ready" ? state.accounts : [];
   const isRefreshing = state.status === "ready" ? state.isRefreshing : false;
-  const isLoading = state.status === "loading";
+  const isLoading    = state.status === "loading";
 
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-ink">
@@ -128,19 +115,22 @@ export default function AccountsScreen() {
           />
         }
       >
-        {/* ── header ── */}
+        {/* ── Header ── */}
         <View className="mb-5 flex-row items-center justify-between">
           <Text className="font-fraunces-medium text-[20px] text-parchment">
             Accounts
           </Text>
-          <Pressable onPress={handleAddAccount} className="active:opacity-60">
-            <Text className="text-[13px] font-manrope-bold text-brass">
+          <Pressable
+            onPress={() => router.push("/add-account")}
+            className="active:opacity-60"
+          >
+            <Text className="font-manrope-bold text-[13px] text-brass">
               + Add
             </Text>
           </Pressable>
         </View>
 
-        {/* ── loading skeleton ── */}
+        {/* ── Loading skeleton ── */}
         {isLoading && (
           <View className="items-center py-14">
             <Text className="text-sm text-parchment-dim">
@@ -149,7 +139,7 @@ export default function AccountsScreen() {
           </View>
         )}
 
-        {/* ── empty state ── */}
+        {/* ── Empty state ── */}
         {!isLoading && accounts.length === 0 && (
           <View className="items-center rounded-2xl border border-white/[0.09] bg-ink-2 px-6 py-10">
             <Text className="mb-2 font-fraunces-medium text-xl text-parchment">
@@ -160,7 +150,7 @@ export default function AccountsScreen() {
               start tracking your money.
             </Text>
             <Pressable
-              onPress={handleAddAccount}
+              onPress={() => router.push("/add-account")}
               className="rounded-2xl bg-brass px-6 py-3.5 active:opacity-80"
             >
               <Text className="font-manrope-bold text-sm text-ink">
@@ -170,16 +160,15 @@ export default function AccountsScreen() {
           </View>
         )}
 
-        {/* ── account cards ── */}
+        {/* ── Account cards ── */}
         {!isLoading && accounts.length > 0 && (
           <>
             {accounts.map((account) => (
               <AccountCard key={account.id} account={account} />
             ))}
 
-            {/* ── add-more dashed row ── */}
             <Pressable
-              onPress={handleAddAccount}
+              onPress={() => router.push("/add-account")}
               className="mt-1 items-center rounded-2xl border border-dashed border-parchment/20 py-4 active:opacity-60"
             >
               <Text className="text-[13px] text-parchment-dim">

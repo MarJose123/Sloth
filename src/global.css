@@ -4,54 +4,52 @@
 
 /* ─────────────────────────────────────────────────────────────────
    SLOTH DESIGN TOKENS
-   Previously in tailwind.config.js → theme.extend
-   In Tailwind v4, custom tokens live here under @theme.
+   All tokens live here under @theme — no tailwind.config.js.
    Naming: --color-{name} generates bg-{name}, text-{name}, etc.
+   Font keys must exactly match the registration keys in useAppFonts.
    ───────────────────────────────────────────────────────────────── */
 
 @theme {
-  /* Background surfaces */
+  /* ── Surfaces ──────────────────────────────────────────────────── */
   --color-ink: #1b1f1a;
   --color-ink-2: #242920;
   --color-ink-3: #2e3428;
 
-  /* Text */
+  /* ── Text ──────────────────────────────────────────────────────── */
   --color-parchment: #f3eee1;
   --color-parchment-dim: #a79f8c;
 
-  /* Accents */
+  /* ── Accents ───────────────────────────────────────────────────── */
   --color-brass: #c87b54;
   --color-brass-soft: #8f5636;
   --color-sage: #7fa06b;
   --color-rust: #9c4a3d;
 
-  /* Category ring extras */
+  /* ── Category ring extras ──────────────────────────────────────── */
   --color-dusty-blue: #6e8fb0;
   --color-ochre: #c9a227;
 
-  /* ── Typography ────────────────────────────────────────────────
-       React Native does not support font fallbacks.
-       Each weight must be a single exact font-file name.
-       Generates: font-fraunces, font-manrope, font-mono
+  /* ── Typography ────────────────────────────────────────────────────
+       React Native requires exact font-file key names, no fallbacks.
+       Keys here must match what useAppFonts.tsx registers in its map.
     ─────────────────────────────────────────────────────────────── */
   --font-fraunces: "Fraunces_400Regular";
-  --font-fraunces-medium: "Fraunces_450";
-  --font-fraunces-semibold: "Fraunces_450";
+  --font-fraunces-medium: "Fraunces_450";           /* hook alias → 500Medium */
+  --font-fraunces-semibold: "Fraunces_600SemiBold"; /* was "Fraunces_450" — fixed */
 
-  --font-manrope: "Manrope_400";
-  --font-manrope-medium: "Manrope_400";
+  --font-manrope: "Manrope_400";                    /* hook alias → 400Regular */
+  --font-manrope-medium: "Manrope_500Medium";       /* was "Manrope_400" — fixed */
   --font-manrope-semibold: "Manrope_600SemiBold";
   --font-manrope-bold: "Manrope_700Bold";
   --font-manrope-extrabold: "Manrope_800ExtraBold";
 
-  --font-mono: "IBMPlexMono_400";
+  --font-mono: "IBMPlexMono_400";                   /* hook alias → 400Regular */
   --font-mono-medium: "IBMPlexMono_500Medium";
 }
 
 /* ─────────────────────────────────────────────────────────────────
    GLOBAL BASE STYLES
-   Previously set via cssInterop or global component overrides.
-   Sloth is dark-only — set the root background statically.
+   Sloth is dark-only; root background set statically here.
    ───────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
@@ -62,8 +60,6 @@
 
 /* ─────────────────────────────────────────────────────────────────
    CUSTOM UTILITIES
-   Add project-specific one-off utilities that don't map to Tailwind
-   primitives (e.g. hairline border, brass glow).
    ───────────────────────────────────────────────────────────────── */
 @utility hairline {
   border-color: rgba(243, 238, 225, 0.09);

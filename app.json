@@ -27,6 +27,13 @@
         }
       ],
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Sloth uses your camera to scan QR codes.",
+          "barcodeScannerEnabled": true
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "android": {

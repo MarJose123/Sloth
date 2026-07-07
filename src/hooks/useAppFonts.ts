@@ -2,9 +2,11 @@ import {
   useFonts as useFraunces,
   Fraunces_400Regular,
   Fraunces_500Medium,
+  Fraunces_600SemiBold,
 } from "@expo-google-fonts/fraunces";
 import {
   Manrope_400Regular,
+  Manrope_500Medium,
   Manrope_600SemiBold,
   Manrope_700Bold,
   Manrope_800ExtraBold,
@@ -16,12 +18,18 @@ import {
 
 export function useAppFonts() {
   const [loaded] = useFraunces({
-    Fraunces_450: Fraunces_500Medium, // closest static weight to the 450 used in mockup
+    // Fraunces has no 450 weight in the static subset — 500Medium is the
+    // closest available. The alias key must exactly match global.css.
+    Fraunces_450: Fraunces_500Medium,
     Fraunces_400Regular,
+    Fraunces_600SemiBold,
+    // Manrope aliases match the --font-* keys in global.css
     Manrope_400: Manrope_400Regular,
+    Manrope_500Medium,
     Manrope_600SemiBold,
     Manrope_700Bold,
     Manrope_800ExtraBold,
+    // IBM Plex Mono aliases
     IBMPlexMono_400: IBMPlexMono_400Regular,
     IBMPlexMono_500Medium,
   });
