@@ -64,6 +64,7 @@ jobs:
         run: |
           # Build with increased memory limit
           export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
+          bun expo prebuild --clean
           eas build --platform android --profile staging --local --non-interactive --output=./app-dev.apk
         env:
           NODE_ENV: development
@@ -74,4 +75,4 @@ jobs:
           name: app-builds
           path: |
             ./app-dev.apk
-          retention-days: 7
+          retention-days: 1
