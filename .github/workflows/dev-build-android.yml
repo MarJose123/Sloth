@@ -1,13 +1,6 @@
 name: Android Debug Build
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "package.json"
-      - "app.json"
-      - "bun.lock"
-      - ".github/workflows/dev-build-android.yml"
   pull_request:
     branches: [main]
   workflow_dispatch: {}
