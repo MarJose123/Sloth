@@ -6,7 +6,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { AccountSwitcher } from "@/components/dashboard/AccountSwitcher";
@@ -27,25 +26,19 @@ export default function DashboardScreen() {
 
   if (state.status === "loading") {
     return (
-      <SafeAreaView
-        edges={["top", "left", "right"]}
-        className="flex-1 items-center justify-center bg-ink"
-      >
+      <View className="flex-1 items-center justify-center bg-ink pt-safe">
         <Text className="text-sm text-parchment-dim">
           Loading your accounts…
         </Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (state.status === "error") {
     return (
-      <SafeAreaView
-        edges={["top", "left", "right"]}
-        className="flex-1 items-center justify-center bg-ink px-8"
-      >
+      <View className="flex-1 items-center justify-center bg-ink px-8 pt-safe">
         <Text className="text-center text-sm text-rust">{state.message}</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -60,7 +53,7 @@ export default function DashboardScreen() {
     : accounts.reduce((sum, a) => sum + a.balanceCents, 0);
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-ink">
+    <View className="flex-1 bg-ink pt-safe">
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 28 }}
@@ -142,6 +135,6 @@ export default function DashboardScreen() {
           <EmptyAccountsCard onAddAccount={() => router.push("/(app)/add")} />
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

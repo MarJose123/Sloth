@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -71,7 +70,7 @@ export default function ReceiptScanScreen() {
       <View style={styles.viewport} />
 
       {/* ── Top bar ── */}
-      <SafeAreaView edges={["top"]} style={styles.topBar}>
+      <View style={styles.topBar} className="pt-safe">
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}
@@ -81,7 +80,7 @@ export default function ReceiptScanScreen() {
         </Pressable>
 
         <Text style={styles.flashLabel}>Flash: Auto</Text>
-      </SafeAreaView>
+      </View>
 
       {/* ── Scan caption ── */}
       <Text style={styles.caption}>

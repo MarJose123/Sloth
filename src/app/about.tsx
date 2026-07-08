@@ -1,5 +1,4 @@
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import * as Application from "expo-application";
 import { DialFrame } from "@/components/DialFrame";
@@ -61,7 +60,7 @@ export default function AboutScreen() {
   };
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-ink">
+    <View className="flex-1 bg-ink pt-safe">
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
@@ -131,6 +130,6 @@ export default function AboutScreen() {
           Made slowly, on purpose.
         </Text>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

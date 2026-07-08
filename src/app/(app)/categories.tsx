@@ -7,7 +7,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import Svg, { Circle, G } from "react-native-svg";
 import { useCategoriesData } from "@/hooks/useCategoriesData";
@@ -141,7 +140,7 @@ export default function CategoriesScreen() {
     state.status === "ready" ? state.data.totalExpenseCents : 0;
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-ink">
+    <View className="flex-1 bg-ink pt-safe">
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
@@ -239,7 +238,7 @@ export default function CategoriesScreen() {
           </Pressable>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

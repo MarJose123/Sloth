@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { colors } from "@/theme/colors";
 
@@ -99,7 +98,7 @@ export default function ImportScreen() {
   const canImport = parsedFile !== null && !isImporting;
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-ink">
+    <View className="flex-1 bg-ink pt-safe">
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
@@ -219,6 +218,6 @@ export default function ImportScreen() {
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

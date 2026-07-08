@@ -10,7 +10,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useAddTransactionData } from "@/hooks/useAddTransactionData";
 import { insertTransaction } from "@/lib/db/repositories/transactions";
@@ -263,7 +262,7 @@ export default function AddScreen() {
   // ── render ───────────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-ink">
+    <View className="flex-1 bg-ink pt-safe">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         className="flex-1"
@@ -478,10 +477,7 @@ export default function AddScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setPickerOpen(null)}
       >
-        <SafeAreaView
-          edges={["top", "left", "right"]}
-          className="flex-1 bg-ink"
-        >
+        <View className="flex-1 bg-ink pt-safe">
           <View className="flex-row items-center justify-between border-b border-white/[0.09] px-5 py-4">
             <Text className="font-fraunces-medium text-xl text-parchment">
               Select account
@@ -515,7 +511,7 @@ export default function AddScreen() {
               ))
             )}
           </ScrollView>
-        </SafeAreaView>
+        </View>
       </Modal>
 
       {/* ── category picker modal ── */}
@@ -525,10 +521,7 @@ export default function AddScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setPickerOpen(null)}
       >
-        <SafeAreaView
-          edges={["top", "left", "right"]}
-          className="flex-1 bg-ink"
-        >
+        <View className="flex-1 bg-ink pt-safe">
           <View className="flex-row items-center justify-between border-b border-white/[0.09] px-5 py-4">
             <Text className="font-fraunces-medium text-xl text-parchment">
               Select category
@@ -590,8 +583,8 @@ export default function AddScreen() {
               ))
             )}
           </ScrollView>
-        </SafeAreaView>
+        </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }

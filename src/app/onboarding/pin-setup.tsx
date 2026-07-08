@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
-import { Text, Alert } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, Alert, View } from "react-native";
 import { router } from "expo-router";
 import { PinDots } from "@/components/ui/PinDots";
 import { Keypad } from "@/components/Keypad";
@@ -58,7 +57,7 @@ export default function PinSetupScreen() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-ink px-5 pb-7 pt-3">
+    <View className="flex-1 bg-ink px-5 pb-7 pt-safe">
       <Text className="text-center font-mono text-[11px] uppercase tracking-[2px] text-parchment-dim">
         Sloth setup
       </Text>
@@ -69,6 +68,6 @@ export default function PinSetupScreen() {
       <PinDots length={PIN_LENGTH} filledCount={currentInput.length} />
 
       <Keypad onDigit={handleDigit} onBackspace={handleBackspace} />
-    </SafeAreaView>
+    </View>
   );
 }

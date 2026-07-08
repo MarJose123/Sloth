@@ -6,7 +6,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
@@ -88,12 +87,9 @@ export default function AccountsScreen() {
 
   if (state.status === "error") {
     return (
-      <SafeAreaView
-        edges={["top", "left", "right"]}
-        className="flex-1 items-center justify-center bg-ink px-8"
-      >
+      <View className="flex-1 items-center justify-center bg-ink px-8 pt-safe">
         <Text className="text-center text-sm text-rust">{state.message}</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -102,7 +98,7 @@ export default function AccountsScreen() {
   const isLoading = state.status === "loading";
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-ink">
+    <View className="flex-1 bg-ink pt-safe">
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 28 }}
@@ -183,6 +179,6 @@ export default function AccountsScreen() {
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

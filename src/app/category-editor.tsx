@@ -10,7 +10,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import Svg, { Circle } from "react-native-svg";
 import {
@@ -192,17 +191,14 @@ export default function CategoryEditorScreen() {
 
   if (isLoadingData) {
     return (
-      <SafeAreaView
-        edges={["top", "left", "right"]}
-        className="flex-1 items-center justify-center bg-ink"
-      >
+      <View className="flex-1 items-center justify-center bg-ink pt-safe">
         <Text className="text-sm text-parchment-dim">Loading…</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-ink">
+    <View className="flex-1 bg-ink pt-safe">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -348,7 +344,7 @@ export default function CategoryEditorScreen() {
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 

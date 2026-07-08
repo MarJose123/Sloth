@@ -8,7 +8,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { storage, type ThemePreference } from "@/lib/storage";
 import { Toggle } from "@/components/ui/Toggle";
@@ -189,7 +188,7 @@ export default function SettingsScreen() {
   // ── render ───────────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-ink">
+    <View className="flex-1 bg-ink pt-safe">
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 48 }}
@@ -337,6 +336,6 @@ export default function SettingsScreen() {
         visible={showDonate}
         onClose={() => setShowDonate(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 }

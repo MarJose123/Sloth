@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { View, Text, Alert } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { DialFrame } from "@/components/DialFrame";
 import { FingerprintIcon } from "@/components/ui/FingerprintIcon";
@@ -43,13 +42,15 @@ export default function BiometricSetupScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-ink px-5 pb-7 pt-3">
-      <View className="flex-1">
-        <Text className="font-mono text-[11px] uppercase tracking-[2px] text-parchment-dim">
-          Step 3 of 3
-        </Text>
+    <View className="flex-1 bg-ink px-5 pt-safe">
+      {/* ── Header text ── */}
+      <Text className="mt-3 font-mono text-[11px] uppercase tracking-[0.1em] text-parchment-dim">
+        Step 3 of 3
+      </Text>
 
-        <Text className="mb-2 mt-2.5 font-fraunces-medium text-[26px] leading-[32px] text-parchment">
+      {/* ── Content ── */}
+      <View className="flex-1">
+        <Text className="mb-2 mt-[10px] font-fraunces-medium text-[26px] leading-[32px] text-parchment">
           Lock Sloth to your face or fingerprint.
         </Text>
         <Text className="mb-8 text-[13.5px] leading-[20px] text-parchment-dim">
@@ -61,12 +62,17 @@ export default function BiometricSetupScreen() {
           <FingerprintIcon size={30} />
         </DialFrame>
 
-        <Text className="mb-auto mt-4 text-center font-mono text-xs uppercase tracking-[0.05em] text-brass">
+        {/* Caption anchored to bottom of flex-1 via mb-auto */}
+        <Text
+          style={{ marginTop: 16, marginBottom: "auto" }}
+          className="text-center font-mono text-xs uppercase tracking-[0.05em] text-brass"
+        >
           Touch the sensor to continue
         </Text>
       </View>
 
-      <View className="gap-2.5">
+      {/* ── Buttons ── */}
+      <View className="gap-2.5 pb-7">
         <BrassButton
           label={isAuthenticating ? "Waiting…" : "Enable Face / Touch ID"}
           onPress={handleEnableBiometrics}
@@ -76,6 +82,6 @@ export default function BiometricSetupScreen() {
           onPress={() => router.push("/onboarding/pin-setup")}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

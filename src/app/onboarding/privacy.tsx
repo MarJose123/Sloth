@@ -1,5 +1,4 @@
 import { View, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { FeatureRow } from "@/components/FeatureRow";
 import { StepDots } from "@/components/StepDots";
@@ -25,13 +24,14 @@ const FEATURES = [
 
 export default function PrivacyExplainerScreen() {
   return (
-    <SafeAreaView className="flex-1 bg-ink px-5 pb-7 pt-3">
+    <View className="flex-1 bg-ink px-5 pt-safe">
+      {/* ── Content ── */}
       <View className="flex-1">
-        <Text className="mb-8 font-mono text-[11px] uppercase tracking-[2px] text-parchment-dim">
+        <Text className="mt-3 font-mono text-[11px] uppercase tracking-[0.1em] text-parchment-dim">
           How it works
         </Text>
 
-        <Text className="mb-1 font-fraunces-medium text-[25px] leading-[31px] text-parchment">
+        <Text className="mb-1 mt-[34px] font-fraunces-medium text-[25px] leading-[31px] text-parchment">
           Three ways Sloth keeps this yours.
         </Text>
 
@@ -48,11 +48,14 @@ export default function PrivacyExplainerScreen() {
         </View>
       </View>
 
+      {/* ── Bottom nav ── */}
       <StepDots total={3} activeIndex={1} />
-      <BrassButton
-        label="Continue"
-        onPress={() => router.push("/onboarding/biometric")}
-      />
-    </SafeAreaView>
+      <View className="pb-7">
+        <BrassButton
+          label="Continue"
+          onPress={() => router.push("/onboarding/biometric")}
+        />
+      </View>
+    </View>
   );
 }
