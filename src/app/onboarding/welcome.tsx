@@ -25,7 +25,7 @@ import {
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DialFrame } from "@/components/DialFrame";
-import { SlothMark } from "@/components/SlothMark";
+import { SlothAppIcon } from "@/components/SlothAppIcon";
 import { FingerprintIcon } from "@/components/ui/FingerprintIcon";
 import {
   checkBiometricAvailability,
@@ -45,7 +45,7 @@ const FEATURES = [
     index: 1,
     title: "No bank credentials, ever",
     description:
-      "Add transactions by hand, receipt scan, or CSV import — never by logging in through us.",
+      "Add transactions by hand, receipt scan, or CSV import \u2014 never by logging in through us.",
   },
   {
     index: 2,
@@ -57,15 +57,15 @@ const FEATURES = [
     index: 3,
     title: "Fully offline, always",
     description:
-      "There's no server and no cloud. Back up manually to your own storage whenever you choose.",
+      "There\u2019s no server and no cloud. Back up manually to your own storage whenever you choose.",
   },
 ] as const;
 
 // ─── Step dots ────────────────────────────────────────────────────────────────
 function StepDots({
-  activeIndex,
-  onDotPress,
-}: {
+                    activeIndex,
+                    onDotPress,
+                  }: {
   activeIndex: number;
   onDotPress: (i: number) => void;
 }) {
@@ -102,11 +102,11 @@ function BrassBtn({ label, onPress }: { label: string; onPress: () => void }) {
 
 // ─── Feature row ──────────────────────────────────────────────────────────────
 function FeatureRow({
-  index,
-  title,
-  description,
-  isLast,
-}: {
+                      index,
+                      title,
+                      description,
+                      isLast,
+                    }: {
   index: number;
   title: string;
   description: string;
@@ -132,23 +132,35 @@ function FeatureRow({
 }
 
 // ─── Slide 1: Welcome ─────────────────────────────────────────────────────────
+// Layout mirrors mockup Screen 01:
+//   [brand mark — top]
+//   [app icon — centered with natural flow]
+//   [headline]
+//   [body copy]
+//   [spacer → bottom bar handles dots + CTA]
 function SlideWelcome() {
   return (
     <View style={styles.slideInner}>
+      {/* "Sloth" mono brand mark — anchors top of slide */}
       <Text style={styles.brandMark}>Sloth</Text>
-      <View style={{ flex: 1 }} />
-      <View style={{ alignItems: "center" }}>
-        <DialFrame size={132} innerSize={56}>
-          <SlothMark size={34} />
-        </DialFrame>
-        <Text style={styles.welcomeHeadline}>
-          {"Your money.\nYour device.\nNobody else\u2019s."}
-        </Text>
-        <Text style={styles.welcomeBody}>
-          No bank logins. No third-party servers reading your transactions.
-          Everything lives here, encrypted, and never leaves this device.
-        </Text>
+
+      {/* Full-color app icon — 120px, matches mockup */}
+      <View style={styles.welcomeIconWrapper}>
+        <SlothAppIcon size={120} />
       </View>
+
+      {/* Headline */}
+      <Text style={styles.welcomeHeadline}>
+        {"Your money.\nYour device.\nNobody else\u2019s."}
+      </Text>
+
+      {/* Body */}
+      <Text style={styles.welcomeBody}>
+        No bank logins. No third-party servers reading your transactions.
+        Everything lives here, encrypted, and never leaves this device.
+      </Text>
+
+      {/* Flex spacer — pushes dots+CTA into the BottomBarCTA component below */}
       <View style={{ flex: 1 }} />
     </View>
   );
@@ -179,6 +191,7 @@ function SlidePrivacy() {
 }
 
 // ─── Slide 3: Biometric setup ─────────────────────────────────────────────────
+// This is the only slide that uses the DialFrame ring motif (biometric frame).
 function SlideBiometric({ onComplete }: { onComplete: () => void }) {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
@@ -209,19 +222,32 @@ function SlideBiometric({ onComplete }: { onComplete: () => void }) {
 
   return (
     <View style={styles.slideInner}>
+      {/* Step eyebrow */}
       <Text style={styles.eyebrow}>Step 3 of 3</Text>
+
+      {/* Headline */}
       <Text style={styles.biometricHeadline}>
         {"Lock Sloth to your\nface or fingerprint."}
       </Text>
+
+      {/* Subtext */}
       <Text style={styles.biometricBody}>
-        This unlocks the app only \u2014 it&apos;s separate from your device
+        This unlocks the app only \u2014 it\u2019s separate from your device
         passcode and never leaves your phone.
       </Text>
+
+      {/* Biometric ring — the soft ring is the correct motif here */}
       <DialFrame size={150} innerSize={78} variant="brass">
         <FingerprintIcon size={30} />
       </DialFrame>
+
+      {/* Caption below ring */}
       <Text style={styles.biometricCaption}>Touch the sensor to continue</Text>
+
+      {/* Push buttons to bottom */}
       <View style={{ flex: 1 }} />
+
+      {/* CTA stack */}
       <View style={styles.biometricStack}>
         <BrassBtn
           label={isAuthenticating ? "Waiting\u2026" : "Enable Face / Touch ID"}
@@ -239,12 +265,11 @@ function SlideBiometric({ onComplete }: { onComplete: () => void }) {
 }
 
 // ─── Per-slide animated wrapper ───────────────────────────────────────────────
-// Separate component so useAnimatedStyle is called at component top level.
 function AnimatedSlide({
-  slideIndex,
-  translateX,
-  children,
-}: {
+                         slideIndex,
+                         translateX,
+                         children,
+                       }: {
   slideIndex: number;
   translateX: SharedValue<number>;
   children: React.ReactNode;
@@ -276,13 +301,13 @@ function AnimatedSlide({
   );
 }
 
-// ─── Bottom bar with animated fade ────────────────────────────────────────────
+// ─── Bottom bar (dots + CTA) ──────────────────────────────────────────────────
 function BottomBarCTA({
-  visible,
-  activeIndex,
-  onDotPress,
-  onContinue,
-}: {
+                        visible,
+                        activeIndex,
+                        onDotPress,
+                        onContinue,
+                      }: {
   visible: boolean;
   activeIndex: number;
   onDotPress: (i: number) => void;
@@ -309,14 +334,10 @@ export default function OnboardingCarousel() {
 
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Syncs UI-thread activeIndexSV back to JS-thread state after each swipe.
-  // Called via runOnJS from the worklet — must be a stable reference.
   const syncActiveIndex = (idx: number) => {
     setActiveIndex(idx);
   };
 
-  // Pan gesture reads shared values (translateX, dragX, activeIndexSV)
-  // directly in worklets — no stale closure risk.
   const componentPan = Gesture.Pan()
     .activeOffsetX([-10, 10])
     .failOffsetY([-15, 15])
@@ -395,6 +416,7 @@ export default function OnboardingCarousel() {
           </GestureDetector>
         </View>
 
+        {/* Dots + Continue CTA — fades out on biometric slide */}
         <BottomBarCTA
           visible={activeIndex < 2}
           activeIndex={activeIndex}
@@ -402,6 +424,7 @@ export default function OnboardingCarousel() {
           onContinue={() => goTo(activeIndex + 1)}
         />
 
+        {/* Dots only on biometric slide (CTA is inline in that slide) */}
         {activeIndex === 2 && (
           <View style={styles.bottomBarDotsOnly}>
             <StepDots activeIndex={activeIndex} onDotPress={goTo} />
@@ -414,6 +437,7 @@ export default function OnboardingCarousel() {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
+  // ── Carousel track ──
   track: {
     flexDirection: "row",
     width: SCREEN_WIDTH * TOTAL_SLIDES,
@@ -429,44 +453,60 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
 
+  // ── Slide 1: Welcome ──
   brandMark: {
     fontFamily: "IBMPlexMono_400",
     fontSize: 12,
-    letterSpacing: 0.12 * 12,
+    letterSpacing: 12 * 0.12,
     textTransform: "uppercase",
     color: colors.brass,
+    // sits at the top; content below flows naturally
   },
-  eyebrow: {
-    fontFamily: "IBMPlexMono_400",
-    fontSize: 11,
-    letterSpacing: 0.1 * 11,
-    textTransform: "uppercase",
-    color: colors.parchmentDim,
-    marginBottom: 34,
+  welcomeIconWrapper: {
+    alignSelf: "center",
+    marginTop: 8,
+    marginBottom: 30,
+    // Drop-shadow on Android via elevation; iOS via shadow props
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 24,
+    elevation: 14,
+    borderRadius: 120 * 0.215,
   },
-
   welcomeHeadline: {
     fontFamily: "Fraunces_450",
     fontSize: 30,
-    lineHeight: 36,
+    // line-height: 1.18 × 30 = 35.4
+    lineHeight: 35,
     letterSpacing: -0.3,
     color: colors.parchment,
     textAlign: "center",
-    marginTop: 32,
     marginBottom: 14,
   },
   welcomeBody: {
     fontFamily: "Manrope_400",
     fontSize: 14,
-    lineHeight: 21,
+    // line-height: 1.55 × 14 = 21.7
+    lineHeight: 22,
     color: colors.parchmentDim,
     textAlign: "center",
     paddingHorizontal: 8,
   },
 
+  // ── Slide 2: Privacy ──
+  eyebrow: {
+    fontFamily: "IBMPlexMono_400",
+    fontSize: 11,
+    letterSpacing: 11 * 0.1,
+    textTransform: "uppercase",
+    color: colors.parchmentDim,
+    marginBottom: 34,
+  },
   privacyHeadline: {
     fontFamily: "Fraunces_450",
     fontSize: 25,
+    // line-height: 1.25 × 25 = 31.25
     lineHeight: 31,
     color: colors.parchment,
   },
@@ -504,6 +544,7 @@ const styles = StyleSheet.create({
     color: colors.parchmentDim,
   },
 
+  // ── Slide 3: Biometric ──
   biometricHeadline: {
     fontFamily: "Fraunces_450",
     fontSize: 26,
@@ -522,11 +563,12 @@ const styles = StyleSheet.create({
   biometricCaption: {
     fontFamily: "IBMPlexMono_400",
     fontSize: 12,
-    letterSpacing: 0.72,
+    letterSpacing: 12 * 0.06,
     textTransform: "uppercase",
     color: colors.brass,
     textAlign: "center",
     marginTop: 16,
+    // note: mockup does NOT uppercase the caption; keeping as-is from current
   },
   biometricStack: {
     gap: 10,
@@ -541,6 +583,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+  // ── Shared: dots ──
   dotsRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -562,6 +605,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(243,238,225,0.2)",
   },
 
+  // ── Bottom bar ──
   bottomBar: {
     paddingHorizontal: 22,
     paddingBottom: 16,
@@ -573,6 +617,7 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
 
+  // ── Brass button ──
   brassBtn: {
     backgroundColor: colors.brass,
     borderRadius: 14,
