@@ -5,15 +5,21 @@ export default function OnboardingLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        gestureEnabled: false, // force forward-only progression through onboarding
-        animation: "slide_from_right",
+        gestureEnabled: false,
+        animation: "none", // Carousel manages its own transitions
         contentStyle: { backgroundColor: "#1B1F1A" },
       }}
     >
+      {/* welcome.tsx hosts the full carousel (all 3 onboarding slides) */}
       <Stack.Screen name="welcome" />
+      {/* pin-setup is a separate screen navigated to from the biometric slide */}
+      <Stack.Screen
+        name="pin-setup"
+        options={{ animation: "slide_from_right" }}
+      />
+      {/* privacy and biometric kept for any deep-link compatibility — they redirect to welcome */}
       <Stack.Screen name="privacy" />
       <Stack.Screen name="biometric" />
-      <Stack.Screen name="pin-setup" />
     </Stack>
   );
 }
