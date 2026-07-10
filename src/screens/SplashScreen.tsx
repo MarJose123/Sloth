@@ -5,7 +5,7 @@ import { colors } from "@/theme/colors";
 export function SplashScreen() {
   return (
     <View style={styles.root}>
-      {/* Icon with drop-shadow approximated via shadowColor on a wrapper */}
+      {/* Full-colour app icon — 112px, matches mockup Screen 00 exactly */}
       <View style={styles.iconWrapper}>
         <SlothAppIcon size={112} />
       </View>
@@ -13,7 +13,7 @@ export function SplashScreen() {
       <Text style={styles.wordmark}>Sloth</Text>
       <Text style={styles.tagline}>Private by default</Text>
 
-      {/* Loading dots: dim · active · dim */}
+      {/* Loading dots: dim · active(brass) · dim — mockup: span:nth-child(2) is active */}
       <View style={styles.loadingRow}>
         <View style={[styles.dot, styles.dotDim]} />
         <View style={[styles.dot, styles.dotActive]} />
@@ -32,13 +32,14 @@ const styles = StyleSheet.create({
   },
   iconWrapper: {
     marginBottom: 20,
-    // Soft drop-shadow (Android elevation + iOS shadow)
+    // Android elevation gives a diffuse shadow under the icon
+    elevation: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.35,
     shadowRadius: 24,
-    elevation: 16,
-    borderRadius: 112 * 0.215, // match icon corner radius so shadow clips correctly
+    // borderRadius must match the icon's rx (220/1024 * 112 ≈ 24) so elevation clips correctly
+    borderRadius: 24,
   },
   wordmark: {
     fontFamily: "Fraunces_450",
@@ -50,7 +51,8 @@ const styles = StyleSheet.create({
   tagline: {
     fontFamily: "IBMPlexMono_400",
     fontSize: 10.5,
-    letterSpacing: 10.5 * 0.1,
+    // 0.1em × 10.5px = 1.05
+    letterSpacing: 1.05,
     textTransform: "uppercase",
     color: colors.parchmentDim,
   },
@@ -59,7 +61,6 @@ const styles = StyleSheet.create({
     bottom: 64,
     flexDirection: "row",
     gap: 6,
-    alignSelf: "center",
   },
   dot: {
     width: 5,

@@ -7,33 +7,71 @@ interface DialFrameProps {
   variant?: "default" | "brass";
 }
 
-/** The soft ring used as the biometric frame and progress indicator throughout the app. */
+/**
+ * Soft ring used as the biometric frame and category progress indicator.
+ * Only appears on screens that need the ring motif (biometric/lock).
+ * Splash and Onboarding-welcome use SlothAppIcon directly — no ring.
+ */
 export function DialFrame({
-  size = 120,
-  innerSize = 50,
-  children,
-  variant = "default",
-}: DialFrameProps) {
-  const outerClasses =
+                            size = 120,
+                            innerSize = 50,
+                            children,
+                            variant = "default",
+                          }: DialFrameProps) {
+  const outerStyle =
     variant === "brass"
-      ? "border-brass/30 bg-brass/10"
-      : "border-white/10 bg-transparent";
+      ? {
+        borderColor: "rgba(200,123,84,0.55)",
+        backgroundColor: "rgba(200,123,84,0.1)",
+      }
+      : {
+        borderColor: "rgba(243,238,225,0.1)",
+        backgroundColor: "transparent",
+      };
 
-  const innerClasses =
-    variant === "brass" ? "border-brass/50 bg-transparent" : "bg-ink-2";
+  // Mockup .s3 .dial-inner:
+  //   background: radial-gradient(circle at 35% 30%, rgba(200,123,84,0.25), transparent 60%)
+  //   border: 1px solid rgba(200,123,84,0.6)
+  // React Native doesn't support CSS gradients on View — use a solid approximation:
+  // rgba(200,123,84,0.12) is the visual midpoint of the 25%-opacity gradient.
+  const innerStyle =
+    variant === "brass"
+      ? {
+        borderWidth: 1,
+        borderColor: "rgba(200,123,84,0.6)",
+        backgroundColor: "rgba(200,123,84,0.12)",
+      }
+      : {
+        borderWidth: 0,
+        backgroundColor: "#242920",
+      };
 
   return (
     <View
-      style={{ width: size, height: size, borderRadius: size / 2 }}
-      className={`items-center justify-center self-center border ${outerClasses}`}
+      style={[
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          borderWidth: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          alignSelf: "center",
+        },
+        outerStyle,
+      ]}
     >
       <View
-        style={{
-          width: innerSize,
-          height: innerSize,
-          borderRadius: innerSize / 2,
-        }}
-        className={`items-center justify-center ${innerClasses}`}
+        style={[
+          {
+            width: innerSize,
+            height: innerSize,
+            borderRadius: innerSize / 2,
+            alignItems: "center",
+            justifyContent: "center",
+          },
+          innerStyle,
+        ]}
       >
         {children}
       </View>

@@ -132,49 +132,52 @@ function FeatureRow({
 }
 
 // ─── Slide 1: Welcome ─────────────────────────────────────────────────────────
-// Layout mirrors mockup Screen 01:
-//   [brand mark — top]
-//   [app icon — centered with natural flow]
-//   [headline]
-//   [body copy]
-//   [spacer → bottom bar handles dots + CTA]
+// FIX: No double flex:1 spacers. Content flows top-down, pinned to top.
+// Brand mark at top → icon immediately below (marginTop:8, marginBottom:30) →
+// headline → body → flex:1 pushes remainder to bottom bar.
 function SlideWelcome() {
   return (
     <View style={styles.slideInner}>
-      {/* "Sloth" mono brand mark — anchors top of slide */}
+      {/* "SLOTH" mono brand mark — top anchor */}
       <Text style={styles.brandMark}>Sloth</Text>
 
-      {/* Full-color app icon — 120px, matches mockup */}
+      {/* Full-colour app icon at 120px — no DialFrame ring on this slide */}
       <View style={styles.welcomeIconWrapper}>
         <SlothAppIcon size={120} />
       </View>
 
-      {/* Headline */}
+      {/* Headline: font-size 30, line-height 1.18×30=35, marginBottom 14 */}
       <Text style={styles.welcomeHeadline}>
         {"Your money.\nYour device.\nNobody else\u2019s."}
       </Text>
 
-      {/* Body */}
+      {/* Body: font-size 14, line-height 1.55×14=21.7 */}
       <Text style={styles.welcomeBody}>
         No bank logins. No third-party servers reading your transactions.
         Everything lives here, encrypted, and never leaves this device.
       </Text>
 
-      {/* Flex spacer — pushes dots+CTA into the BottomBarCTA component below */}
+      {/* Single flex:1 — lets the bottom bar (dots + Continue) sit at the bottom */}
       <View style={{ flex: 1 }} />
     </View>
   );
 }
 
 // ─── Slide 2: Privacy explainer ───────────────────────────────────────────────
+// FIX: marginBottom:26 moves onto privacyHeadline itself; remove extra wrapper marginTop:24
 function SlidePrivacy() {
   return (
     <View style={styles.slideInner}>
+      {/* Eyebrow: "HOW IT WORKS" — parchment-dim, marginBottom:34 */}
       <Text style={styles.eyebrow}>How it works</Text>
+
+      {/* Headline: marginBottom:26 per mockup (.s2 h2 margin:0 0 26px) */}
       <Text style={styles.privacyHeadline}>
         Three ways Sloth keeps this yours.
       </Text>
-      <View style={{ marginTop: 24 }}>
+
+      {/* Feature rows — no extra top margin, hairlines provide visual gap */}
+      <View>
         {FEATURES.map((f, i) => (
           <FeatureRow
             key={f.title}
@@ -185,13 +188,14 @@ function SlidePrivacy() {
           />
         ))}
       </View>
+
       <View style={{ flex: 1 }} />
     </View>
   );
 }
 
 // ─── Slide 3: Biometric setup ─────────────────────────────────────────────────
-// This is the only slide that uses the DialFrame ring motif (biometric frame).
+// FIX: unicode dashes/apostrophes as actual chars, not escape sequences in JSX text
 function SlideBiometric({ onComplete }: { onComplete: () => void }) {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
@@ -222,32 +226,29 @@ function SlideBiometric({ onComplete }: { onComplete: () => void }) {
 
   return (
     <View style={styles.slideInner}>
-      {/* Step eyebrow */}
       <Text style={styles.eyebrow}>Step 3 of 3</Text>
 
-      {/* Headline */}
       <Text style={styles.biometricHeadline}>
         {"Lock Sloth to your\nface or fingerprint."}
       </Text>
 
-      {/* Subtext */}
+      {/* FIX: actual em-dash and right-single-quote chars, not \u escape in JSX text */}
       <Text style={styles.biometricBody}>
-        This unlocks the app only \u2014 it\u2019s separate from your device
-        passcode and never leaves your phone.
+        {
+          "This unlocks the app only \u2014 it\u2019s separate from your device passcode and never leaves your phone."
+        }
       </Text>
 
-      {/* Biometric ring — the soft ring is the correct motif here */}
+      {/* DialFrame with variant="brass" — ring only appears on biometric slide */}
       <DialFrame size={150} innerSize={78} variant="brass">
         <FingerprintIcon size={30} />
       </DialFrame>
 
-      {/* Caption below ring */}
+      {/* Caption: margin:14px 0 auto in mockup → marginTop:14, flex:1 below pushes stack down */}
       <Text style={styles.biometricCaption}>Touch the sensor to continue</Text>
 
-      {/* Push buttons to bottom */}
       <View style={{ flex: 1 }} />
 
-      {/* CTA stack */}
       <View style={styles.biometricStack}>
         <BrassBtn
           label={isAuthenticating ? "Waiting\u2026" : "Enable Face / Touch ID"}
@@ -416,7 +417,7 @@ export default function OnboardingCarousel() {
           </GestureDetector>
         </View>
 
-        {/* Dots + Continue CTA — fades out on biometric slide */}
+        {/* Dots + Continue — slides 0 and 1 only */}
         <BottomBarCTA
           visible={activeIndex < 2}
           activeIndex={activeIndex}
@@ -424,7 +425,7 @@ export default function OnboardingCarousel() {
           onContinue={() => goTo(activeIndex + 1)}
         />
 
-        {/* Dots only on biometric slide (CTA is inline in that slide) */}
+        {/* Biometric slide (index 2) has its own inline CTA — just show dots */}
         {activeIndex === 2 && (
           <View style={styles.bottomBarDotsOnly}>
             <StepDots activeIndex={activeIndex} onDotPress={goTo} />
@@ -447,6 +448,8 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH,
     flex: 1,
   },
+  // Matches mockup .screen: padding 56px 22px 28px
+  // paddingTop handled by SafeAreaView edges=top; we add 12 for brand mark breathing room
   slideInner: {
     flex: 1,
     paddingHorizontal: 22,
@@ -457,31 +460,36 @@ const styles = StyleSheet.create({
   brandMark: {
     fontFamily: "IBMPlexMono_400",
     fontSize: 12,
-    letterSpacing: 12 * 0.12,
+    // 0.12em × 12px = 1.44
+    letterSpacing: 1.44,
     textTransform: "uppercase",
     color: colors.brass,
-    // sits at the top; content below flows naturally
+    // No marginBottom — icon sits 8px below via welcomeIconWrapper marginTop
   },
   welcomeIconWrapper: {
     alignSelf: "center",
+    // Mockup .s1 .dial: margin:8px auto 30px
     marginTop: 8,
     marginBottom: 30,
-    // Drop-shadow on Android via elevation; iOS via shadow props
+    // Shadow — elevation is Android-only; shadow* props are iOS-only
+    elevation: 14,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.35,
     shadowRadius: 24,
-    elevation: 14,
-    borderRadius: 120 * 0.215,
+    // borderRadius must match icon rx so elevation shadow clips correctly
+    // icon rx = 220/1024 × 120 ≈ 26
+    borderRadius: 26,
   },
   welcomeHeadline: {
     fontFamily: "Fraunces_450",
     fontSize: 30,
     // line-height: 1.18 × 30 = 35.4
-    lineHeight: 35,
+    lineHeight: 36,
     letterSpacing: -0.3,
     color: colors.parchment,
     textAlign: "center",
+    // Mockup .s1 h2: margin:0 0 14px — NO top margin (was 32 before, causing excess space)
     marginBottom: 14,
   },
   welcomeBody: {
@@ -491,6 +499,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: colors.parchmentDim,
     textAlign: "center",
+    // Mockup .s1 p.sub: padding:0 8px
     paddingHorizontal: 8,
   },
 
@@ -498,9 +507,11 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontFamily: "IBMPlexMono_400",
     fontSize: 11,
-    letterSpacing: 11 * 0.1,
+    // 0.1em × 11 = 1.1
+    letterSpacing: 1.1,
     textTransform: "uppercase",
     color: colors.parchmentDim,
+    // Mockup .s2 .top-mark: margin-bottom:34px
     marginBottom: 34,
   },
   privacyHeadline: {
@@ -509,11 +520,14 @@ const styles = StyleSheet.create({
     // line-height: 1.25 × 25 = 31.25
     lineHeight: 31,
     color: colors.parchment,
+    // Mockup .s2 h2: margin:0 0 26px — bottom gap before feature rows
+    marginBottom: 26,
   },
   featRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 14,
+    // Mockup .feat-row: padding:16px 0
     paddingVertical: 16,
   },
   featIcon: {
@@ -540,6 +554,7 @@ const styles = StyleSheet.create({
   featDesc: {
     fontFamily: "Manrope_400",
     fontSize: 12.5,
+    // line-height: 1.5 × 12.5 = 18.75
     lineHeight: 19,
     color: colors.parchmentDim,
   },
@@ -550,25 +565,29 @@ const styles = StyleSheet.create({
     fontSize: 26,
     lineHeight: 32,
     color: colors.parchment,
+    // Mockup .s3 h2: margin:10px 0 8px
     marginTop: 10,
     marginBottom: 8,
   },
   biometricBody: {
     fontFamily: "Manrope_400",
     fontSize: 13.5,
+    // line-height: 1.55 × 13.5 = 20.9
     lineHeight: 21,
     color: colors.parchmentDim,
+    // Mockup .s3 p.sub: margin:0 0 30px
     marginBottom: 30,
   },
   biometricCaption: {
     fontFamily: "IBMPlexMono_400",
     fontSize: 12,
-    letterSpacing: 12 * 0.06,
+    // 0.06em × 12 = 0.72
+    letterSpacing: 0.72,
     textTransform: "uppercase",
     color: colors.brass,
     textAlign: "center",
-    marginTop: 16,
-    // note: mockup does NOT uppercase the caption; keeping as-is from current
+    // Mockup .s3 .caption: margin:14px 0 auto → marginTop:14, flex:1 below handles "auto"
+    marginTop: 14,
   },
   biometricStack: {
     gap: 10,
@@ -581,6 +600,8 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     textDecorationColor: "rgba(167,159,140,0.4)",
     textAlign: "center",
+    // Mockup .pin-fallback: margin-top:4px
+    marginTop: 4,
   },
 
   // ── Shared: dots ──
@@ -589,18 +610,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
-    marginBottom: 22,
-    marginTop: 8,
+    // Mockup .dots: margin:22px 0 8px
+    marginTop: 22,
+    marginBottom: 8,
   },
   dot: {
     height: 6,
     borderRadius: 3,
   },
   dotActive: {
+    // Mockup .dots span.on: width:18px, background:brass, border-radius:3px
     width: 18,
     backgroundColor: colors.brass,
   },
   dotInactive: {
+    // Mockup .dots span: width:6px, background:rgba(237,233,224,0.2)
     width: 6,
     backgroundColor: "rgba(243,238,225,0.2)",
   },
@@ -620,6 +644,7 @@ const styles = StyleSheet.create({
   // ── Brass button ──
   brassBtn: {
     backgroundColor: colors.brass,
+    // Mockup .brass-btn: border-radius:14px, padding:16px
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: "center",

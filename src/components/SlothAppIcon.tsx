@@ -1,29 +1,21 @@
-import Svg, {
-  Rect,
-  Circle,
-  Ellipse,
-  Path,
-  G,
-} from "react-native-svg";
+import Svg, { Rect, Circle, Ellipse, Path, G } from "react-native-svg";
 
 interface SlothAppIconProps {
   size?: number;
-  borderRadius?: number;
 }
 
 /**
- * Full-color illustrated Sloth app icon.
+ * Full-colour illustrated Sloth app icon (moss-green rounded rect bg + sloth face).
  * Used on: Splash (Screen 00), Onboarding Welcome (Slide 1), About (Screen 18).
- * Matches the SVG symbol defined in the HTML mockup exactly.
- * NOT the same as SlothMark (which is the line-art biometric/dial motif).
+ * The DialFrame ring is NOT used on these screens — this icon is standalone.
  */
-export function SlothAppIcon({ size = 112, borderRadius }: SlothAppIconProps) {
-  const r = borderRadius ?? size * 0.215; // ~22% matches iOS icon corner radius
+export function SlothAppIcon({ size = 112 }: SlothAppIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 1024 1024">
-      {/* Background — moss green */}
+      {/* Background: moss green rounded rect */}
       <Rect width={1024} height={1024} rx={220} fill="#7FA06B" />
 
+      {/* Sloth face — scaled to 80% and centred, matching the HTML symbol exactly */}
       <G transform="translate(512,512) scale(0.8) translate(-512,-512)">
         {/* Ear patches */}
         <Circle cx={290} cy={300} r={92} fill="#7A5A3D" />
@@ -43,7 +35,7 @@ export function SlothAppIcon({ size = 112, borderRadius }: SlothAppIconProps) {
         <Circle cx={404} cy={474} r={16} fill="#F3EEE1" />
         <Circle cx={578} cy={474} r={16} fill="#F3EEE1" />
 
-        {/* Brow arches (eye-patch circles) */}
+        {/* Brow arches */}
         <Path
           d="M368 396 Q425 372 482 396"
           stroke="#7A5A3D"
