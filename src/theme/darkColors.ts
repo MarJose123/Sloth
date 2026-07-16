@@ -16,4 +16,5 @@ export const darkColors = {
   rust: "#9C4A3D",
   dustyBlue: "#6E8FB0",
   ochre: "#C9A227",
+  hairline: "rgba(243,238,225,0.09)",
 } as const;

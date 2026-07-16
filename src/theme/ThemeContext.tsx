@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { Appearance } from "react-native";
+import { colorScheme as rnCssColorScheme } from "react-native-css/native";
 import { storage, type ThemePreference } from "@/lib/storage";
 import { darkColors, lightColors } from "@/theme/colors";
 import type { ColorPalette } from "@/theme/colors";
@@ -69,6 +70,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const resolved = preference === "auto" ? systemScheme : preference;
+
+  // ── sync react-native-css colorScheme with resolved theme ───────────────
+  // This makes @media (prefers-color-scheme: light/dark) in global.css
+  // re-evaluate, which swaps all CSS variables and thus all Tailwind utilities.
+  useEffect(() => {
+    if (loaded) {
+      rnCssColorScheme.set(resolved);
+    }
+  }, [resolved, loaded]);
 
   const palette = resolved === "light" ? lightColors : darkColors;
 

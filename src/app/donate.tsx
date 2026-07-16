@@ -26,9 +26,19 @@ export default function DonateScreen() {
   }, []);
 
   return (
-    <View className="flex-1 justify-center bg-[rgba(8,9,13,0.6)] px-5">
+    <View
+      className="flex-1 justify-center px-5"
+      style={{ backgroundColor: colors.ink + "99" }} // Use primary background with 60% opacity (0.6 * 255 = 153 ≈ 99 hex)
+    >
       {/* Modal card */}
-      <View className="w-[82%] self-center rounded-[22px] bg-ink-2 px-6 pb-8 pt-6">
+      <View
+        className="w-[82%] self-center rounded-[22px] px-6 pb-8 pt-6"
+        style={{
+          backgroundColor: colors.ink2,
+          borderWidth: 1,
+          borderColor: colors.hairline,
+        }}
+      >
         {/* Close button */}
         <View className="mb-4 flex-row justify-end">
           <Pressable
@@ -54,9 +64,13 @@ export default function DonateScreen() {
         </Text>
 
         {/* QR code box */}
-        <View className="mb-4 items-center self-center rounded-[14px] bg-parchment p-3">
+        <View
+          className="mb-4 items-center self-center rounded-[14px] p-3"
+          style={{ backgroundColor: colors.parchment }}
+        >
           <View
-            className="h-[168px] w-[168px] items-center justify-center rounded-[14px] bg-parchment"
+            className="h-[168px] w-[168px] items-center justify-center rounded-[14px]"
+            style={{ backgroundColor: colors.parchment }}
             accessibilityLabel="Donation QR code"
           >
             {/* Placeholder: QR code will render here via react-native-qrcode-svg */}

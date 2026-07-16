@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -9,7 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useAddTransactionData } from "@/hooks/useAddTransactionData";
 import { insertTransaction } from "@/lib/db/repositories/transactions";
 import { formatCurrency } from "@/lib/format";
@@ -56,7 +56,7 @@ function PickerRow({
   return (
     <Pressable
       onPress={onPress}
-      className="rounded-2xl border border-white/[0.09] bg-ink-2 px-4 py-3.5 active:opacity-70"
+      className="rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5 active:opacity-70"
     >
       <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
         {label}
@@ -69,8 +69,14 @@ function PickerRow({
 export default function AddTransactionScreen() {
   const colors = useColors();
   const formData = useAddTransactionData();
+  const params = useLocalSearchParams<{
+    merchant?: string;
+    amountCents?: string;
+    date?: string;
+    source?: Method;
+  }>();
 
-  const [method, setMethod] = useState<Method>("manual");
+  const [method, setMethod] = useState<Method>(params.source ?? "manual");
   const [amountText, setAmountText] = useState("0");
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
@@ -84,6 +90,19 @@ export default function AddTransactionScreen() {
     new Date().toISOString().slice(0, 10),
   );
   const [isSaving, setIsSaving] = useState(false);
+
+  // Sync params if they arrive (e.g. from OCR scan)
+  useEffect(() => {
+    if (params.merchant) setMerchant(params.merchant);
+    if (params.date) setDateText(params.date);
+    if (params.amountCents) {
+      const cents = parseInt(params.amountCents, 10);
+      if (!isNaN(cents)) {
+        setAmountText((cents / 100).toFixed(2));
+      }
+    }
+    if (params.source) setMethod(params.source);
+  }, [params]);
 
   // Parse amount: user types "12.50" → 1250 cents (expense = negative)
   const parseAmountCents = useCallback(() => {
@@ -134,6 +153,7 @@ export default function AddTransactionScreen() {
         amountCents: -Math.abs(amountCents), // expense = negative cents
         occurredAt: finalDate,
         note: note.trim() || undefined,
+        source: method,
       });
       router.back();
     } catch (err) {
@@ -150,12 +170,16 @@ export default function AddTransactionScreen() {
     merchant,
     note,
     dateText,
+    method,
     parseAmountCents,
   ]);
 
   if (formData.status === "loading") {
     return (
-      <View className="flex-1 items-center justify-center bg-ink pt-safe">
+      <View
+        className="flex-1 items-center justify-center pt-safe"
+        style={{ backgroundColor: colors.ink }}
+      >
         <Text className="text-sm text-parchment-dim">Loading…</Text>
       </View>
     );
@@ -163,7 +187,10 @@ export default function AddTransactionScreen() {
 
   if (formData.status === "error") {
     return (
-      <View className="flex-1 items-center justify-center bg-ink px-8 pt-safe">
+      <View
+        className="flex-1 items-center justify-center px-8 pt-safe"
+        style={{ backgroundColor: colors.ink }}
+      >
         <Text className="text-center text-sm text-rust">
           {formData.message}
         </Text>
@@ -174,7 +201,10 @@ export default function AddTransactionScreen() {
   const { accounts, categories } = formData.data;
 
   return (
-    <View className="flex-1 bg-ink pt-safe">
+    <View
+      className="flex-1 pt-safe"
+      style={{ backgroundColor: colors.ink }}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -290,7 +320,7 @@ export default function AddTransactionScreen() {
               }}
             />
 
-            <View className="rounded-2xl border border-white/[0.09] bg-ink-2 px-4 py-3.5">
+            <View className="rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
               <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
                 Merchant
               </Text>
@@ -305,7 +335,7 @@ export default function AddTransactionScreen() {
               />
             </View>
 
-            <View className="rounded-2xl border border-white/[0.09] bg-ink-2 px-4 py-3.5">
+            <View className="rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
               <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
                 Note (optional)
               </Text>
@@ -319,7 +349,7 @@ export default function AddTransactionScreen() {
               />
             </View>
 
-            <View className="rounded-2xl border border-white/[0.09] bg-ink-2 px-4 py-3.5">
+            <View className="rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
               <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
                 Date
               </Text>

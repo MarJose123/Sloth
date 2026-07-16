@@ -15,7 +15,6 @@ import {
   type AccountType,
 } from "@/lib/db/repositories/accounts";
 import { useColors } from "@/theme/ThemeContext";
-import { colors } from "@/theme/colors";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -27,11 +26,11 @@ const ACCOUNT_TYPES: { type: AccountType; label: string; icon: string }[] = [
 ];
 
 const BADGE_COLORS = [
-  colors.brass,
-  colors.sage,
-  colors.rust,
-  colors.dustyBlue,
-  "#9B9787",
+  "#C87B54", // brass
+  "#7FA06B", // sage
+  "#9C4A3D", // rust
+  "#6E8FB0", // dustyBlue
+  "#A79F8C", // parchmentDim
 ] as const;
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -62,6 +61,7 @@ function ColorSwatch({
   selected: boolean;
   onPress: () => void;
 }) {
+  const colors = useColors();
   return (
     <Pressable onPress={onPress} className="active:opacity-70">
       <View
@@ -95,7 +95,7 @@ export default function AddAccountScreen() {
   const [balanceText, setBalanceText] = useState("0.00");
   const [isSaving, setIsSaving] = useState(false);
 
-  const selectedColor = BADGE_COLORS[selectedColorIdx] ?? colors.brass;
+  const selectedColor = BADGE_COLORS[selectedColorIdx] ?? "#C87B54";
   const initials = getInitials(name) || "·";
 
   const handleSave = useCallback(async () => {
@@ -126,7 +126,10 @@ export default function AddAccountScreen() {
   }, [name, selectedType, selectedColor, balanceText]);
 
   return (
-    <View className="flex-1 bg-ink pt-safe">
+    <View
+      className="flex-1 pt-safe"
+      style={{ backgroundColor: colors.ink }}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -163,7 +166,7 @@ export default function AddAccountScreen() {
           </View>
 
           {/* ── Account name ── */}
-          <View className="mb-5 rounded-2xl border border-white/[0.09] bg-ink-2 px-4 py-3.5">
+          <View className="mb-5 rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
             <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
               Account name
             </Text>
@@ -192,7 +195,7 @@ export default function AddAccountScreen() {
                   className={`flex-1 basis-[45%] flex-col gap-2 rounded-[13px] border p-3.5 active:opacity-80 ${
                     active
                       ? "border-brass/50 bg-brass/10"
-                      : "border-white/[0.09] bg-ink-2"
+                      : "border-hairline bg-ink-2"
                   }`}
                 >
                   <Text
@@ -245,7 +248,7 @@ export default function AddAccountScreen() {
           </View>
 
           {/* ── Starting balance ── */}
-          <View className="mb-8 rounded-2xl border border-white/[0.09] bg-ink-2 px-4 py-3.5">
+          <View className="mb-8 rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
             <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
               Starting balance
             </Text>

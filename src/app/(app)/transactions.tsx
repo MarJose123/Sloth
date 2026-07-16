@@ -26,7 +26,7 @@ function TransactionLedgerRow({
   const amountColor = isIncome ? colors.sage : colors.parchment;
 
   return (
-    <View className="flex-row items-center gap-3 border-b border-white/[0.09] py-[11px]">
+    <View className="flex-row items-center gap-3 border-b border-hairline py-[11px]">
       {/* ── Category icon badge ── */}
       <View
         className="h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
@@ -79,7 +79,10 @@ export default function TransactionsScreen() {
 
   if (state.status === "error") {
     return (
-      <View className="flex-1 items-center justify-center bg-ink px-8 pt-safe">
+      <View
+        className="flex-1 items-center justify-center px-8 pt-safe"
+        style={{ backgroundColor: colors.ink }}
+      >
         <Text className="text-center text-sm text-rust">{state.message}</Text>
       </View>
     );
@@ -90,7 +93,10 @@ export default function TransactionsScreen() {
   const isLoading = state.status === "loading";
 
   return (
-    <View className="flex-1 bg-ink pt-safe">
+    <View
+      className="flex-1 pt-safe"
+      style={{ backgroundColor: colors.ink }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
@@ -129,7 +135,7 @@ export default function TransactionsScreen() {
 
         {/* ── Empty state ── */}
         {!isLoading && transactions.length === 0 && (
-          <View className="items-center rounded-2xl border border-white/[0.09] bg-ink-2 px-6 py-10">
+          <View className="items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10">
             <Text className="mb-2 font-fraunces-medium text-xl text-parchment">
               No transactions yet
             </Text>

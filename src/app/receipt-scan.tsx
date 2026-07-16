@@ -1,16 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { ArrowRightIcon, XIcon } from "@/components/navigation/icons";
 import { useColors } from "@/theme/ThemeContext";
+import { extractReceiptData, type OcrResult } from "@/lib/ocr";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
-interface DetectedReceipt {
-  merchant: string;
-  amount: string;
-  date: string;
-  category: string;
+interface DetectedReceipt extends OcrResult {
+  formattedAmount: string;
 }
 
 // ─── screen ───────────────────────────────────────────────────────────────────
@@ -18,59 +17,105 @@ interface DetectedReceipt {
 /**
  * Receipt scan screen — Screen 13.
  *
- * SCAFFOLD: Real camera requires `expo-camera` which is not yet in
- * package.json. Add it with:
- *   bun add expo-camera@~57.0.0
- * then replace the placeholder viewport with a <CameraView> component.
- *
- * OCR requires an on-device vision library (e.g. @react-native-ml-kit/text-recognition
- * or expo-mlkit) and a parsing layer; both are deferred.
+ * Uses `expo-camera` for capture and `extractReceiptData` (OCR shim)
+ * for processing. Detected values can be confirmed to pre-fill the
+ * Add Transaction form.
  */
 export default function ReceiptScanScreen() {
   const colors = useColors();
+  const [permission, requestPermission] = useCameraPermissions();
+  const [camera, setCamera] = useState<CameraView | null>(null);
   const [detected, setDetected] = useState<DetectedReceipt | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleShutter = () => {
-    if (isProcessing) return;
+  useEffect(() => {
+    if (permission && !permission.granted && permission.canAskAgain) {
+      requestPermission();
+    }
+  }, [permission]);
 
-    // TODO: Replace with real CameraView capture + OCR pipeline
-    setIsProcessing(true);
-    setTimeout(() => {
-      setDetected({
-        merchant: "Corner Market",
-        amount: "$18.40",
-        date: new Date().toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }),
-        category: "Groceries",
+  const handleShutter = async () => {
+    if (isProcessing || !camera) return;
+
+    try {
+      setIsProcessing(true);
+      const photo = await camera.takePictureAsync({
+        quality: 0.8,
+        skipProcessing: false,
       });
+
+      if (photo) {
+        const result = await extractReceiptData(photo.uri);
+        setDetected({
+          ...result,
+          formattedAmount: result.amountCents
+            ? (result.amountCents / 100).toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD",
+              })
+            : "—",
+        });
+      }
+    } catch (err) {
+      Alert.alert("Capture Error", "Failed to take photo or process OCR.");
+      console.error(err);
+    } finally {
       setIsProcessing(false);
-    }, 1200);
+    }
   };
 
   const handleConfirm = () => {
     if (!detected) return;
-    // TODO: Pass detected values into Add Transaction as initial state
-    Alert.alert(
-      "OCR not yet wired",
-      "Detected values will pre-fill the Add Transaction form once the OCR pipeline is connected.",
-      [
-        {
-          text: "Go to Add Transaction",
-          onPress: () => router.replace("/transaction/new"),
-        },
-        { text: "Cancel", style: "cancel" },
-      ],
+
+    // Pass detected values to the new transaction screen
+    router.replace({
+      pathname: "/transaction/new",
+      params: {
+        merchant: detected.merchant ?? "",
+        amountCents: detected.amountCents?.toString() ?? "",
+        date: detected.date ?? "",
+        source: "scan",
+      },
+    });
+  };
+
+  if (!permission) {
+    return <View style={[styles.root, { backgroundColor: colors.ink }]} />;
+  }
+
+  if (!permission.granted) {
+    return (
+      <View style={[styles.root, { backgroundColor: colors.ink, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+        <Text style={{ color: colors.parchment, textAlign: 'center', marginBottom: 20, fontFamily: 'Manrope_400Regular' }}>
+          Sloth needs camera access to scan receipts.
+        </Text>
+        <Pressable
+          onPress={requestPermission}
+          style={{ backgroundColor: colors.brass, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 }}
+        >
+          <Text style={{ color: colors.ink, fontFamily: 'Manrope_700Bold' }}>Grant Permission</Text>
+        </Pressable>
+      </View>
     );
+  }
+
+  const detectedStyle = {
+    backgroundColor: colors.ink2,
+    borderWidth: 1,
+    borderColor: colors.hairline,
   };
 
   return (
-    <View style={styles.root}>
-      {/* ── Simulated camera viewport ── */}
-      <View style={styles.viewport} />
+    <View style={[styles.root, { backgroundColor: colors.ink }]}>
+      {/* ── Camera viewport ── */}
+      <CameraView
+        ref={(ref) => setCamera(ref)}
+        style={styles.viewport}
+        facing="back"
+        barcodeScannerSettings={{
+          barcodeTypes: ["qr"],
+        }}
+      />
 
       {/* ── Top bar ── */}
       <View style={styles.topBar} className="pt-safe">
@@ -82,51 +127,75 @@ export default function ReceiptScanScreen() {
           <XIcon size={24} color={colors.parchmentDim} />
         </Pressable>
 
-        <Text style={styles.flashLabel}>Flash: Auto</Text>
+        <Text style={[styles.flashLabel, { color: colors.parchmentDim }]}>Flash: Auto</Text>
       </View>
 
       {/* ── Scan caption ── */}
-      <Text style={styles.caption}>
-        Align receipt in frame · processed on-device
-      </Text>
+      {!detected && (
+        <Text style={[styles.caption, { color: colors.parchmentDim }]}>
+          Align receipt in frame · processed on-device
+        </Text>
+      )}
 
       {/* ── Receipt frame overlay ── */}
-      <View style={styles.receiptFrame}>
-        {/* Animated scan-line — static in scaffold */}
-        <View style={styles.scanLine} />
-      </View>
+      {!detected && (
+        <View style={[styles.receiptFrame, { borderColor: colors.brass }]}>
+          {/* Animated scan-line — static in scaffold */}
+          <View style={[styles.scanLine, { backgroundColor: colors.brass }]} />
+        </View>
+      )}
 
       {/* ── Detected card ── */}
       {detected && (
-        <View style={styles.detectedCard}>
-          <Text style={styles.detectedTag}>◉ Detected on-device</Text>
+        <View style={[styles.detectedCard, detectedStyle]}>
+          <Text style={[styles.detectedTag, { color: colors.sage }]}>◉ Detected on-device</Text>
 
           <View style={styles.detectedRow}>
-            <Text style={styles.detectedLabel}>Merchant</Text>
-            <Text style={styles.detectedValue}>{detected.merchant}</Text>
+            <Text style={[styles.detectedLabel, { color: colors.parchmentDim }]}>
+              Merchant
+            </Text>
+            <Text style={[styles.detectedValue, { color: colors.parchment }]}>
+              {detected.merchant ?? "—"}
+            </Text>
           </View>
           <View style={styles.detectedRow}>
-            <Text style={styles.detectedLabel}>Amount</Text>
-            <Text style={styles.detectedValue}>{detected.amount}</Text>
+            <Text style={[styles.detectedLabel, { color: colors.parchmentDim }]}>
+              Amount
+            </Text>
+            <Text style={[styles.detectedValue, { color: colors.parchment }]}>
+              {detected.formattedAmount}
+            </Text>
           </View>
           <View style={styles.detectedRow}>
-            <Text style={styles.detectedLabel}>Date</Text>
-            <Text style={styles.detectedValue}>{detected.date}</Text>
-          </View>
-          <View style={styles.detectedRow}>
-            <Text style={styles.detectedLabel}>Category</Text>
-            <Text style={styles.detectedValue}>{detected.category}</Text>
+            <Text style={[styles.detectedLabel, { color: colors.parchmentDim }]}>
+              Date
+            </Text>
+            <Text style={[styles.detectedValue, { color: colors.parchment }]}>
+              {detected.date ?? "—"}
+            </Text>
           </View>
 
           <Pressable
             onPress={handleConfirm}
-            style={styles.confirmBtn}
+            style={[styles.confirmBtn, { backgroundColor: colors.brass }]}
             className="active:opacity-80"
           >
             <View className="flex-row items-center gap-2">
-              <Text style={styles.confirmBtnLabel}>Use these details</Text>
+              <Text style={[styles.confirmBtnLabel, { color: colors.ink }]}>
+                Use these details
+              </Text>
               <ArrowRightIcon size={16} color={colors.ink} />
             </View>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setDetected(null)}
+            className="mt-3 active:opacity-60"
+            style={{ alignItems: 'center' }}
+          >
+            <Text style={{ color: colors.parchmentDim, fontFamily: 'Manrope_400Regular', fontSize: 13 }}>
+              Retake photo
+            </Text>
           </Pressable>
         </View>
       )}
@@ -137,10 +206,19 @@ export default function ReceiptScanScreen() {
           <Pressable
             onPress={handleShutter}
             disabled={isProcessing}
-            style={[styles.shutterRing, isProcessing && { opacity: 0.5 }]}
+            style={[
+              styles.shutterRing,
+              { borderColor: colors.parchment },
+              isProcessing && { opacity: 0.5 },
+            ]}
             className="active:opacity-80"
           >
-            <View style={styles.shutterInner} />
+            <View
+              style={[
+                styles.shutterInner,
+                { backgroundColor: colors.brass },
+              ]}
+            />
           </Pressable>
         </View>
       )}
@@ -156,13 +234,9 @@ export default function ReceiptScanScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#08090D",
   },
   viewport: {
-    ...StyleSheet.absoluteFill,
-    // Simulated camera texture — replace with <CameraView style={StyleSheet.absoluteFill} />
-    backgroundColor: "#0E1019",
-    opacity: 0.95,
+    ...StyleSheet.absoluteFillObject,
   },
   topBar: {
     position: "absolute",
@@ -175,12 +249,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     zIndex: 10,
   },
-  topAction: {
-    color: "#A79F8C",
-    fontSize: 18,
-  },
   flashLabel: {
-    color: "#A79F8C",
     fontSize: 14.5,
     fontFamily: "Manrope_400Regular",
   },
@@ -193,7 +262,6 @@ const styles = StyleSheet.create({
     fontFamily: "IBMPlexMono_400Regular",
     fontSize: 12.5,
     letterSpacing: 0.4,
-    color: "#A79F8C",
     zIndex: 5,
   },
   receiptFrame: {
@@ -204,7 +272,6 @@ const styles = StyleSheet.create({
     bottom: 240,
     borderWidth: 1.5,
     borderStyle: "dashed",
-    borderColor: "#C87B54",
     borderRadius: 10,
     overflow: "hidden",
   },
@@ -214,7 +281,6 @@ const styles = StyleSheet.create({
     left: "8%",
     right: "8%",
     height: 2,
-    backgroundColor: "#C87B54",
     opacity: 0.7,
     // TODO: Animate this with Reanimated (scroll from top to bottom of frame)
   },
@@ -224,16 +290,12 @@ const styles = StyleSheet.create({
     right: 20,
     bottom: 110,
     zIndex: 5,
-    backgroundColor: "#242920",
-    borderWidth: 1,
-    borderColor: "rgba(243,238,225,0.09)",
     borderRadius: 16,
     padding: 16,
   },
   detectedTag: {
     fontFamily: "IBMPlexMono_400Regular",
     fontSize: 11.5,
-    color: "#7FA06B",
     marginBottom: 10,
   },
   detectedRow: {
@@ -243,17 +305,14 @@ const styles = StyleSheet.create({
   },
   detectedLabel: {
     fontSize: 13,
-    color: "#A79F8C",
     fontFamily: "Manrope_400Regular",
   },
   detectedValue: {
     fontSize: 14.5,
-    color: "#F3EEE1",
     fontFamily: "Manrope_600SemiBold",
   },
   confirmBtn: {
     marginTop: 12,
-    backgroundColor: "#C87B54",
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: "center",
@@ -261,7 +320,6 @@ const styles = StyleSheet.create({
   confirmBtnLabel: {
     fontFamily: "Manrope_700Bold",
     fontSize: 15,
-    color: "#1B1F1A",
   },
   shutterRow: {
     position: "absolute",
@@ -276,7 +334,6 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     borderWidth: 3,
-    borderColor: "#F3EEE1",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -284,6 +341,5 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: "#C87B54",
   },
 });

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, G } from "react-native-svg";
 import type { CategorySpend } from "@/lib/db/repositories/categories";
+import { useColors } from "@/theme/ThemeContext";
 
 interface CategoryRingCardProps {
   category: CategorySpend;
@@ -23,6 +24,7 @@ export function CategoryRingCard({
   category,
   totalExpenseCents,
 }: CategoryRingCardProps) {
+  const colors = useColors();
   const percent =
     totalExpenseCents > 0
       ? Math.min(
@@ -35,7 +37,7 @@ export function CategoryRingCard({
   const strokeDashoffset = CIRCUMFERENCE * (1 - percent / 100);
 
   return (
-    <View className="flex-1 items-center rounded-2xl border border-white/[0.09] bg-ink-2 p-3.5">
+    <View className="flex-1 items-center rounded-2xl border border-hairline bg-ink-2 p-3.5">
       {/* ── Progress ring ────────────────────────────────────────────── */}
       <View style={styles.ringContainer}>
         {/* SVG layer: background track + progress arc */}
@@ -50,7 +52,7 @@ export function CategoryRingCard({
             cy={CENTER}
             r={RING_RADIUS}
             fill="none"
-            stroke="rgba(243,238,225,0.09)"
+            stroke={colors.hairline}
             strokeWidth={2.5}
           />
 
@@ -76,7 +78,11 @@ export function CategoryRingCard({
         <View
           style={[
             styles.innerCircle,
-            { top: INNER_OFFSET, left: INNER_OFFSET },
+            {
+              top: INNER_OFFSET,
+              left: INNER_OFFSET,
+              backgroundColor: colors.ink3,
+            },
           ]}
         >
           <Text style={styles.icon}>{category.icon}</Text>

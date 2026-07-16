@@ -26,6 +26,6 @@ export const lightColors = {
   rust: "#9C4A3D",
   /** Transit category ring */
   dustyBlue: "#6E8FB0",
-  /** Dining category ring */
   ochre: "#C9A227",
+  hairline: "rgba(27, 31, 26, 0.09)",
 } as const;

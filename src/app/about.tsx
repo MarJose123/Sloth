@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import * as Application from "expo-application";
 import { SlothAppIcon } from "@/components/SlothAppIcon";
 import { ArrowLeftIcon, ChevronRightIcon } from "@/components/navigation/icons";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -24,7 +24,7 @@ function AboutRow({
   onPress?: () => void;
 }) {
   const content = (
-    <View className="flex-row items-center justify-between border-t border-white/[0.09] py-[13px]">
+    <View className="flex-row items-center justify-between border-t border-hairline py-[13px]">
       <View className="flex-1 pr-4">
         <Text className="text-[14.5px] font-manrope-semibold text-parchment">
           {title}
@@ -61,7 +61,10 @@ export default function AboutScreen() {
   };
 
   return (
-    <View className="flex-1 bg-ink pt-safe">
+    <View
+      className="flex-1 pt-safe"
+      style={{ backgroundColor: colors.ink }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}

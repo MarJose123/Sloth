@@ -482,6 +482,7 @@ The `ThemeProvider` wraps the entire app in `src/app/_layout.tsx`. It:
 
 - Reads the stored preference from `SecureStore` via `storage.getThemePreference()` on mount
 - Resolves `"auto"` mode by subscribing to `Appearance.addChangeListener` (React Native's system colour scheme API)
+- Calls **`colorScheme.set(resolved)`** from `react-native-css/native` whenever the resolved theme changes — this is what makes Tailwind utility classes (`bg-ink`, `text-parchment`, etc.) update dynamically at runtime
 - Provides `useTheme()` (full context: preference, resolved, palette, setter) and `useColors()` (just the active palette)
 
 ```tsx
@@ -494,39 +495,61 @@ const colors = useColors();
 
 ### 8.3 Color Palettes
 
-**Dark (default):** `darkColors.ts` — the original Sloth palette: deep ink backgrounds, warm parchment text, brass accents. All Tailwind utility classes (`bg-ink`, `text-parchment`, etc.) are compiled to these values.
+**Dark (default):** `darkColors.ts` — the original Sloth palette: deep ink backgrounds, warm parchment text, brass accents. Defined as `--sloth-*` CSS variables on `:root` in `global.css`.
 
-**Light:** `lightColors.ts` — warm-light surfaces (`#F5F0E4`), dark ink text (`#1B1F1A`), with slightly adjusted accent colours (sage `#6B8D58`) for contrast on light backgrounds.
+**Light:** `lightColors.ts` — warm-light surfaces (`#F5F0E4`), dark ink text (`#1B1F1A`), with slightly adjusted accent colours (sage `#6B8D58`) for contrast on light backgrounds. Defined inside `@media (prefers-color-scheme: light)` in `global.css`.
 
-### 8.4 Usage Patterns
+### 8.4 How Runtime Theme Switching Works
 
-**Inline styles (theme-aware):** Use `useColors()` for inline `style={}` props:
+Light theme works via a three-layer mechanism:
+
+1. **CSS variables on `:root`** — All colour tokens are defined as `--sloth-*` CSS custom properties in `global.css`. Dark values are on `:root`; light values are inside `@media (prefers-color-scheme: light) { :root { ... } }`.
+
+2. **`@theme` references these variables** — `--color-ink: var(--sloth-ink, #1b1f1a)`, etc. Tailwind utility classes like `bg-ink` and `text-parchment` resolve through these variables.
+
+3. **`colorScheme.set()` triggers re-evaluation** — `ThemeContext` calls `colorScheme.set(resolved)` from `react-native-css/native` on every theme change. This makes the `prefers-color-scheme` media query re-evaluate, swapping all `--sloth-*` variables at runtime.
+
+**Result:** ALL Tailwind utility classes (`bg-ink`, `text-parchment`, `bg-ink-2`, `text-brass`, etc.) switch with the theme automatically — no component changes needed.
+
+### 8.5 Inline Styles (useColors)
+
+For inline `style={}` props that reference colours, use the `useColors()` hook:
 
 ```tsx
 const colors = useColors();
 // <View style={{ backgroundColor: colors.ink }}>
 ```
 
-**Tailwind utility classes (dark-only):** NativeWind classes like `bg-ink`, `text-parchment`, `bg-ink-2` are compiled statically to the dark palette values. They do NOT switch with the theme. If a component uses only Tailwind classes, it will always render in the dark theme. To make a component fully theme-aware, convert its Tailwind colour classes to inline styles using `useColors()`.
+This is only needed for components that use `StyleSheet.create()` or inline styles (e.g. `Toggle.tsx`, `SplashScreen.tsx`, `DonateQRModal.tsx`). Components using Tailwind classes switch automatically via the CSS variable mechanism.
 
-**Module-level constants:** Files that define colour arrays at module scope (e.g. `BADGE_COLORS`, `RING_COLORS`) must import from the static `colors` export of `@/theme/colors`:
+### 8.6 Module-Level Constants
+
+Files that define colour arrays at module scope (e.g. `BADGE_COLORS`, `RING_COLORS`) import from the static `colors` export:
 
 ```ts
-// Module-level — always uses dark palette (acceptable for accent colours)
 const BADGE_COLORS = [colors.brass, colors.sage, colors.rust];
 ```
 
-### 8.5 Settings Integration
+These accent colours (brass, rust, dustyBlue) are identical in both themes, so the static import is safe.
 
-The Appearance section in Settings (Screen 07) uses the `useTheme()` hook for the Theme segment control (Light / Dark / Auto). The stored preference is persisted to `SecureStore` under key `sloth.theme_preference`.
+### 8.7 Settings Integration
 
-### 8.6 Limitations & Future Work
+The Appearance section in Settings uses `useTheme()` for the Theme segment control (Light / Dark / Auto). The preference is persisted to `SecureStore` under key `sloth.theme_preference`. On change, `ThemeContext` calls `colorScheme.set()` which triggers the CSS variable swap across the entire app.
 
-- Tailwind utility classes do not switch with theme — they always resolve to dark palette values. A future pass can migrate to inline styles or add a `dark:` variant system.
-- The `SlothAppIcon` SVG component and `SlothMark.tsx` use static colours that work in both themes (the sloth icon has its own palette).
-- Module-level constants that reference colour tokens (BADGE_COLORS, RING_COLORS) stay on the dark palette values — these are accent colours that look acceptable in both themes.
+### 8.8 Key Files
 
-### 8.1 EAS Profile (`eas.json`)
+| File | Role |
+|---|---|
+| `src/global.css` | `:root` + `@media (prefers-color-scheme: light)` CSS variables + `@theme` |
+| `src/theme/ThemeContext.tsx` | React context + `colorScheme.set()` bridge |
+| `src/theme/darkColors.ts` | JS dark palette for inline styles |
+| `src/theme/lightColors.ts` | JS light palette for inline styles |
+| `src/theme/colors.ts` | Exports both palettes + default `colors` (dark) |
+| `src/app/(app)/settings.tsx` | Theme segment control (Light / Dark / Auto) |
+
+## 9 · Build & CI
+
+### 9.1 EAS Profile (`eas.json`)
 
 ```json
 {
@@ -570,7 +593,7 @@ Key notes:
 - All extend a `base` profile with Bun 1.3.14 pinned.
 - Staging is equivalent to the older `gradleCommand: ":app:assembleRelease"` approach.
 
-### 8.2 GitHub Actions (CI)
+### 9.2 GitHub Actions (CI)
 
 **Workflow file:** `.github/workflows/dev-build-android.yml`
 
@@ -599,7 +622,7 @@ Steps:
 - No explicit NDK/CMAKE/JAVA/ABI env vars — those come from the Ubuntu runner image.
 - EAS manages all Android credentials — no manual keystore handling in workflow files.
 
-### 8.3 Pre-commit Lint Gate (must all pass)
+### 9.3 Pre-commit Lint Gate (must all pass)
 
 ```bash
 bun lint
@@ -609,7 +632,7 @@ This runs `prettier --write . && expo lint` (see `package.json` scripts).
 
 ---
 
-## 9 · Hard Rules (agent must NEVER violate)
+## 10 · Hard Rules (agent must NEVER violate)
 
 | # | Rule |
 |---|---|
@@ -630,7 +653,7 @@ This runs `prettier --write . && expo lint` (see `package.json` scripts).
 
 ---
 
-## 10 · Implementation Plan (Phase-gated)
+## 11 · Implementation Plan (Phase-gated)
 
 Each phase requires explicit approval before implementation begins.
 
@@ -705,7 +728,7 @@ Each phase requires explicit approval before implementation begins.
 
 ---
 
-## 11 · File Structure Reference
+## 12 · File Structure Reference
 
 ```
 sloth/
@@ -831,7 +854,7 @@ sloth/
     └── db/.gitkeep                 ← legacy placeholder (DO NOT USE — all DB code under lib/db/)
 ```
 
-## 12 · Agent Behaviour Rules
+## 13 · Agent Behaviour Rules
 
 1. **Read this file first** before generating any code or making any decision.
 2. **Mockup-first:** every pixel value, colour token, and font size must trace to

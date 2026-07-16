@@ -11,6 +11,7 @@ const PIN_LENGTH = 6;
 type Stage = "enter" | "confirm";
 
 export default function PinSetupScreen() {
+  const colors = useColors();
   const [stage, setStage] = useState<Stage>("enter");
   const [firstPin, setFirstPin] = useState("");
   const [currentInput, setCurrentInput] = useState("");
@@ -57,7 +58,10 @@ export default function PinSetupScreen() {
   }, []);
 
   return (
-    <View className="flex-1 bg-ink px-5 pb-5 pt-safe">
+    <View
+      className="flex-1 px-5 pb-5 pt-safe"
+      style={{ backgroundColor: colors.ink }}
+    >
       <Text className="mt-15 text-center font-mono text-[12.5px] uppercase tracking-[2px] text-parchment-dim">
         Sloth setup
       </Text>

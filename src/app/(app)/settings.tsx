@@ -14,8 +14,7 @@ import { Toggle } from "@/components/ui/Toggle";
 import { DonateQRModal } from "@/components/modals/DonateQRModal";
 import * as Application from "expo-application";
 import { ChevronRightIcon } from "@/components/navigation/icons";
-import { colors } from "@/theme/colors";
-import { useTheme } from "@/theme/ThemeContext";
+import { useTheme, useColors } from "@/theme/ThemeContext";
 import type { ThemePreference } from "@/lib/storage";
 
 // ─── local primitives ────────────────────────────────────────────────────────
@@ -29,6 +28,7 @@ function SegmentedThemeControl({
   value: ThemePreference;
   onChange: (v: ThemePreference) => void;
 }) {
+  const colors = useColors();
   return (
     <View className="flex-row rounded-[10px] bg-ink-3 p-0.5">
       {THEME_OPTIONS.map((option) => (
@@ -40,9 +40,8 @@ function SegmentedThemeControl({
           }`}
         >
           <Text
-            className={`text-[11.5px] font-manrope-bold capitalize ${
-              option === value ? "text-ink" : "text-parchment-dim"
-            }`}
+            className="text-[11.5px] font-manrope-bold capitalize"
+            style={{ color: option === value ? colors.ink : colors.parchmentDim }}
           >
             {option}
           </Text>
@@ -61,6 +60,7 @@ function SectionLabel({ label }: { label: string }) {
 }
 
 function Chevron() {
+  const colors = useColors();
   return <ChevronRightIcon size={18} color={colors.parchmentDim} />;
 }
 
@@ -79,22 +79,25 @@ function SettingsRow({
   right,
   onPress,
 }: SettingsRowProps) {
+  const colors = useColors();
   const content = (
-    <View className="flex-row items-center border-b border-white/[0.09] py-[13px]">
+    <View className="flex-row items-center border-b border-hairline py-[13px]">
       <View className="mr-3 flex-1 flex-row items-center gap-3">
         <View className="h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[9px] bg-ink-3">
           <Text className="text-[14px] text-brass">{icon}</Text>
         </View>
         <View className="flex-1">
           <Text
-            className="text-[14.5px] font-manrope-semibold text-parchment"
+            className="text-[14.5px] font-manrope-semibold"
+            style={{ color: colors.parchment }}
             numberOfLines={1}
           >
             {title}
           </Text>
           {description !== undefined && (
             <Text
-              className="mt-[1px] text-[12px] text-parchment-dim"
+              className="mt-[1px] text-[12px]"
+              style={{ color: colors.parchmentDim }}
               numberOfLines={2}
             >
               {description}
@@ -123,6 +126,7 @@ const APP_VERSION = Application.nativeApplicationVersion ?? "1.0.0";
 const APP_BUILD_NUMBER = Application.nativeBuildVersion ?? "1";
 
 export default function SettingsScreen() {
+  const colors = useColors();
   const {
     preference: theme,
     setPreference: setTheme,
@@ -190,13 +194,19 @@ export default function SettingsScreen() {
   // ── render ───────────────────────────────────────────────────────────────────
 
   return (
-    <View className="flex-1 bg-ink pt-safe">
+    <View
+      className="flex-1 pt-safe"
+      style={{ backgroundColor: colors.ink }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="mb-[22px] font-fraunces-medium text-[22px] text-parchment">
+        <Text
+          className="mb-[22px] font-fraunces-medium text-[22px]"
+          style={{ color: colors.parchment }}
+        >
           Settings
         </Text>
 
@@ -301,7 +311,10 @@ export default function SettingsScreen() {
         />
 
         {/* ── Build stamp ── */}
-        <Text className="mt-8 text-center font-mono text-[11.5px] text-parchment-dim">
+        <Text
+          className="mt-8 text-center font-mono text-[11.5px]"
+          style={{ color: colors.parchmentDim }}
+        >
           Sloth {APP_VERSION} ({APP_BUILD_NUMBER}) · GPLv3
         </Text>
       </ScrollView>

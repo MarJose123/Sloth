@@ -1,12 +1,8 @@
 import { useCallback, useState } from "react";
-import {
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { useColors } from "@/theme/ThemeContext";
 import { AccountSwitcher } from "@/components/dashboard/AccountSwitcher";
 import { CategoryRingCard } from "@/components/dashboard/CategoryRingCard";
 import { TransactionRow } from "@/components/dashboard/TransactionRow";
@@ -18,6 +14,7 @@ export default function DashboardScreen() {
     null,
   );
   const { state, refresh } = useDashboardData(selectedAccountId);
+  const colors = useColors();
 
   const onRefresh = useCallback(() => {
     refresh();
@@ -36,7 +33,10 @@ export default function DashboardScreen() {
     : accounts.reduce((sum, a) => sum + a.balanceCents, 0);
 
   return (
-    <View className="flex-1 bg-ink pt-safe">
+    <View
+      className="flex-1 pt-safe"
+      style={{ backgroundColor: colors.ink }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 110 }}
@@ -44,7 +44,7 @@ export default function DashboardScreen() {
           <RefreshControl
             refreshing={state.isRefreshing}
             onRefresh={onRefresh}
-            tintColor="#C87B54"
+            tintColor={colors.brass}
           />
         }
       >

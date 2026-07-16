@@ -18,7 +18,6 @@ import {
   updateCategory,
   type CategoryKind,
 } from "@/lib/db/repositories/categories";
-import { colors } from "@/theme/colors";
 import { useColors } from "@/theme/ThemeContext";
 
 // ─── icon library ─────────────────────────────────────────────────────────────
@@ -51,10 +50,10 @@ const ICONS = [
 // ─── color palette ────────────────────────────────────────────────────────────
 
 const RING_COLORS = [
-  colors.brass,
-  colors.sage,
-  colors.rust,
-  colors.dustyBlue,
+  "#C87B54", // brass
+  "#7FA06B", // sage
+  "#9C4A3D", // rust
+  "#6E8FB0", // dustyBlue
   "#9B9787",
 ] as const;
 
@@ -69,6 +68,7 @@ function ColorSwatch({
   selected: boolean;
   onPress: () => void;
 }) {
+  const colors = useColors();
   return (
     <Pressable onPress={onPress} className="active:opacity-70">
       <View
@@ -193,14 +193,20 @@ export default function CategoryEditorScreen() {
 
   if (isLoadingData) {
     return (
-      <View className="flex-1 items-center justify-center bg-ink pt-safe">
+      <View
+        className="flex-1 items-center justify-center pt-safe"
+        style={{ backgroundColor: colors.ink }}
+      >
         <Text className="text-sm text-parchment-dim">Loading…</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-ink pt-safe">
+    <View
+      className="flex-1 pt-safe"
+      style={{ backgroundColor: colors.ink }}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -239,7 +245,7 @@ export default function CategoryEditorScreen() {
           {/* ── Preview + name ── */}
           <View className="mb-6 flex-row items-center gap-3.5">
             <PreviewRing icon={selectedIcon} color={selectedColor} />
-            <View className="flex-1 rounded-2xl border border-white/[0.09] bg-ink-2 px-4 py-3.5">
+            <View className="flex-1 rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
               <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
                 Name
               </Text>
@@ -269,7 +275,7 @@ export default function CategoryEditorScreen() {
                   className={`h-11 w-11 items-center justify-center rounded-[11px] border active:opacity-70 ${
                     active
                       ? "border-brass/60 bg-brass/10"
-                      : "border-white/[0.09] bg-ink-2"
+                      : "border-hairline bg-ink-2"
                   }`}
                 >
                   <Text style={{ fontSize: 20 }}>{icon}</Text>
@@ -307,7 +313,7 @@ export default function CategoryEditorScreen() {
                   className={`flex-1 flex-row items-center gap-2 rounded-2xl border p-3.5 active:opacity-80 ${
                     active
                       ? "border-brass/50 bg-brass/10"
-                      : "border-white/[0.09] bg-ink-2"
+                      : "border-hairline bg-ink-2"
                   }`}
                 >
                   <Text

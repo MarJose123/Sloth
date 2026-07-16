@@ -95,7 +95,7 @@ function CategoryRow({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center gap-3 border-b border-white/[0.09] py-[13px] active:opacity-70"
+      className="flex-row items-center gap-3 border-b border-hairline py-[13px] active:opacity-70"
     >
       <CategoryListRing
         category={category}
@@ -128,12 +128,12 @@ function CategoryRow({
 
 export default function CategoriesScreen() {
   const { state, refresh } = useCategoriesData();
-  const colors = useColors();
 
   const onRefresh = useCallback(() => {
     refresh();
   }, [refresh]);
 
+  const colors = useColors();
   const isLoading = state.status === "loading";
   const isRefreshing = state.status === "ready" ? state.isRefreshing : false;
   const categories = state.status === "ready" ? state.data.categories : [];
@@ -141,7 +141,10 @@ export default function CategoriesScreen() {
     state.status === "ready" ? state.data.totalExpenseCents : 0;
 
   return (
-    <View className="flex-1 bg-ink pt-safe">
+    <View
+      className="flex-1 pt-safe"
+      style={{ backgroundColor: colors.ink }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
@@ -193,7 +196,7 @@ export default function CategoriesScreen() {
 
         {/* ── Empty state ── */}
         {!isLoading && state.status !== "error" && categories.length === 0 && (
-          <View className="items-center rounded-2xl border border-white/[0.09] bg-ink-2 px-6 py-10">
+          <View className="items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10">
             <Text className="mb-2 font-fraunces-medium text-xl text-parchment">
               No categories yet
             </Text>
@@ -231,7 +234,8 @@ export default function CategoriesScreen() {
         {!isLoading && categories.length > 0 && (
           <Pressable
             onPress={() => router.push("/category-editor")}
-            className="mt-3.5 items-center rounded-2xl border border-dashed border-parchment/20 py-4 active:opacity-60"
+            className="mt-3.5 items-center rounded-2xl border border-dashed py-4 active:opacity-60"
+            style={{ borderColor: colors.parchmentDim, opacity: 0.5 }}
           >
             <Text className="text-[14.5px] text-parchment-dim">
               + Create a new expense type
@@ -253,7 +257,6 @@ const styles = StyleSheet.create({
     width: INNER_SIZE,
     height: INNER_SIZE,
     borderRadius: INNER_SIZE / 2,
-    backgroundColor: "#2E3428", // ink-3
     alignItems: "center",
     justifyContent: "center",
   },

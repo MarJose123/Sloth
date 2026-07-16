@@ -45,7 +45,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
       : colors.parchment;
 
   return (
-    <Pressable className="mb-3 flex-row items-center gap-3 rounded-2xl border border-white/[0.09] bg-ink-2 p-4 active:opacity-80">
+    <Pressable className="mb-3 flex-row items-center gap-3 rounded-2xl border border-hairline bg-ink-2 p-4 active:opacity-80">
       <View
         className="h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-[11px]"
         style={{ backgroundColor: account.colorHex }}
@@ -89,7 +89,10 @@ export default function AccountsScreen() {
 
   if (state.status === "error") {
     return (
-      <View className="flex-1 items-center justify-center bg-ink px-8 pt-safe">
+      <View
+        className="flex-1 items-center justify-center px-8 pt-safe"
+        style={{ backgroundColor: colors.ink }}
+      >
         <Text className="text-center text-sm text-rust">{state.message}</Text>
       </View>
     );
@@ -100,7 +103,10 @@ export default function AccountsScreen() {
   const isLoading = state.status === "loading";
 
   return (
-    <View className="flex-1 bg-ink pt-safe">
+    <View
+      className="flex-1 pt-safe"
+      style={{ backgroundColor: colors.ink }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 110 }}
@@ -139,7 +145,7 @@ export default function AccountsScreen() {
 
         {/* ── Empty state ── */}
         {!isLoading && accounts.length === 0 && (
-          <View className="items-center rounded-2xl border border-white/[0.09] bg-ink-2 px-6 py-10">
+          <View className="items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10">
             <Text className="mb-2 font-fraunces-medium text-xl text-parchment">
               No accounts yet
             </Text>
@@ -167,7 +173,8 @@ export default function AccountsScreen() {
 
             <Pressable
               onPress={() => router.push("/add-account")}
-              className="mt-1 items-center rounded-2xl border border-dashed border-parchment/20 py-4 active:opacity-60"
+              className="mt-1 items-center rounded-2xl border border-dashed py-4 active:opacity-60"
+              style={{ borderColor: colors.parchmentDim, opacity: 0.5 }}
             >
               <Text className="text-[14.5px] text-parchment-dim">
                 + Add another account

@@ -53,7 +53,10 @@ export default function FabSheetScreen() {
   }, []);
 
   return (
-    <View className="flex-1 justify-end bg-[rgba(8,9,13,0.6)]">
+    <View
+      className="flex-1 justify-end"
+      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+    >
       {/* Tappable scrim — dismisses the sheet */}
       <Pressable
         onPress={handleDismiss}
@@ -64,17 +67,18 @@ export default function FabSheetScreen() {
 
       {/* Bottom sheet */}
       <View
-        className="rounded-t-[22px] bg-ink-2 px-5 pb-8 pt-2"
+        className="rounded-t-[22px] px-5 pb-8 pt-2"
         style={{
+          backgroundColor: colors.ink2,
           borderTopWidth: 1,
-          borderTopColor: "rgba(243,238,225,0.09)",
+          borderTopColor: colors.hairline,
         }}
       >
         {/* Drag handle */}
         <View className="mb-5 items-center">
           <View
             className="h-1 w-9 rounded-full"
-            style={{ backgroundColor: "rgba(237,233,224,0.2)" }}
+            style={{ backgroundColor: colors.hairline }}
           />
         </View>
 

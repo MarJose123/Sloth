@@ -329,6 +329,7 @@ function BottomBarCTA({
 
 // ─── Root: Carousel host ──────────────────────────────────────────────────────
 export default function OnboardingCarousel() {
+  const colors = useColors();
   const translateX = useSharedValue(0);
   const dragX = useSharedValue(0);
   const activeIndexSV = useSharedValue(0);
@@ -395,7 +396,10 @@ export default function OnboardingCarousel() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <View className="flex-1 bg-ink pt-safe">
+      <View
+        className="flex-1 pt-safe"
+        style={{ backgroundColor: colors.ink }}
+      >
         <View style={{ flex: 1, overflow: "hidden" }}>
           <GestureDetector gesture={componentPan}>
             <Animated.View style={[styles.track, trackStyle]}>

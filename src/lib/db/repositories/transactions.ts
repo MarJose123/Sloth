@@ -45,6 +45,7 @@ export interface InsertTransactionInput {
   amountCents: number;
   occurredAt: number;
   note?: string;
+  source?: "manual" | "scan" | "import";
 }
 
 // ─── row shapes (internal) ────────────────────────────────────────────────────
@@ -167,11 +168,12 @@ export async function insertTransaction(
   const db = await getDb();
   const id = ExpoCrypto.randomUUID();
   const now = Date.now();
+  const source = input.source ?? "manual";
 
   await db.execute(
     `INSERT INTO transactions
        (id, account_id, category_id, merchant, amount_cents, occurred_at, note, source, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'manual', ?);`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     [
       id,
       input.accountId,
@@ -180,6 +182,7 @@ export async function insertTransaction(
       input.amountCents,
       input.occurredAt,
       input.note?.trim() ?? null,
+      source,
       now,
     ],
   );

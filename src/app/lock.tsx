@@ -114,7 +114,10 @@ export default function LockScreen() {
 
   if (view.screen === "biometric") {
     return (
-      <View className="flex-1 items-center justify-center bg-ink px-5">
+      <View
+        className="flex-1 items-center justify-center px-5"
+        style={{ backgroundColor: colors.ink }}
+      >
         {/* Brass brand-mark */}
         <View className="mb-2">
           <Text className="text-center font-mono text-[12.5px] uppercase tracking-[2px] text-brass">
@@ -150,7 +153,10 @@ export default function LockScreen() {
 
   // PIN verify screen
   return (
-    <View className="flex-1 bg-ink px-5 pb-5 pt-safe">
+    <View
+      className="flex-1 px-5 pb-5 pt-safe"
+      style={{ backgroundColor: colors.ink }}
+    >
       {/* Sloth locked eyebrow */}
       <Text className="mb-2 mt-15 text-center font-mono text-[12.5px] uppercase tracking-[2px] text-brass">
         Sloth locked

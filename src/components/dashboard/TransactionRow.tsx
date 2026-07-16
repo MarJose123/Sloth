@@ -11,7 +11,7 @@ export function TransactionRow({
     transaction.categoryKind === "income" || transaction.amountCents > 0;
 
   return (
-    <View className="flex-row items-center justify-between border-t border-white/[0.09] py-[11px]">
+    <View className="flex-row items-center justify-between border-t border-hairline py-[11px]">
       <View className="flex-1 pr-3">
         <Text
           className="text-[14.5px] font-manrope-semibold text-parchment"

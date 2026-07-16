@@ -1,4 +1,5 @@
 import { View, Pressable, Text, useWindowDimensions } from "react-native";
+import { useColors } from "@/theme/ThemeContext";
 
 interface KeypadProps {
   onDigit: (digit: string) => void;
@@ -53,6 +54,7 @@ function KeypadKey({
   muted?: boolean;
   isBackspace?: boolean;
 }) {
+  const colors = useColors();
   return (
     <Pressable
       onPress={onPress}
@@ -62,15 +64,15 @@ function KeypadKey({
         width: size,
         height: size,
         borderRadius: size / 2,
+        backgroundColor: muted ? "transparent" : colors.ink2,
+        borderWidth: muted ? 0 : 1,
+        borderColor: colors.hairline,
       }}
-      className={`items-center justify-center active:opacity-70 ${
-        muted ? "bg-transparent" : "border border-hairline bg-ink-2"
-      }`}
+      className="items-center justify-center active:opacity-70"
     >
       <Text
-        className={`font-manrope-bold text-parchment ${
-          isBackspace ? "text-xl" : "text-[26px]"
-        }`}
+        className={isBackspace ? "text-xl" : "text-[26px]"}
+        style={{ color: colors.parchment, fontFamily: "Manrope_700Bold" }}
       >
         {label}
       </Text>

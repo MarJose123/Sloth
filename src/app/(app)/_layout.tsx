@@ -1,7 +1,8 @@
-import { Tabs, TabList, TabTrigger, TabSlot } from "expo-router/ui";
-import { router } from "expo-router";
+import { View } from "react-native";
+import { router, usePathname, Slot } from "expo-router";
 import { AddTabButton } from "@/components/navigation/AddTabButton";
 import { TabBarButton } from "@/components/navigation/TabBarButton";
+import { useColors } from "@/theme/ThemeContext";
 import {
   AccountsIcon,
   HomeIcon,
@@ -10,47 +11,65 @@ import {
 } from "@/components/navigation/icons";
 
 export default function AppLayout() {
+  const pathname = usePathname();
+  const colors = useColors();
+
   return (
-    <Tabs style={{ flex: 1, backgroundColor: "#1B1F1A" }}>
-      <TabSlot style={{ flex: 1 }} />
+    <View style={{ flex: 1, backgroundColor: colors.ink }}>
+      <Slot />
 
-      <TabList className="absolute bottom-6 left-1/2 -ml-[150px] w-[300px] h-[64px] flex-row items-center bg-[rgba(18,20,28,0.95)] border border-white/[0.09] rounded-[32px] overflow-visible shadow-2xl px-2">
-        <TabTrigger
-          name="dashboard"
-          href="/(app)/dashboard"
-          asChild
-          style={{ flex: 1 }}
-        >
-          <TabBarButton Icon={HomeIcon} />
-        </TabTrigger>
-        <TabTrigger
-          name="accounts"
-          href="/(app)/accounts"
-          asChild
-          style={{ flex: 1 }}
-        >
-          <TabBarButton Icon={AccountsIcon} />
-        </TabTrigger>
+      <View
+        className="absolute bottom-6 left-1/2 -ml-[150px] w-[300px] h-[64px] flex-row items-center border rounded-[32px] overflow-visible shadow-2xl px-2"
+        style={{
+          backgroundColor: colors.tabBar ?? "rgba(18,20,28,0.95)",
+          borderColor: colors.hairline ?? "rgba(255,255,255,0.09)",
+        }}
+      >
+        <TabBarButton
+          Icon={HomeIcon}
+          isFocused={
+            pathname === "/(app)/dashboard" ||
+            pathname === "/dashboard" ||
+            pathname === "/" ||
+            pathname === "/(app)"
+          }
+          onPress={() => {
+            router.navigate("/(app)/dashboard");
+          }}
+        />
 
-        <AddTabButton onPress={() => router.push("/fab-sheet")} />
+        <TabBarButton
+          Icon={AccountsIcon}
+          isFocused={pathname === "/(app)/accounts" || pathname === "/accounts"}
+          onPress={() => {
+            router.navigate("/(app)/accounts");
+          }}
+        />
 
-        <TabTrigger
-          name="transactions"
-          href="/(app)/transactions"
-          asChild
-          style={{ flex: 1 }}
-        >
-          <TabBarButton Icon={TransactionsIcon} />
-        </TabTrigger>
-        <TabTrigger
-          name="settings"
-          href="/(app)/settings"
-          asChild
-          style={{ flex: 1 }}
-        >
-          <TabBarButton Icon={SettingsIcon} />
-        </TabTrigger>
-      </TabList>
-    </Tabs>
+        <AddTabButton
+          onPress={() => {
+            router.push("/fab-sheet");
+          }}
+        />
+
+        <TabBarButton
+          Icon={TransactionsIcon}
+          isFocused={
+            pathname === "/(app)/transactions" || pathname === "/transactions"
+          }
+          onPress={() => {
+            router.navigate("/(app)/transactions");
+          }}
+        />
+
+        <TabBarButton
+          Icon={SettingsIcon}
+          isFocused={pathname === "/(app)/settings" || pathname === "/settings"}
+          onPress={() => {
+            router.navigate("/(app)/settings");
+          }}
+        />
+      </View>
+    </View>
   );
 }
