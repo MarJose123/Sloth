@@ -1,0 +1,116 @@
+import { useCallback } from "react";
+import { Text, View, Pressable } from "react-native";
+import { router } from "expo-router";
+import { ChevronRightIcon } from "@/components/navigation/icons";
+import { colors } from "@/theme/colors";
+
+// ─── action definition ────────────────────────────────────────────────────────
+
+interface FabAction {
+  icon: string;
+  label: string;
+  description: string;
+  route: string;
+}
+
+const ACTIONS: FabAction[] = [
+  {
+    icon: "✎",
+    label: "Manual transaction",
+    description: "Enter an expense or income by hand",
+    route: "/transaction/new",
+  },
+  {
+    icon: "▦",
+    label: "Scan receipt",
+    description: "Use the camera to capture receipt details",
+    route: "/receipt-scan",
+  },
+  {
+    icon: "▢",
+    label: "New account",
+    description: "Add a checking, savings, credit, or cash account",
+    route: "/add-account",
+  },
+  {
+    icon: "⟐",
+    label: "Import CSV/OFX",
+    description: "Bulk import transactions from a file",
+    route: "/import",
+  },
+];
+
+// ─── screen ───────────────────────────────────────────────────────────────────
+
+export default function FabSheetScreen() {
+  const handleAction = useCallback((route: string) => {
+    router.navigate(route);
+  }, []);
+
+  const handleDismiss = useCallback(() => {
+    router.back();
+  }, []);
+
+  return (
+    <View className="flex-1 justify-end bg-[rgba(8,9,13,0.6)]">
+      {/* Tappable scrim — dismisses the sheet */}
+      <Pressable
+        onPress={handleDismiss}
+        className="flex-1"
+        accessibilityLabel="Close action sheet"
+        accessibilityRole="button"
+      />
+
+      {/* Bottom sheet */}
+      <View
+        className="rounded-t-[22px] bg-ink-2 px-5 pb-8 pt-2"
+        style={{
+          borderTopWidth: 1,
+          borderTopColor: "rgba(243,238,225,0.09)",
+        }}
+      >
+        {/* Drag handle */}
+        <View className="mb-5 items-center">
+          <View
+            className="h-1 w-9 rounded-full"
+            style={{ backgroundColor: "rgba(237,233,224,0.2)" }}
+          />
+        </View>
+
+        {/* Title */}
+        <Text className="mb-6 text-center font-fraunces-medium text-lg text-parchment">
+          Add to Sloth
+        </Text>
+
+        {/* Action rows */}
+        {ACTIONS.map((action) => (
+          <Pressable
+            key={action.label}
+            onPress={() => handleAction(action.route)}
+            className="mb-2.5 flex-row items-center gap-4 rounded-2xl border border-hairline bg-ink-3 px-4 py-3.5 active:opacity-70"
+            accessibilityRole="button"
+            accessibilityLabel={action.label}
+          >
+            {/* Icon tile */}
+            <View className="h-11 w-11 items-center justify-center rounded-xl border border-brass/30 bg-ink-3">
+              <Text className="text-lg text-brass">{action.icon}</Text>
+            </View>
+
+            {/* Label + description */}
+            <View className="flex-1">
+              <Text className="font-manrope-bold text-[13px] text-parchment">
+                {action.label}
+              </Text>
+              <Text className="text-[11.5px] leading-4 text-parchment-dim">
+                {action.description}
+              </Text>
+            </View>
+
+            {/* Chevron */}
+            <ChevronRightIcon size={18} color={colors.parchmentDim} />
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+}

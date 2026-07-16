@@ -85,7 +85,7 @@ export function CategoryRingCard({
 
       {/* ── Category label ───────────────────────────────────────────── */}
       <Text
-        className="mt-2 font-mono text-[11px] uppercase text-parchment-dim"
+        className="mt-2 font-mono text-[12px] uppercase text-parchment-dim"
         numberOfLines={1}
       >
         {category.name}
@@ -110,6 +110,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   icon: {
-    fontSize: 16,
+    fontSize: 18,
   },
 });

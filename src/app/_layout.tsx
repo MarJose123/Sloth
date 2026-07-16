@@ -3,9 +3,7 @@ import { useEffect, useCallback } from "react";
 import { View } from "react-native";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { SafeAreaListener } from "react-native-safe-area-context";
 import { useAppFonts } from "@/hooks/useAppFonts";
-import { Uniwind } from "uniwind";
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* no-op: safe to ignore if already hidden */
@@ -27,29 +25,23 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <SafeAreaListener
-      onChange={({ insets }) => {
-        Uniwind.updateInsets(insets);
-      }}
-    >
-      <View className="flex-1 bg-ink">
-        <Stack screenOptions={{ headerShown: false }}>
-          {/* ── Core groups ── */}
-          <Stack.Screen name="index" />
-          <Stack.Screen name="onboarding" />
-          <Stack.Screen name="(app)" />
+    <View className="flex-1 bg-ink">
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* ── Core groups ── */}
+        <Stack.Screen name="(app)" />
+        <Stack.Screen name="onboarding" />
 
-          {/* ── Root-level push screens (no tab bar) ── */}
-          {/* Navigated to via router.push("/add-account") etc. from    */}
-          {/* within (app) tabs; renders outside the tab layout so the  */}
-          {/* tab bar is not visible on these screens.                  */}
-          <Stack.Screen name="add-account" />
-          <Stack.Screen name="category-editor" />
-          <Stack.Screen name="about" />
-          <Stack.Screen name="receipt-scan" />
-          <Stack.Screen name="import" />
-        </Stack>
-      </View>
-    </SafeAreaListener>
+        {/* ── Root-level push screens (no tab bar) ── */}
+        <Stack.Screen name="add-account" />
+        <Stack.Screen name="category-editor" />
+        <Stack.Screen name="transaction/new" />
+        <Stack.Screen name="about" />
+        <Stack.Screen name="receipt-scan" />
+        <Stack.Screen name="import" />
+        <Stack.Screen name="lock" />
+        <Stack.Screen name="donate" />
+        <Stack.Screen name="fab-sheet" />
+      </Stack>
+    </View>
   );
 }

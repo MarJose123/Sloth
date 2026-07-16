@@ -1,6 +1,8 @@
 /* src/global.css */
-@import "tailwindcss";
-@import "uniwind";
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "nativewind/theme";
 
 /* ─────────────────────────────────────────────────────────────────
    SLOTH DESIGN TOKENS
@@ -61,6 +63,37 @@
 /* ─────────────────────────────────────────────────────────────────
    CUSTOM UTILITIES
    ───────────────────────────────────────────────────────────────── */
+
+/* Safe area insets — provided by react-native-css's SafeAreaProvider wrapper,
+   which sets --react-native-css-safe-area-inset-{top,right,bottom,left}
+   via VariableContext. These replace the old Uniwind built-in utilities. */
+@utility pt-safe {
+  padding-top: var(--react-native-css-safe-area-inset-top);
+}
+@utility pb-safe {
+  padding-bottom: var(--react-native-css-safe-area-inset-bottom);
+}
+@utility pl-safe {
+  padding-left: var(--react-native-css-safe-area-inset-left);
+}
+@utility pr-safe {
+  padding-right: var(--react-native-css-safe-area-inset-right);
+}
+@utility px-safe {
+  padding-left: var(--react-native-css-safe-area-inset-left);
+  padding-right: var(--react-native-css-safe-area-inset-right);
+}
+@utility py-safe {
+  padding-top: var(--react-native-css-safe-area-inset-top);
+  padding-bottom: var(--react-native-css-safe-area-inset-bottom);
+}
+@utility p-safe {
+  padding-top: var(--react-native-css-safe-area-inset-top);
+  padding-right: var(--react-native-css-safe-area-inset-right);
+  padding-bottom: var(--react-native-css-safe-area-inset-bottom);
+  padding-left: var(--react-native-css-safe-area-inset-left);
+}
+
 @utility hairline {
   border-color: rgba(243, 238, 225, 0.09);
 }

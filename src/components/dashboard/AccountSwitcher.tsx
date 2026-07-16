@@ -60,7 +60,7 @@ function AccountChip({ label, dotColor, active, onPress }: AccountChipProps) {
         style={{ backgroundColor: dotColor }}
       />
       <Text
-        className={`text-[11.5px] font-manrope-semibold ${active ? "text-parchment" : "text-parchment-dim"}`}
+        className={`text-[12.5px] font-manrope-semibold ${active ? "text-parchment" : "text-parchment-dim"}`}
       >
         {label}
       </Text>

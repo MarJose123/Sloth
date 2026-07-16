@@ -103,19 +103,19 @@ function CategoryRow({
       />
 
       <View className="flex-1">
-        <Text className="text-[13.5px] font-manrope-semibold text-parchment">
+        <Text className="text-[14.5px] font-manrope-semibold text-parchment">
           {category.name}
         </Text>
-        <Text className="mt-0.5 font-mono text-[11px] uppercase text-parchment-dim">
+        <Text className="mt-0.5 font-mono text-[12px] uppercase text-parchment-dim">
           {category.kind}
         </Text>
       </View>
 
       <View className="items-end">
-        <Text className="font-mono text-[12.5px] text-parchment">
+        <Text className="font-mono text-[13.5px] text-parchment">
           {formatCurrency(category.spendCents)}
         </Text>
-        <Text className="mt-0.5 font-mono text-[10px] text-parchment-dim">
+        <Text className="mt-0.5 font-mono text-[11px] text-parchment-dim">
           {category.transactionCount}{" "}
           {category.transactionCount === 1 ? "transaction" : "transactions"}
         </Text>
@@ -155,20 +155,20 @@ export default function CategoriesScreen() {
       >
         {/* ── Header ── */}
         <View className="mb-1 flex-row items-center justify-between">
-          <Text className="font-fraunces-medium text-[20px] text-parchment">
+          <Text className="font-fraunces-medium text-[22px] text-parchment">
             Categories
           </Text>
           <Pressable
             onPress={() => router.push("/category-editor")}
             className="active:opacity-60"
           >
-            <Text className="font-manrope-bold text-[13px] text-brass">
+            <Text className="font-manrope-bold text-[14.5px] text-brass">
               + Add
             </Text>
           </Pressable>
         </View>
 
-        <Text className="mb-5 text-[11px] text-parchment-dim">
+        <Text className="mb-5 text-[12px] text-parchment-dim">
           This month · ring shows share of total spend
         </Text>
 
@@ -232,7 +232,7 @@ export default function CategoriesScreen() {
             onPress={() => router.push("/category-editor")}
             className="mt-3.5 items-center rounded-2xl border border-dashed border-parchment/20 py-4 active:opacity-60"
           >
-            <Text className="text-[13px] text-parchment-dim">
+            <Text className="text-[14.5px] text-parchment-dim">
               + Create a new expense type
             </Text>
           </Pressable>

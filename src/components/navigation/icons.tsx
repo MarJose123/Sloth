@@ -95,3 +95,74 @@ export function PlusIcon({ size = 22, color }: TabIconProps) {
     </Svg>
   );
 }
+
+export function ArrowLeftIcon({ size = 24, color }: TabIconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Line x1="19" y1="12" x2="5" y2="12" />
+      <Path d="M12 19l-7-7 7-7" />
+    </Svg>
+  );
+}
+
+export function ArrowRightIcon({ size = 24, color }: TabIconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Line x1="5" y1="12" x2="19" y2="12" />
+      <Path d="M12 5l7 7-7 7" />
+    </Svg>
+  );
+}
+
+export function ChevronRightIcon({ size = 20, color }: TabIconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M9 18l6-6-6-6" />
+    </Svg>
+  );
+}
+
+export function XIcon({ size = 24, color }: TabIconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Line x1="18" y1="6" x2="6" y2="18" />
+      <Line x1="6" y1="6" x2="18" y2="18" />
+    </Svg>
+  );
+}

@@ -24,23 +24,7 @@ export default function DashboardScreen() {
     refresh();
   }, [refresh]);
 
-  if (state.status === "loading") {
-    return (
-      <View className="flex-1 items-center justify-center bg-ink pt-safe">
-        <Text className="text-sm text-parchment-dim">
-          Loading your accounts…
-        </Text>
-      </View>
-    );
-  }
-
-  if (state.status === "error") {
-    return (
-      <View className="flex-1 items-center justify-center bg-ink px-8 pt-safe">
-        <Text className="text-center text-sm text-rust">{state.message}</Text>
-      </View>
-    );
-  }
+  if (state.status !== "ready") return null;
 
   const { accounts, categories, totalExpenseCents, recentTransactions } =
     state.data;
@@ -56,7 +40,7 @@ export default function DashboardScreen() {
     <View className="flex-1 bg-ink pt-safe">
       <ScrollView
         className="flex-1 px-5"
-        contentContainerStyle={{ paddingTop: 8, paddingBottom: 28 }}
+        contentContainerStyle={{ paddingTop: 8, paddingBottom: 110 }}
         refreshControl={
           <RefreshControl
             refreshing={state.isRefreshing}
@@ -65,13 +49,13 @@ export default function DashboardScreen() {
           />
         }
       >
-        <Text className="mb-0.5 text-[12.5px] text-parchment-dim">
+        <Text className="mb-0.5 text-[17px] text-parchment-dim">
           {getGreeting()}
         </Text>
 
         <View className="mb-[22px] flex-row items-center gap-1.5 self-start rounded-full border border-sage/35 px-2.5 py-1">
           <View className="h-1.5 w-1.5 rounded-full bg-sage" />
-          <Text className="font-mono text-[10px] tracking-[0.6px] text-sage uppercase">
+          <Text className="font-mono text-[11px] tracking-[0.6px] text-sage uppercase">
             Local Processing
           </Text>
         </View>
@@ -86,12 +70,12 @@ export default function DashboardScreen() {
               onSelect={setSelectedAccountId}
             />
 
-            <Text className="mb-1.5 text-xs text-parchment-dim">
+            <Text className="mb-1.5 text-[13px] text-parchment-dim">
               {selectedAccount
                 ? `${selectedAccount.name} balance`
                 : "Total balance"}
             </Text>
-            <Text className="mb-[26px] font-fraunces-medium text-[44px] leading-[48px] text-parchment">
+            <Text className="mb-[26px] font-fraunces-medium text-[48px] leading-[52px] text-parchment">
               {formatCurrency(totalBalanceCents)}
             </Text>
 
@@ -108,17 +92,9 @@ export default function DashboardScreen() {
             )}
 
             <View className="mb-3 flex-row items-center justify-between">
-              <Text className="font-mono text-[11px] uppercase tracking-[1px] text-parchment-dim">
+              <Text className="font-mono text-xs uppercase tracking-[1px] text-parchment-dim">
                 Recent
               </Text>
-              <Pressable
-                onPress={() => router.push("/(app)/add")}
-                className="rounded-full bg-brass px-3 py-1.5 active:opacity-80"
-              >
-                <Text className="font-manrope-bold text-[11px] text-ink">
-                  + Add
-                </Text>
-              </Pressable>
             </View>
 
             {recentTransactions.length > 0 ? (
@@ -126,7 +102,7 @@ export default function DashboardScreen() {
                 <TransactionRow key={tx.id} transaction={tx} />
               ))
             ) : (
-              <Text className="py-4 text-center text-[12.5px] text-parchment-dim">
+              <Text className="py-4 text-center text-sm text-parchment-dim">
                 No transactions yet — tap Add to record your first one.
               </Text>
             )}

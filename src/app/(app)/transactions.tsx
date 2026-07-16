@@ -35,19 +35,19 @@ function TransactionLedgerRow({
             : "rgba(243,238,225,0.05)",
         }}
       >
-        <Text style={{ fontSize: 16 }}>{transaction.categoryIcon ?? "·"}</Text>
+        <Text style={{ fontSize: 18 }}>{transaction.categoryIcon ?? "·"}</Text>
       </View>
 
       {/* ── Details ── */}
       <View className="flex-1 pr-2">
         <Text
-          className="text-[13.5px] font-manrope-semibold text-parchment"
+          className="text-[14.5px] font-manrope-semibold text-parchment"
           numberOfLines={1}
         >
           {transaction.merchant}
         </Text>
         <Text
-          className="mt-0.5 text-[11px] text-parchment-dim"
+          className="mt-0.5 text-[12px] text-parchment-dim"
           numberOfLines={1}
         >
           {transaction.categoryName ?? "Uncategorized"} ·{" "}
@@ -59,7 +59,7 @@ function TransactionLedgerRow({
       </View>
 
       {/* ── Amount ── */}
-      <Text className="font-mono text-[13.5px]" style={{ color: amountColor }}>
+      <Text className="font-mono text-[14.5px]" style={{ color: amountColor }}>
         {formatSignedCurrency(transaction.amountCents)}
       </Text>
     </View>
@@ -103,14 +103,14 @@ export default function TransactionsScreen() {
       >
         {/* ── Header ── */}
         <View className="mb-5 flex-row items-center justify-between">
-          <Text className="font-fraunces-medium text-[20px] text-parchment">
+          <Text className="font-fraunces-medium text-[22px] text-parchment">
             Transactions
           </Text>
           <Pressable
             onPress={() => router.push("/(app)/add")}
             className="rounded-full bg-brass px-3 py-1.5 active:opacity-80"
           >
-            <Text className="font-manrope-bold text-[11px] text-ink">
+            <Text className="font-manrope-bold text-[12px] text-ink">
               + Add
             </Text>
           </Pressable>
@@ -154,7 +154,7 @@ export default function TransactionsScreen() {
 
         {/* ── End of list note ── */}
         {!isLoading && transactions.length > 0 && (
-          <Text className="mt-5 text-center font-mono text-[10px] text-parchment-dim">
+          <Text className="mt-5 text-center font-mono text-[11px] text-parchment-dim">
             {transactions.length} transaction
             {transactions.length !== 1 ? "s" : ""} · all stored on this device
           </Text>

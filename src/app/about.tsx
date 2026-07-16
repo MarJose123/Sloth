@@ -1,8 +1,9 @@
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import * as Application from "expo-application";
-import { DialFrame } from "@/components/DialFrame";
-import { SlothMark } from "@/components/SlothMark";
+import { SlothAppIcon } from "@/components/SlothAppIcon";
+import { ArrowLeftIcon, ChevronRightIcon } from "@/components/navigation/icons";
+import { colors } from "@/theme/colors";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -25,16 +26,16 @@ function AboutRow({
   const content = (
     <View className="flex-row items-center justify-between border-t border-white/[0.09] py-[13px]">
       <View className="flex-1 pr-4">
-        <Text className="text-[13.5px] font-manrope-semibold text-parchment">
+        <Text className="text-[14.5px] font-manrope-semibold text-parchment">
           {title}
         </Text>
       </View>
       {value !== undefined ? (
-        <Text className="font-mono text-[12px] text-parchment-dim">
+        <Text className="font-mono text-[13px] text-parchment-dim">
           {value}
         </Text>
       ) : (
-        <Text className="text-sm text-parchment-dim">›</Text>
+        <ChevronRightIcon size={18} color={colors.parchmentDim} />
       )}
     </View>
   );
@@ -70,31 +71,29 @@ export default function AboutScreen() {
         <View className="mb-7 flex-row items-center gap-3">
           <Pressable
             onPress={() => router.back()}
-            hitSlop={12}
+            hitSlop={20}
             className="active:opacity-60"
           >
-            <Text className="text-base text-parchment-dim">←</Text>
+            <ArrowLeftIcon size={28} color={colors.parchmentDim} />
           </Pressable>
-          <Text className="font-fraunces-medium text-lg text-parchment">
+          <Text className="font-fraunces-medium text-[20px] text-parchment">
             About
           </Text>
         </View>
 
         {/* ── Brand section ── */}
         <View className="mb-7 items-center">
-          <DialFrame size={56} innerSize={40}>
-            <SlothMark size={28} />
-          </DialFrame>
-          <Text className="mt-3 font-fraunces-medium text-xl text-parchment">
+          <SlothAppIcon size={64} />
+          <Text className="mt-3 font-fraunces-medium text-[22px] text-parchment">
             Sloth
           </Text>
-          <Text className="mt-1 font-mono text-[11px] text-parchment-dim">
+          <Text className="mt-1 font-mono text-[12px] text-parchment-dim">
             Version {APP_VERSION} ({APP_BUILD_NUMBER})
           </Text>
         </View>
 
         {/* ── Description ── */}
-        <Text className="mb-7 text-center text-[12.5px] leading-[19px] text-parchment-dim">
+        <Text className="mb-7 text-center text-sm leading-[19px] text-parchment-dim">
           A private, fully offline finance tracker. No cloud, no sync, no
           accounts to create anywhere but here.
         </Text>
@@ -107,26 +106,12 @@ export default function AboutScreen() {
         <AboutRow title="License" value="GPLv3" />
         <AboutRow title="Source code" onPress={() => openUrl(GITHUB_BASE)} />
         <AboutRow
-          title="Request a feature"
-          onPress={() =>
-            openUrl(`${GITHUB_BASE}/issues/new?labels=enhancement`)
-          }
-        />
-        <AboutRow
-          title="Report an error"
-          onPress={() => openUrl(`${GITHUB_BASE}/issues/new?labels=bug`)}
-        />
-        <AboutRow
-          title="Privacy & security"
-          onPress={() => router.back()} // TODO: wire to dedicated privacy screen
-        />
-        <AboutRow
           title="Acknowledgments"
           onPress={() => openUrl(`${GITHUB_BASE}/blob/main/CONTRIBUTING.md`)}
         />
 
         {/* ── Footer ── */}
-        <Text className="mt-8 text-center font-mono text-[11px] text-parchment-dim">
+        <Text className="mt-8 text-center font-mono text-[12px] text-parchment-dim">
           Made slowly, on purpose.
         </Text>
       </ScrollView>

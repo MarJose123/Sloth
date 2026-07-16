@@ -13,7 +13,7 @@ export function TextLink({ label, onPress, className = "" }: TextLinkProps) {
       accessibilityRole="button"
       className={`items-center py-1 ${className}`}
     >
-      <Text className="text-center text-[12.5px] text-parchment-dim underline">
+      <Text className="text-center text-[14.5px] text-parchment-dim underline">
         {label}
       </Text>
     </Pressable>

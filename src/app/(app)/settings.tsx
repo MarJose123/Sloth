@@ -13,6 +13,8 @@ import { storage, type ThemePreference } from "@/lib/storage";
 import { Toggle } from "@/components/ui/Toggle";
 import { DonateQRModal } from "@/components/modals/DonateQRModal";
 import * as Application from "expo-application";
+import { ChevronRightIcon } from "@/components/navigation/icons";
+import { colors } from "@/theme/colors";
 
 // ─── local primitives ────────────────────────────────────────────────────────
 
@@ -36,7 +38,7 @@ function SegmentedThemeControl({
           }`}
         >
           <Text
-            className={`text-[10.5px] font-manrope-bold capitalize ${
+            className={`text-[11.5px] font-manrope-bold capitalize ${
               option === value ? "text-ink" : "text-parchment-dim"
             }`}
           >
@@ -50,18 +52,14 @@ function SegmentedThemeControl({
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <Text className="mb-2 mt-[18px] font-mono text-[10.5px] uppercase tracking-[0.08em] text-brass">
+    <Text className="mb-2 mt-[18px] font-mono text-[11.5px] uppercase tracking-[0.08em] text-brass">
       {label}
     </Text>
   );
 }
 
 function Chevron() {
-  return (
-    <Text className="text-sm text-parchment-dim" accessibilityElementsHidden>
-      ›
-    </Text>
-  );
+  return <ChevronRightIcon size={18} color={colors.parchmentDim} />;
 }
 
 interface SettingsRowProps {
@@ -83,18 +81,18 @@ function SettingsRow({
     <View className="flex-row items-center border-b border-white/[0.09] py-[13px]">
       <View className="mr-3 flex-1 flex-row items-center gap-3">
         <View className="h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[9px] bg-ink-3">
-          <Text className="text-[13px] text-brass">{icon}</Text>
+          <Text className="text-[14px] text-brass">{icon}</Text>
         </View>
         <View className="flex-1">
           <Text
-            className="text-[13.5px] font-manrope-semibold text-parchment"
+            className="text-[14.5px] font-manrope-semibold text-parchment"
             numberOfLines={1}
           >
             {title}
           </Text>
           {description !== undefined && (
             <Text
-              className="mt-[1px] text-[11px] text-parchment-dim"
+              className="mt-[1px] text-[12px] text-parchment-dim"
               numberOfLines={2}
             >
               {description}
@@ -317,16 +315,9 @@ export default function SettingsScreen() {
           onPress={() => router.push("/about")}
           right={<Chevron />}
         />
-        <SettingsRow
-          icon="i"
-          title="Privacy & security"
-          description="How Sloth protects your data"
-          onPress={() => comingSoon("Privacy screen")}
-          right={<Chevron />}
-        />
 
         {/* ── Build stamp ── */}
-        <Text className="mt-8 text-center font-mono text-[10.5px] text-parchment-dim">
+        <Text className="mt-8 text-center font-mono text-[11.5px] text-parchment-dim">
           Sloth {APP_VERSION} ({APP_BUILD_NUMBER}) · GPLv3
         </Text>
       </ScrollView>

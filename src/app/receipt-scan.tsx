@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
+import { ArrowRightIcon, XIcon } from "@/components/navigation/icons";
+import { colors } from "@/theme/colors";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -57,7 +59,7 @@ export default function ReceiptScanScreen() {
       [
         {
           text: "Go to Add Transaction",
-          onPress: () => router.replace("/(app)/add"),
+          onPress: () => router.replace("/transaction/new"),
         },
         { text: "Cancel", style: "cancel" },
       ],
@@ -73,10 +75,10 @@ export default function ReceiptScanScreen() {
       <View style={styles.topBar} className="pt-safe">
         <Pressable
           onPress={() => router.back()}
-          hitSlop={12}
+          hitSlop={20}
           className="active:opacity-60"
         >
-          <Text style={styles.topAction}>✕</Text>
+          <XIcon size={24} color={colors.parchmentDim} />
         </Pressable>
 
         <Text style={styles.flashLabel}>Flash: Auto</Text>
@@ -120,7 +122,10 @@ export default function ReceiptScanScreen() {
             style={styles.confirmBtn}
             className="active:opacity-80"
           >
-            <Text style={styles.confirmBtnLabel}>Use these details →</Text>
+            <View className="flex-row items-center gap-2">
+              <Text style={styles.confirmBtnLabel}>Use these details</Text>
+              <ArrowRightIcon size={16} color={colors.ink} />
+            </View>
           </Pressable>
         </View>
       )}
@@ -175,7 +180,7 @@ const styles = StyleSheet.create({
   },
   flashLabel: {
     color: "#A79F8C",
-    fontSize: 13,
+    fontSize: 14.5,
     fontFamily: "Manrope_400Regular",
   },
   caption: {
@@ -185,7 +190,7 @@ const styles = StyleSheet.create({
     right: 0,
     textAlign: "center",
     fontFamily: "IBMPlexMono_400Regular",
-    fontSize: 11,
+    fontSize: 12.5,
     letterSpacing: 0.4,
     color: "#A79F8C",
     zIndex: 5,
@@ -226,7 +231,7 @@ const styles = StyleSheet.create({
   },
   detectedTag: {
     fontFamily: "IBMPlexMono_400Regular",
-    fontSize: 10,
+    fontSize: 11.5,
     color: "#7FA06B",
     marginBottom: 10,
   },
@@ -236,12 +241,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   detectedLabel: {
-    fontSize: 11.5,
+    fontSize: 13,
     color: "#A79F8C",
     fontFamily: "Manrope_400Regular",
   },
   detectedValue: {
-    fontSize: 13,
+    fontSize: 14.5,
     color: "#F3EEE1",
     fontFamily: "Manrope_600SemiBold",
   },
@@ -254,7 +259,7 @@ const styles = StyleSheet.create({
   },
   confirmBtnLabel: {
     fontFamily: "Manrope_700Bold",
-    fontSize: 13.5,
+    fontSize: 15,
     color: "#1B1F1A",
   },
   shutterRow: {

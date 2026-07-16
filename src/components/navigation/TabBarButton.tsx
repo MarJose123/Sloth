@@ -1,14 +1,15 @@
 import type { Ref } from "react";
 import { Pressable, Text, View } from "react-native";
-import type { TabTriggerSlotProps } from "expo-router/ui";
+import type { PressableProps } from "react-native";
 import { colors } from "@/theme/colors";
 import type { TabIconProps } from "./icons";
 
 type IconComponent = (props: TabIconProps) => React.ReactElement;
 
-type TabBarButtonProps = TabTriggerSlotProps & {
+type TabBarButtonProps = PressableProps & {
   label: string;
   Icon: IconComponent;
+  isFocused?: boolean;
   ref?: Ref<View>;
 };
 
@@ -16,7 +17,7 @@ type TabBarButtonProps = TabTriggerSlotProps & {
 export function TabBarButton({
   label,
   Icon,
-  isFocused,
+  isFocused = false,
   ref,
   ...props
 }: TabBarButtonProps) {
@@ -28,14 +29,11 @@ export function TabBarButton({
       {...props}
       accessibilityRole="button"
       accessibilityState={{ selected: isFocused }}
-      className="flex-1 items-center gap-[5px]"
+      className="flex-1 items-center justify-center"
     >
-      <View className="h-[22px] w-[22px] items-center justify-center">
-        <Icon size={18} color={color} />
+      <View className="w-[32px] h-[32px] items-center justify-center">
+        <Icon size={24} color={color} />
       </View>
-      <Text style={{ color }} className="text-[9.5px] font-manrope-semibold">
-        {label}
-      </Text>
     </Pressable>
   );
 }

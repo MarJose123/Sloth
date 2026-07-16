@@ -23,7 +23,6 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import { router } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { DialFrame } from "@/components/DialFrame";
 import { SlothAppIcon } from "@/components/SlothAppIcon";
 import { FingerprintIcon } from "@/components/ui/FingerprintIcon";
@@ -63,9 +62,9 @@ const FEATURES = [
 
 // ─── Step dots ────────────────────────────────────────────────────────────────
 function StepDots({
-                    activeIndex,
-                    onDotPress,
-                  }: {
+  activeIndex,
+  onDotPress,
+}: {
   activeIndex: number;
   onDotPress: (i: number) => void;
 }) {
@@ -102,11 +101,11 @@ function BrassBtn({ label, onPress }: { label: string; onPress: () => void }) {
 
 // ─── Feature row ──────────────────────────────────────────────────────────────
 function FeatureRow({
-                      index,
-                      title,
-                      description,
-                      isLast,
-                    }: {
+  index,
+  title,
+  description,
+  isLast,
+}: {
   index: number;
   title: string;
   description: string;
@@ -267,10 +266,10 @@ function SlideBiometric({ onComplete }: { onComplete: () => void }) {
 
 // ─── Per-slide animated wrapper ───────────────────────────────────────────────
 function AnimatedSlide({
-                         slideIndex,
-                         translateX,
-                         children,
-                       }: {
+  slideIndex,
+  translateX,
+  children,
+}: {
   slideIndex: number;
   translateX: SharedValue<number>;
   children: React.ReactNode;
@@ -304,11 +303,11 @@ function AnimatedSlide({
 
 // ─── Bottom bar (dots + CTA) ──────────────────────────────────────────────────
 function BottomBarCTA({
-                        visible,
-                        activeIndex,
-                        onDotPress,
-                        onContinue,
-                      }: {
+  visible,
+  activeIndex,
+  onDotPress,
+  onContinue,
+}: {
   visible: boolean;
   activeIndex: number;
   onDotPress: (i: number) => void;
@@ -395,10 +394,7 @@ export default function OnboardingCarousel() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView
-        edges={["top", "bottom"]}
-        style={{ flex: 1, backgroundColor: colors.ink }}
-      >
+      <View className="flex-1 bg-ink pt-safe">
         <View style={{ flex: 1, overflow: "hidden" }}>
           <GestureDetector gesture={componentPan}>
             <Animated.View style={[styles.track, trackStyle]}>
@@ -431,7 +427,7 @@ export default function OnboardingCarousel() {
             <StepDots activeIndex={activeIndex} onDotPress={goTo} />
           </View>
         )}
-      </SafeAreaView>
+      </View>
     </GestureHandlerRootView>
   );
 }
@@ -459,7 +455,7 @@ const styles = StyleSheet.create({
   // ── Slide 1: Welcome ──
   brandMark: {
     fontFamily: "IBMPlexMono_400",
-    fontSize: 12,
+    fontSize: 13,
     // 0.12em × 12px = 1.44
     letterSpacing: 1.44,
     textTransform: "uppercase",
@@ -483,9 +479,9 @@ const styles = StyleSheet.create({
   },
   welcomeHeadline: {
     fontFamily: "Fraunces_450",
-    fontSize: 30,
+    fontSize: 32,
     // line-height: 1.18 × 30 = 35.4
-    lineHeight: 36,
+    lineHeight: 38,
     letterSpacing: -0.3,
     color: colors.parchment,
     textAlign: "center",
@@ -494,9 +490,9 @@ const styles = StyleSheet.create({
   },
   welcomeBody: {
     fontFamily: "Manrope_400",
-    fontSize: 14,
+    fontSize: 15.5,
     // line-height: 1.55 × 14 = 21.7
-    lineHeight: 22,
+    lineHeight: 24,
     color: colors.parchmentDim,
     textAlign: "center",
     // Mockup .s1 p.sub: padding:0 8px
@@ -506,7 +502,7 @@ const styles = StyleSheet.create({
   // ── Slide 2: Privacy ──
   eyebrow: {
     fontFamily: "IBMPlexMono_400",
-    fontSize: 11,
+    fontSize: 12.5,
     // 0.1em × 11 = 1.1
     letterSpacing: 1.1,
     textTransform: "uppercase",
@@ -516,9 +512,9 @@ const styles = StyleSheet.create({
   },
   privacyHeadline: {
     fontFamily: "Fraunces_450",
-    fontSize: 25,
+    fontSize: 27,
     // line-height: 1.25 × 25 = 31.25
-    lineHeight: 31,
+    lineHeight: 33,
     color: colors.parchment,
     // Mockup .s2 h2: margin:0 0 26px — bottom gap before feature rows
     marginBottom: 26,
@@ -542,28 +538,28 @@ const styles = StyleSheet.create({
   },
   featIconText: {
     fontFamily: "IBMPlexMono_400",
-    fontSize: 14,
+    fontSize: 15,
     color: colors.brass,
   },
   featTitle: {
     fontFamily: "Manrope_700Bold",
-    fontSize: 14,
+    fontSize: 15.5,
     color: colors.parchment,
     marginBottom: 3,
   },
   featDesc: {
     fontFamily: "Manrope_400",
-    fontSize: 12.5,
+    fontSize: 14,
     // line-height: 1.5 × 12.5 = 18.75
-    lineHeight: 19,
+    lineHeight: 21,
     color: colors.parchmentDim,
   },
 
   // ── Slide 3: Biometric ──
   biometricHeadline: {
     fontFamily: "Fraunces_450",
-    fontSize: 26,
-    lineHeight: 32,
+    fontSize: 28,
+    lineHeight: 34,
     color: colors.parchment,
     // Mockup .s3 h2: margin:10px 0 8px
     marginTop: 10,
@@ -571,16 +567,16 @@ const styles = StyleSheet.create({
   },
   biometricBody: {
     fontFamily: "Manrope_400",
-    fontSize: 13.5,
+    fontSize: 15,
     // line-height: 1.55 × 13.5 = 20.9
-    lineHeight: 21,
+    lineHeight: 23,
     color: colors.parchmentDim,
     // Mockup .s3 p.sub: margin:0 0 30px
     marginBottom: 30,
   },
   biometricCaption: {
     fontFamily: "IBMPlexMono_400",
-    fontSize: 12,
+    fontSize: 13.5,
     // 0.06em × 12 = 0.72
     letterSpacing: 0.72,
     textTransform: "uppercase",
@@ -595,7 +591,7 @@ const styles = StyleSheet.create({
   },
   pinFallbackText: {
     fontFamily: "Manrope_400",
-    fontSize: 12.5,
+    fontSize: 14,
     color: colors.parchmentDim,
     textDecorationLine: "underline",
     textDecorationColor: "rgba(167,159,140,0.4)",
@@ -651,7 +647,7 @@ const styles = StyleSheet.create({
   },
   brassBtnLabel: {
     fontFamily: "Manrope_700Bold",
-    fontSize: 15,
+    fontSize: 16.5,
     letterSpacing: 0.15,
     color: colors.ink,
   },

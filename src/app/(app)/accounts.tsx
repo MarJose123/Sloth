@@ -59,17 +59,17 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
 
       <View className="flex-1">
         <Text
-          className="text-sm font-manrope-semibold text-parchment"
+          className="text-[15.5px] font-manrope-semibold text-parchment"
           numberOfLines={1}
         >
           {account.name}
         </Text>
-        <Text className="mt-0.5 font-mono text-[11.5px] text-parchment-dim">
+        <Text className="mt-0.5 font-mono text-[12.5px] text-parchment-dim">
           {typeLabel}
         </Text>
       </View>
 
-      <Text className="font-mono text-sm" style={{ color: balanceColor }}>
+      <Text className="font-mono text-[15.5px]" style={{ color: balanceColor }}>
         {formatCurrency(account.balanceCents)}
       </Text>
     </Pressable>
@@ -101,7 +101,7 @@ export default function AccountsScreen() {
     <View className="flex-1 bg-ink pt-safe">
       <ScrollView
         className="flex-1 px-5"
-        contentContainerStyle={{ paddingTop: 8, paddingBottom: 28 }}
+        contentContainerStyle={{ paddingTop: 8, paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -113,14 +113,14 @@ export default function AccountsScreen() {
       >
         {/* ── Header ── */}
         <View className="mb-5 flex-row items-center justify-between">
-          <Text className="font-fraunces-medium text-[20px] text-parchment">
+          <Text className="font-fraunces-medium text-[22px] text-parchment">
             Accounts
           </Text>
           <Pressable
             onPress={() => router.push("/add-account")}
             className="active:opacity-60"
           >
-            <Text className="font-manrope-bold text-[13px] text-brass">
+            <Text className="font-manrope-bold text-[14.5px] text-brass">
               + Add
             </Text>
           </Pressable>
@@ -167,12 +167,12 @@ export default function AccountsScreen() {
               onPress={() => router.push("/add-account")}
               className="mt-1 items-center rounded-2xl border border-dashed border-parchment/20 py-4 active:opacity-60"
             >
-              <Text className="text-[13px] text-parchment-dim">
+              <Text className="text-[14.5px] text-parchment-dim">
                 + Add another account
               </Text>
             </Pressable>
 
-            <Text className="mt-5 text-center text-[11px] leading-[1.5] text-parchment-dim">
+            <Text className="mt-5 text-center text-[12px] leading-[1.5] text-parchment-dim">
               Every account&apos;s balance and history is stored only on this
               device — nothing is uploaded, ever.
             </Text>

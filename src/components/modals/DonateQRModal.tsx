@@ -1,5 +1,6 @@
 import { Modal, Pressable, Text, View } from "react-native";
 import { colors } from "@/theme/colors";
+import { XIcon } from "@/components/navigation/icons";
 
 interface DonateQRModalProps {
   visible: boolean;
@@ -33,9 +34,9 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
           <Pressable
             onPress={onClose}
             className="absolute right-4 top-3.5 active:opacity-60"
-            hitSlop={12}
+            hitSlop={20}
           >
-            <Text className="text-base text-parchment-dim">✕</Text>
+            <XIcon size={24} color={colors.parchmentDim} />
           </Pressable>
 
           {/* ── Title ── */}

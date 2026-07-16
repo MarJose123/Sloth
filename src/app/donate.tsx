@@ -1,0 +1,95 @@
+import { useCallback, useRef, useState } from "react";
+import { Text, View, Pressable } from "react-native";
+import { router } from "expo-router";
+import { BrassButton } from "@/components/ui/BrassButton";
+import { XIcon } from "@/components/navigation/icons";
+import { colors } from "@/theme/colors";
+
+const DONATION_ADDRESS = "0x1234...Sloth"; // placeholder — replace with real address
+
+export default function DonateScreen() {
+  const [saved, setSaved] = useState(false);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSave = useCallback(() => {
+    // Placeholder: in a real build, capture QR as image via react-native-view-shot
+    // or similar, then MediaLibrary.saveToLibraryAsync(uri).
+    // For now we simulate a save-success toast.
+    setSaved(true);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setSaved(false), 2500);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    router.back();
+  }, []);
+
+  return (
+    <View className="flex-1 justify-center bg-[rgba(8,9,13,0.6)] px-5">
+      {/* Modal card */}
+      <View className="w-[82%] self-center rounded-[22px] bg-ink-2 px-6 pb-8 pt-6">
+        {/* Close button */}
+        <View className="mb-4 flex-row justify-end">
+          <Pressable
+            onPress={handleClose}
+            className="active:opacity-60"
+            accessibilityLabel="Close donate modal"
+            accessibilityRole="button"
+            hitSlop={12}
+          >
+            <XIcon size={24} color={colors.parchmentDim} />
+          </Pressable>
+        </View>
+
+        {/* Title */}
+        <Text className="mb-2 text-center font-fraunces-medium text-[21px] text-parchment">
+          Support Sloth
+        </Text>
+
+        {/* Descriptor */}
+        <Text className="mb-6 text-center text-[13.5px] leading-[18px] text-parchment-dim">
+          Sloth is free, open-source, and will always be private. If you find it
+          useful, consider donating to support ongoing development.
+        </Text>
+
+        {/* QR code box */}
+        <View className="mb-4 items-center self-center rounded-[14px] bg-parchment p-3">
+          <View
+            className="h-[168px] w-[168px] items-center justify-center rounded-[14px] bg-parchment"
+            accessibilityLabel="Donation QR code"
+          >
+            {/* Placeholder: QR code will render here via react-native-qrcode-svg */}
+            <Text className="text-center font-mono text-[11px] text-ink">
+              QR placeholder
+            </Text>
+          </View>
+        </View>
+
+        {/* Address */}
+        <View className="mb-6 rounded-lg bg-ink-3 px-3 py-2.5">
+          <Text
+            className="text-center font-mono text-[11.5px] text-parchment-dim"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            {DONATION_ADDRESS}
+          </Text>
+        </View>
+
+        {/* Save button */}
+        <BrassButton label="⬇ Save to Photos" onPress={handleSave} />
+      </View>
+
+      {/* Toast */}
+      {saved && (
+        <View className="absolute bottom-12 left-0 right-0 items-center">
+          <View className="rounded-full bg-sage/90 px-5 py-2.5">
+            <Text className="font-manrope-bold text-[13.5px] text-parchment">
+              ✓ Saved to gallery
+            </Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+}

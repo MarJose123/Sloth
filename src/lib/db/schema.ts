@@ -1,4 +1,9 @@
 export const SCHEMA_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS settings (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  ) STRICT;`,
+
   `CREATE TABLE IF NOT EXISTS accounts (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,

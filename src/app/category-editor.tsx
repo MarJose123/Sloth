@@ -215,7 +215,7 @@ export default function CategoryEditorScreen() {
               onPress={() => router.back()}
               className="active:opacity-60"
             >
-              <Text className="text-[13px] text-parchment-dim">Cancel</Text>
+              <Text className="text-[14.5px] text-parchment-dim">Cancel</Text>
             </Pressable>
             <Text className="font-fraunces-medium text-[20px] text-parchment">
               {isEditing ? "Edit category" : "New category"}
