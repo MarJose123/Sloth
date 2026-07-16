@@ -57,15 +57,17 @@ export default function PinSetupScreen() {
   }, []);
 
   return (
-    <View className="flex-1 bg-ink px-5 pb-7 pt-safe">
-      <Text className="text-center font-mono text-[11px] uppercase tracking-[2px] text-parchment-dim">
+    <View className="flex-1 bg-ink px-5 pb-5 pt-safe">
+      <Text className="mt-15 text-center font-mono text-[12.5px] uppercase tracking-[2px] text-parchment-dim">
         Sloth setup
       </Text>
-      <Text className="mb-7 mt-2.5 text-center font-fraunces-medium text-xl text-parchment">
+      <Text className="mb-7 mt-2.5 text-center font-fraunces-medium text-[22px] text-parchment">
         {stage === "enter" ? "Create a 6-digit PIN" : "Confirm your PIN"}
       </Text>
 
       <PinDots length={PIN_LENGTH} filledCount={currentInput.length} />
+
+      <View className="flex-1" />
 
       <Keypad onDigit={handleDigit} onBackspace={handleBackspace} />
     </View>

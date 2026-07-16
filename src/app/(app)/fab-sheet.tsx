@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { Text, View, Pressable } from "react-native";
 import { router } from "expo-router";
 import { ChevronRightIcon } from "@/components/navigation/icons";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 // ─── action definition ────────────────────────────────────────────────────────
 
@@ -43,6 +43,7 @@ const ACTIONS: FabAction[] = [
 // ─── screen ───────────────────────────────────────────────────────────────────
 
 export default function FabSheetScreen() {
+  const colors = useColors();
   const handleAction = useCallback((route: string) => {
     router.navigate(route);
   }, []);

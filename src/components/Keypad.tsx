@@ -1,4 +1,4 @@
-import { View, Pressable, Text } from "react-native";
+import { View, Pressable, Text, useWindowDimensions } from "react-native";
 
 interface KeypadProps {
   onDigit: (digit: string) => void;
@@ -8,14 +8,34 @@ interface KeypadProps {
 const DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 export function Keypad({ onDigit, onBackspace }: KeypadProps) {
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
+  // Formula from AGENTS.md: KEY_SIZE = (screenWidth - 44 - 14*2) / 3
+  // 44 seems to be horizontal padding (22*2)
+  // 14*2 seems to be gaps
+  const KEY_SIZE = Math.min((SCREEN_WIDTH - 44 - 14 * 2) / 3, 85);
+
   return (
-    <View className="mt-auto flex-row flex-wrap justify-between gap-y-3.5">
+    <View
+      className="flex-row flex-wrap justify-center py-5"
+      style={{ rowGap: 14, columnGap: 14 }}
+    >
       {DIGITS.map((digit) => (
-        <KeypadKey key={digit} label={digit} onPress={() => onDigit(digit)} />
+        <KeypadKey
+          key={digit}
+          label={digit}
+          onPress={() => onDigit(digit)}
+          size={KEY_SIZE}
+        />
       ))}
-      <View className="aspect-square w-[30%]" />
-      <KeypadKey label="0" onPress={() => onDigit("0")} />
-      <KeypadKey label="⌫" onPress={onBackspace} muted />
+      <View style={{ width: KEY_SIZE, height: KEY_SIZE }} />
+      <KeypadKey label="0" onPress={() => onDigit("0")} size={KEY_SIZE} />
+      <KeypadKey
+        label="⌫"
+        onPress={onBackspace}
+        muted
+        size={KEY_SIZE}
+        isBackspace
+      />
     </View>
   );
 }
@@ -23,22 +43,37 @@ export function Keypad({ onDigit, onBackspace }: KeypadProps) {
 function KeypadKey({
   label,
   onPress,
+  size,
   muted = false,
+  isBackspace = false,
 }: {
   label: string;
   onPress: () => void;
+  size: number;
   muted?: boolean;
+  isBackspace?: boolean;
 }) {
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label === "⌫" ? "Backspace" : `Digit ${label}`}
-      className={`aspect-square w-[30%] items-center justify-center rounded-full active:opacity-70 ${
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+      }}
+      className={`items-center justify-center active:opacity-70 ${
         muted ? "bg-transparent" : "border border-hairline bg-ink-2"
       }`}
     >
-      <Text className="font-fraunces text-xl text-parchment">{label}</Text>
+      <Text
+        className={`font-manrope-bold text-parchment ${
+          isBackspace ? "text-xl" : "text-[26px]"
+        }`}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }

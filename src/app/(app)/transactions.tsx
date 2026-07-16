@@ -10,7 +10,7 @@ import { router } from "expo-router";
 import { useTransactionsData } from "@/hooks/useTransactionsData";
 import type { TransactionLedgerItem } from "@/lib/db/repositories/transactions";
 import { formatRelativeDate, formatSignedCurrency } from "@/lib/format";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 // ─── transaction row ──────────────────────────────────────────────────────────
 
@@ -19,6 +19,7 @@ function TransactionLedgerRow({
 }: {
   transaction: TransactionLedgerItem;
 }) {
+  const colors = useColors();
   const isIncome =
     transaction.categoryKind === "income" || transaction.amountCents > 0;
 
@@ -70,6 +71,7 @@ function TransactionLedgerRow({
 
 export default function TransactionsScreen() {
   const { state, refresh } = useTransactionsData();
+  const colors = useColors();
 
   const onRefresh = useCallback(() => {
     refresh();
@@ -107,7 +109,7 @@ export default function TransactionsScreen() {
             Transactions
           </Text>
           <Pressable
-            onPress={() => router.push("/(app)/add")}
+            onPress={() => router.push("/transaction/new")}
             className="rounded-full bg-brass px-3 py-1.5 active:opacity-80"
           >
             <Text className="font-manrope-bold text-[12px] text-ink">
@@ -136,7 +138,7 @@ export default function TransactionsScreen() {
               import from a CSV file.
             </Text>
             <Pressable
-              onPress={() => router.push("/(app)/add")}
+              onPress={() => router.push("/transaction/new")}
               className="rounded-2xl bg-brass px-6 py-3.5 active:opacity-80"
             >
               <Text className="font-manrope-bold text-sm text-ink">

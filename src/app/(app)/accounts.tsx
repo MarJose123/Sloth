@@ -10,7 +10,7 @@ import { router } from "expo-router";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { formatCurrency } from "@/lib/format";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -33,6 +33,7 @@ const TYPE_LABELS: Record<string, string> = {
 // ─── AccountCard ──────────────────────────────────────────────────────────────
 
 function AccountCard({ account }: { account: AccountWithBalance }) {
+  const colors = useColors();
   const initials = getInitials(account.name);
   const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
 
@@ -80,6 +81,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
 
 export default function AccountsScreen() {
   const { state, refresh } = useAccountsData();
+  const colors = useColors();
 
   const onRefresh = useCallback(() => {
     refresh();

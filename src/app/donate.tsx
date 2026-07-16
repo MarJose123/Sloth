@@ -3,11 +3,12 @@ import { Text, View, Pressable } from "react-native";
 import { router } from "expo-router";
 import { BrassButton } from "@/components/ui/BrassButton";
 import { XIcon } from "@/components/navigation/icons";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 const DONATION_ADDRESS = "0x1234...Sloth"; // placeholder — replace with real address
 
 export default function DonateScreen() {
+  const colors = useColors();
   const [saved, setSaved] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 

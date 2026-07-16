@@ -11,6 +11,9 @@ Sloth is a **privacy-first, fully offline, multi-account personal finance tracke
 Android (iOS deferred). All financial data lives **on-device only**, encrypted via
 SQLCipher. There is no cloud sync, no analytics endpoint, no third-party login.
 
+> **⚠️ Bun-only project:** This project uses **Bun** as its package manager and runtime.
+> Never use `npm`, `yarn`, or `pnpm`. See §1 for details.
+
 - **Repo:** `github.com/MarJose123/sloth`
 - **License:** GPLv3 — all derivative works must publish source changes.
 - **Mockup reference:** Not committed. Design follows the `Sloth app mockup.html`
@@ -147,7 +150,7 @@ Tab Group (src/app/(app)/_layout.tsx):
   Tab mapping (expo-router/ui TabList):
     dashboard    → src/app/(app)/dashboard.tsx   (Screen 04)
     accounts     → src/app/(app)/accounts.tsx    (Screen 06)
-    add (FAB)    → src/app/(app)/add.tsx         (Add Transaction / Screen 05 variant)
+    add (FAB)    → src/app/(app)/fab-sheet.tsx   (Action Sheet / Screen 12)
     transactions → src/app/(app)/transactions.tsx
     settings     → src/app/(app)/settings.tsx    (Screen 07)
 
@@ -232,7 +235,7 @@ existing `SafeAreaProvider`.
     - **No** tab bar (tabs are rendered by `TabList` in `(app)/_layout.tsx`)
 
 ### Screen 05 — Add Transaction (tab + push route)
-- **File:** `src/app/(app)/add.tsx` (tab FAB variant) and `src/app/transaction/new.tsx` (push)
+- **File:** `src/app/(app)/fab-sheet.tsx` (action sheet) and `src/app/transaction/new.tsx` (push form)
 - **Elements:** Cancel / "New expense" / Save header, amount display (Fraunces 450 46px,
   cursor `--brass`), method pills (Manual/Scan receipt/Import; active:
   `rgba(200,123,84,0.14)` bg brass border), four field blocks (`--ink-2`, 14px radius),
@@ -288,7 +291,7 @@ existing `SafeAreaProvider`.
 - **Ghost keys:** bottom-left=empty, bottom-right=backspace; transparent bg, no border
 
 ### Screen 12 — FAB Action Sheet
-- **File:** `src/app/fab-sheet.tsx` (modal)
+- **File:** `src/app/(app)/fab-sheet.tsx` (modal action sheet)
 - **Elements:** scrim `rgba(8,9,13,0.6)`, bottom sheet (`--ink-2`, 22px top radius,
   hairline border), drag handle (36×4px `rgba(237,233,224,0.2)`), "Add to Sloth" title
   (Fraunces 450 18px), 4 action rows (icon tile `--ink-3` brass border + bold label + dim
@@ -458,7 +461,71 @@ Layer 3: Screenshot Prevention
 
 ---
 
-## 8 · Build & CI
+## 8 · Theme System
+
+### 8.1 Architecture
+
+Theming uses a **React Context** approach with a `ThemeProvider` at the root layout:
+
+```
+src/theme/
+  ThemeContext.tsx      ← React context + Provider + useTheme() / useColors() hooks
+  darkColors.ts        ← Dark palette (default)
+  lightColors.ts       ← Light palette
+  colors.ts            ← Re-exports darkColors as default + exports both palettes
+```
+
+### 8.2 ThemeContext
+
+**File:** `src/theme/ThemeContext.tsx`
+
+The `ThemeProvider` wraps the entire app in `src/app/_layout.tsx`. It:
+
+- Reads the stored preference from `SecureStore` via `storage.getThemePreference()` on mount
+- Resolves `"auto"` mode by subscribing to `Appearance.addChangeListener` (React Native's system colour scheme API)
+- Provides `useTheme()` (full context: preference, resolved, palette, setter) and `useColors()` (just the active palette)
+
+```tsx
+// Access the full theme context
+const { preference, resolved, palette, setPreference, loaded } = useTheme();
+
+// Or just get the active color palette
+const colors = useColors();
+```
+
+### 8.3 Color Palettes
+
+**Dark (default):** `darkColors.ts` — the original Sloth palette: deep ink backgrounds, warm parchment text, brass accents. All Tailwind utility classes (`bg-ink`, `text-parchment`, etc.) are compiled to these values.
+
+**Light:** `lightColors.ts` — warm-light surfaces (`#F5F0E4`), dark ink text (`#1B1F1A`), with slightly adjusted accent colours (sage `#6B8D58`) for contrast on light backgrounds.
+
+### 8.4 Usage Patterns
+
+**Inline styles (theme-aware):** Use `useColors()` for inline `style={}` props:
+
+```tsx
+const colors = useColors();
+// <View style={{ backgroundColor: colors.ink }}>
+```
+
+**Tailwind utility classes (dark-only):** NativeWind classes like `bg-ink`, `text-parchment`, `bg-ink-2` are compiled statically to the dark palette values. They do NOT switch with the theme. If a component uses only Tailwind classes, it will always render in the dark theme. To make a component fully theme-aware, convert its Tailwind colour classes to inline styles using `useColors()`.
+
+**Module-level constants:** Files that define colour arrays at module scope (e.g. `BADGE_COLORS`, `RING_COLORS`) must import from the static `colors` export of `@/theme/colors`:
+
+```ts
+// Module-level — always uses dark palette (acceptable for accent colours)
+const BADGE_COLORS = [colors.brass, colors.sage, colors.rust];
+```
+
+### 8.5 Settings Integration
+
+The Appearance section in Settings (Screen 07) uses the `useTheme()` hook for the Theme segment control (Light / Dark / Auto). The stored preference is persisted to `SecureStore` under key `sloth.theme_preference`.
+
+### 8.6 Limitations & Future Work
+
+- Tailwind utility classes do not switch with theme — they always resolve to dark palette values. A future pass can migrate to inline styles or add a `dark:` variant system.
+- The `SlothAppIcon` SVG component and `SlothMark.tsx` use static colours that work in both themes (the sloth icon has its own palette).
+- Module-level constants that reference colour tokens (BADGE_COLORS, RING_COLORS) stay on the dark palette values — these are accent colours that look acceptable in both themes.
 
 ### 8.1 EAS Profile (`eas.json`)
 
@@ -560,6 +627,7 @@ This runs `prettier --write . && expo lint` (see `package.json` scripts).
 | 11 | Never import from `src/db/` — database code lives under `src/lib/db/` |
 | 12 | Never create routes under `(tabs)` — the route group is `(app)` |
 | 13 | Font alias names in `global.css` (`--font-*`) MUST match the alias keys in `useAppFonts.ts` exactly |
+| 14 | **Never use `npm`, `yarn`, or `pnpm`** — only `bun` commands (`bun install`, `bun add`, `bun remove`, `bun lint`, etc.). The lock file is `bun.lock`, not `package-lock.json` |
 
 ---
 

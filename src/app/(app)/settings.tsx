@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Alert,
   Linking,
@@ -9,12 +9,14 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
-import { storage, type ThemePreference } from "@/lib/storage";
+import { storage } from "@/lib/storage";
 import { Toggle } from "@/components/ui/Toggle";
 import { DonateQRModal } from "@/components/modals/DonateQRModal";
 import * as Application from "expo-application";
 import { ChevronRightIcon } from "@/components/navigation/icons";
 import { colors } from "@/theme/colors";
+import { useTheme } from "@/theme/ThemeContext";
+import type { ThemePreference } from "@/lib/storage";
 
 // ─── local primitives ────────────────────────────────────────────────────────
 
@@ -121,25 +123,25 @@ const APP_VERSION = Application.nativeApplicationVersion ?? "1.0.0";
 const APP_BUILD_NUMBER = Application.nativeBuildVersion ?? "1";
 
 export default function SettingsScreen() {
+  const {
+    preference: theme,
+    setPreference: setTheme,
+    loaded: prefsLoaded,
+  } = useTheme();
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [screenshotsEnabled, setScreenshotsEnabled] = useState(false);
-  const [theme, setTheme] = useState<ThemePreference>("auto");
-  const [prefsLoaded, setPrefsLoaded] = useState(false);
   const [showDonate, setShowDonate] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [bio, screenshots, themeVal] = await Promise.all([
+      const [bio, screenshots] = await Promise.all([
         storage.getBiometricEnabled(),
         storage.getScreenshotsEnabled(),
-        storage.getThemePreference(),
       ]);
       if (cancelled) return;
       setBiometricEnabled(bio);
       setScreenshotsEnabled(screenshots);
-      setTheme(themeVal);
-      setPrefsLoaded(true);
     })();
     return () => {
       cancelled = true;
@@ -158,10 +160,12 @@ export default function SettingsScreen() {
     await storage.setScreenshotsEnabled(value);
   };
 
-  const handleThemeChange = async (value: ThemePreference) => {
-    setTheme(value);
-    await storage.setThemePreference(value);
-  };
+  const handleThemeChange = useCallback(
+    async (value: ThemePreference) => {
+      await setTheme(value);
+    },
+    [setTheme],
+  );
 
   // ── navigation / action helpers ──────────────────────────────────────────────
 

@@ -108,7 +108,7 @@ export default function DashboardScreen() {
             )}
           </>
         ) : (
-          <EmptyAccountsCard onAddAccount={() => router.push("/(app)/add")} />
+          <EmptyAccountsCard onAddAccount={() => router.push("/add-account")} />
         )}
       </ScrollView>
     </View>

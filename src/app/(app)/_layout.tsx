@@ -23,7 +23,7 @@ export default function AppLayout() {
           asChild
           style={{ flex: 1 }}
         >
-          <TabBarButton label="Home" Icon={HomeIcon} />
+          <TabBarButton Icon={HomeIcon} />
         </TabTrigger>
         <TabTrigger
           name="accounts"
@@ -31,9 +31,9 @@ export default function AppLayout() {
           asChild
           style={{ flex: 1 }}
         >
-          <TabBarButton label="Accounts" Icon={AccountsIcon} />
+          <TabBarButton Icon={AccountsIcon} />
         </TabTrigger>
-        <TabTrigger name="add" href="/(app)/add" asChild style={{ width: 72 }}>
+        <TabTrigger name="fab-sheet" href="/fab-sheet" asChild style={{ width: 72 }}>
           <AddTabButton />
         </TabTrigger>
         <TabTrigger
@@ -42,7 +42,7 @@ export default function AppLayout() {
           asChild
           style={{ flex: 1 }}
         >
-          <TabBarButton label="Transactions" Icon={TransactionsIcon} />
+          <TabBarButton Icon={TransactionsIcon} />
         </TabTrigger>
         <TabTrigger
           name="settings"
@@ -50,7 +50,7 @@ export default function AppLayout() {
           asChild
           style={{ flex: 1 }}
         >
-          <TabBarButton label="Settings" Icon={SettingsIcon} />
+          <TabBarButton Icon={SettingsIcon} />
         </TabTrigger>
       </TabList>
     </Tabs>

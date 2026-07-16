@@ -19,6 +19,7 @@ import {
   type CategoryKind,
 } from "@/lib/db/repositories/categories";
 import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 // ─── icon library ─────────────────────────────────────────────────────────────
 
@@ -119,6 +120,7 @@ function PreviewRing({ icon, color }: { icon: string; color: string }) {
 // ─── screen ───────────────────────────────────────────────────────────────────
 
 export default function CategoryEditorScreen() {
+  const colors = useColors();
   const params = useLocalSearchParams<{ id?: string }>();
   const categoryId = params.id;
   const isEditing = !!categoryId;

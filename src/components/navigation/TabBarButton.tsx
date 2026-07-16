@@ -1,37 +1,22 @@
-import type { Ref } from "react";
-import { Pressable, Text, View } from "react-native";
-import type { PressableProps } from "react-native";
-import { colors } from "@/theme/colors";
-import type { TabIconProps } from "./icons";
+import { Pressable, View, type PressableProps } from "react-native";
+import type { SvgProps } from "react-native-svg";
+import { useColors } from "@/theme/ThemeContext";
 
-type IconComponent = (props: TabIconProps) => React.ReactElement;
-
-type TabBarButtonProps = PressableProps & {
-  label: string;
-  Icon: IconComponent;
+interface TabBarButtonProps extends PressableProps {
+  Icon: React.ComponentType<SvgProps>;
   isFocused?: boolean;
-  ref?: Ref<View>;
-};
+}
 
-/** Standard bottom-tab button: icon + label, brass when active. */
-export function TabBarButton({
-  label,
-  Icon,
-  isFocused = false,
-  ref,
-  ...props
-}: TabBarButtonProps) {
+export function TabBarButton({ Icon, isFocused, ...props }: TabBarButtonProps) {
+  const colors = useColors();
   const color = isFocused ? colors.brass : colors.parchmentDim;
 
   return (
     <Pressable
-      ref={ref}
       {...props}
-      accessibilityRole="button"
-      accessibilityState={{ selected: isFocused }}
-      className="flex-1 items-center justify-center"
+      className="flex-1 items-center justify-center active:opacity-70"
     >
-      <View className="w-[32px] h-[32px] items-center justify-center">
+      <View className="items-center justify-center w-8 h-8">
         <Icon size={24} color={color} />
       </View>
     </Pressable>

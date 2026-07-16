@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import { ArrowRightIcon, ChevronRightIcon } from "@/components/navigation/icons";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -38,6 +38,7 @@ const DEFAULT_MAPPING: Record<string, FieldOption> = {
  * CSV parsing will need a library such as papaparse.
  */
 export default function ImportScreen() {
+  const colors = useColors();
   const [parsedFile, setParsedFile] = useState<ParsedFile | null>(null);
   const [columnMapping, setColumnMapping] =
     useState<Record<string, FieldOption>>(DEFAULT_MAPPING);

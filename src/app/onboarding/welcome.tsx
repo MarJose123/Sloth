@@ -32,6 +32,7 @@ import {
 } from "@/lib/biometrics";
 import { storage } from "@/lib/storage";
 import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const TOTAL_SLIDES = 3;
@@ -328,6 +329,7 @@ function BottomBarCTA({
 
 // ─── Root: Carousel host ──────────────────────────────────────────────────────
 export default function OnboardingCarousel() {
+  const colors = useColors();
   const translateX = useSharedValue(0);
   const dragX = useSharedValue(0);
   const activeIndexSV = useSharedValue(0);

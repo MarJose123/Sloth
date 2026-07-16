@@ -1,13 +1,14 @@
-export const colors = {
-  ink: "#1B1F1A",
-  ink2: "#242920",
-  ink3: "#2E3428",
-  parchment: "#F3EEE1",
-  parchmentDim: "#A79F8C",
-  brass: "#C87B54",
-  brassSoft: "#8F5636",
-  sage: "#7FA06B",
-  rust: "#9C4A3D",
-  dustyBlue: "#6E8FB0",
-  ochre: "#C9A227",
-} as const;
+import { darkColors } from "./darkColors";
+import { lightColors } from "./lightColors";
+
+export type ColorPalette = typeof darkColors;
+
+export { darkColors, lightColors };
+
+/**
+ * Default export — the dark palette.
+ * Components using `useColors()` hook will get the active palette at runtime.
+ * Direct `import { colors } from "@/theme/colors"` always gets the dark palette
+ * (for static references like icon colours that don't change between themes).
+ */
+export const colors = darkColors;

@@ -1,5 +1,5 @@
 import { Pressable, View } from "react-native";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 interface ToggleProps {
   value: boolean;
@@ -11,12 +11,15 @@ interface ToggleProps {
  * A minimal two-state toggle that matches the Sloth design system.
  * Uses inline styles intentionally — the thumb position is a boolean
  * switch between two discrete states, not a Tailwind utility concern.
+ * Colours react to the active theme via useColors().
  */
 export function Toggle({
   value,
   onValueChange,
   disabled = false,
 }: ToggleProps) {
+  const colors = useColors();
+
   return (
     <Pressable
       onPress={() => !disabled && onValueChange(!value)}
@@ -39,7 +42,7 @@ export function Toggle({
           width: 18,
           height: 18,
           borderRadius: 9,
-          backgroundColor: value ? colors.ink : colors.parchmentDim,
+          backgroundColor: value ? colors.parchment : colors.parchmentDim,
           alignSelf: value ? "flex-end" : "flex-start",
         }}
       />

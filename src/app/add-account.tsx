@@ -14,6 +14,7 @@ import {
   insertAccount,
   type AccountType,
 } from "@/lib/db/repositories/accounts";
+import { useColors } from "@/theme/ThemeContext";
 import { colors } from "@/theme/colors";
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -87,6 +88,7 @@ function ColorSwatch({
 // ─── screen ───────────────────────────────────────────────────────────────────
 
 export default function AddAccountScreen() {
+  const colors = useColors();
   const [name, setName] = useState("");
   const [selectedType, setSelectedType] = useState<AccountType>("checking");
   const [selectedColorIdx, setSelectedColorIdx] = useState(0);

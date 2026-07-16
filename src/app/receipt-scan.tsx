@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { ArrowRightIcon, XIcon } from "@/components/navigation/icons";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -27,6 +27,7 @@ interface DetectedReceipt {
  * or expo-mlkit) and a parsing layer; both are deferred.
  */
 export default function ReceiptScanScreen() {
+  const colors = useColors();
   const [detected, setDetected] = useState<DetectedReceipt | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 

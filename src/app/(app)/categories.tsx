@@ -13,6 +13,7 @@ import { useCategoriesData } from "@/hooks/useCategoriesData";
 import type { CategorySpend } from "@/lib/db/repositories/categories";
 import { formatCurrency } from "@/lib/format";
 import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 // ─── ring geometry ────────────────────────────────────────────────────────────
 
@@ -128,6 +129,7 @@ function CategoryRow({
 
 export default function CategoriesScreen() {
   const { state, refresh } = useCategoriesData();
+  const colors = useColors();
 
   const onRefresh = useCallback(() => {
     refresh();

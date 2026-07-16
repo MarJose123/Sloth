@@ -16,6 +16,7 @@ import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import type { Category } from "@/lib/db/repositories/categories";
 import { formatCurrency } from "@/lib/format";
 import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 type Method = "manual" | "scan" | "import";
 
@@ -69,6 +70,7 @@ function PickerRow({
 }
 
 export default function AddTransactionScreen() {
+  const colors = useColors();
   const formData = useAddTransactionData();
 
   const [method, setMethod] = useState<Method>("manual");
