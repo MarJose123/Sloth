@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -77,32 +77,22 @@ export default function AddTransactionScreen() {
   }>();
 
   const [method, setMethod] = useState<Method>(params.source ?? "manual");
-  const [amountText, setAmountText] = useState("0");
+  const [amountText, setAmountText] = useState(() => {
+    const cents = parseInt(params.amountCents ?? "", 10);
+    return !isNaN(cents) ? (cents / 100).toFixed(2) : "0";
+  });
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
   );
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     null,
   );
-  const [merchant, setMerchant] = useState("");
+  const [merchant, setMerchant] = useState(params.merchant ?? "");
   const [note, setNote] = useState("");
   const [dateText, setDateText] = useState(
-    new Date().toISOString().slice(0, 10),
+    params.date ?? new Date().toISOString().slice(0, 10),
   );
   const [isSaving, setIsSaving] = useState(false);
-
-  // Sync params if they arrive (e.g. from OCR scan)
-  useEffect(() => {
-    if (params.merchant) setMerchant(params.merchant);
-    if (params.date) setDateText(params.date);
-    if (params.amountCents) {
-      const cents = parseInt(params.amountCents, 10);
-      if (!isNaN(cents)) {
-        setAmountText((cents / 100).toFixed(2));
-      }
-    }
-    if (params.source) setMethod(params.source);
-  }, [params]);
 
   // Parse amount: user types "12.50" → 1250 cents (expense = negative)
   const parseAmountCents = useCallback(() => {
@@ -201,10 +191,7 @@ export default function AddTransactionScreen() {
   const { accounts, categories } = formData.data;
 
   return (
-    <View
-      className="flex-1 pt-safe"
-      style={{ backgroundColor: colors.ink }}
-    >
+    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}

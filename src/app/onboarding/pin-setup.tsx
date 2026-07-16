@@ -5,6 +5,7 @@ import { PinDots } from "@/components/ui/PinDots";
 import { Keypad } from "@/components/Keypad";
 import { hashPin, isValidPinFormat } from "@/lib/pin";
 import { storage } from "@/lib/storage";
+import { useColors } from "@/theme/ThemeContext";
 
 const PIN_LENGTH = 6;
 

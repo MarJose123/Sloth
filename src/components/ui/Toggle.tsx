@@ -33,7 +33,7 @@ export function Toggle({
         justifyContent: "center",
         backgroundColor: value ? colors.brass : colors.ink3,
         borderWidth: value ? 0 : 1,
-        borderColor: colors.hairline ?? "rgba(243,238,225,0.09)",
+        borderColor: colors.hairline,
         opacity: disabled ? 0.4 : 1,
       }}
     >

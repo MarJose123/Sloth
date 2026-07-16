@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { Text, View, Pressable } from "react-native";
 import { router } from "expo-router";
-import { BrassButton } from "@/components/ui/BrassButton";
+import { Lucide } from "@react-native-vector-icons/lucide";
 import { XIcon } from "@/components/navigation/icons";
 import { useColors } from "@/theme/ThemeContext";
 
@@ -92,15 +92,24 @@ export default function DonateScreen() {
         </View>
 
         {/* Save button */}
-        <BrassButton label="⬇ Save to Photos" onPress={handleSave} />
+        <Pressable
+          onPress={handleSave}
+          className="flex-row items-center justify-center gap-2 rounded-[14px] bg-brass p-4 active:opacity-80"
+        >
+          <Lucide name="download" size={16} color={colors.ink} />
+          <Text className="font-manrope-bold text-[15px] text-ink">
+            Save to Photos
+          </Text>
+        </Pressable>
       </View>
 
       {/* Toast */}
       {saved && (
         <View className="absolute bottom-12 left-0 right-0 items-center">
-          <View className="rounded-full bg-sage/90 px-5 py-2.5">
+          <View className="flex-row items-center gap-1.5 rounded-full bg-sage/90 px-5 py-2.5">
+            <Lucide name="check" size={14} color={colors.parchment} />
             <Text className="font-manrope-bold text-[13.5px] text-parchment">
-              ✓ Saved to gallery
+              Saved to gallery
             </Text>
           </View>
         </View>

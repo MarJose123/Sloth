@@ -17,4 +17,5 @@ export const darkColors = {
   dustyBlue: "#6E8FB0",
   ochre: "#C9A227",
   hairline: "rgba(243,238,225,0.09)",
+  tabBar: "rgba(18,20,28,0.95)",
 } as const;

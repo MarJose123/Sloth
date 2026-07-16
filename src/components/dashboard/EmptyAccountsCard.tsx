@@ -9,8 +9,8 @@ export function EmptyAccountsCard({
   const colors = useColors();
   return (
     <View
-      className="mt-6 items-center rounded-2xl border border-dashed px-6 py-10"
-      style={{ borderColor: colors.parchmentDim, opacity: 0.6 }}
+      className="mt-6 items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10"
+      style={{ backgroundColor: colors.ink2 }}
     >
       <Text
         className="mb-2 text-center font-fraunces-medium text-[22px]"

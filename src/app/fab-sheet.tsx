@@ -1,13 +1,15 @@
 import { useCallback } from "react";
 import { Text, View, Pressable } from "react-native";
 import { router } from "expo-router";
+import { Lucide } from "@react-native-vector-icons/lucide";
+import type { LucideIconName } from "@react-native-vector-icons/lucide";
 import { ChevronRightIcon } from "@/components/navigation/icons";
 import { useColors } from "@/theme/ThemeContext";
 
 // ─── action definition ────────────────────────────────────────────────────────
 
 interface FabAction {
-  icon: string;
+  icon: LucideIconName;
   label: string;
   description: string;
   route: string;
@@ -15,25 +17,25 @@ interface FabAction {
 
 const ACTIONS: FabAction[] = [
   {
-    icon: "✎",
+    icon: "pen-line",
     label: "Manual transaction",
     description: "Enter an expense or income by hand",
     route: "/transaction/new",
   },
   {
-    icon: "▦",
+    icon: "camera",
     label: "Scan receipt",
     description: "Use the camera to capture receipt details",
     route: "/receipt-scan",
   },
   {
-    icon: "▢",
+    icon: "credit-card",
     label: "New account",
     description: "Add a checking, savings, credit, or cash account",
     route: "/add-account",
   },
   {
-    icon: "⟐",
+    icon: "file-spreadsheet",
     label: "Import CSV/OFX",
     description: "Bulk import transactions from a file",
     route: "/import",
@@ -55,7 +57,7 @@ export default function FabSheetScreen() {
   return (
     <View
       className="flex-1 justify-end"
-      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+      style={{ backgroundColor: "rgba(8,9,13,0.6)" }}
     >
       {/* Tappable scrim — dismisses the sheet */}
       <Pressable
@@ -98,7 +100,7 @@ export default function FabSheetScreen() {
           >
             {/* Icon tile */}
             <View className="h-11 w-11 items-center justify-center rounded-xl border border-brass/30 bg-ink-3">
-              <Text className="text-lg text-brass">{action.icon}</Text>
+              <Lucide name={action.icon} size={20} color={colors.brass} />
             </View>
 
             {/* Label + description */}

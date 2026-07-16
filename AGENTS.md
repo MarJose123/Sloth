@@ -482,7 +482,7 @@ The `ThemeProvider` wraps the entire app in `src/app/_layout.tsx`. It:
 
 - Reads the stored preference from `SecureStore` via `storage.getThemePreference()` on mount
 - Resolves `"auto"` mode by subscribing to `Appearance.addChangeListener` (React Native's system colour scheme API)
-- Calls **`colorScheme.set(resolved)`** from `react-native-css/native` whenever the resolved theme changes — this is what makes Tailwind utility classes (`bg-ink`, `text-parchment`, etc.) update dynamically at runtime
+- Calls **`Appearance.setColorScheme(resolved)`** from React Native whenever the resolved theme changes — this triggers the `@media (prefers-color-scheme: light/dark)` media query in `global.css`, swapping all `--sloth-*` CSS variables and making Tailwind utilities update at runtime.
 - Provides `useTheme()` (full context: preference, resolved, palette, setter) and `useColors()` (just the active palette)
 
 ```tsx
@@ -507,7 +507,7 @@ Light theme works via a three-layer mechanism:
 
 2. **`@theme` references these variables** — `--color-ink: var(--sloth-ink, #1b1f1a)`, etc. Tailwind utility classes like `bg-ink` and `text-parchment` resolve through these variables.
 
-3. **`colorScheme.set()` triggers re-evaluation** — `ThemeContext` calls `colorScheme.set(resolved)` from `react-native-css/native` on every theme change. This makes the `prefers-color-scheme` media query re-evaluate, swapping all `--sloth-*` variables at runtime.
+3. **`Appearance.setColorScheme()` triggers re-evaluation** — `ThemeContext` calls `Appearance.setColorScheme(resolved)` from React Native on every theme change. This makes the `prefers-color-scheme` media query re-evaluate, swapping all `--sloth-*` variables at runtime.
 
 **Result:** ALL Tailwind utility classes (`bg-ink`, `text-parchment`, `bg-ink-2`, `text-brass`, etc.) switch with the theme automatically — no component changes needed.
 

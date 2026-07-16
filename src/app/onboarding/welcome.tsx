@@ -1,12 +1,5 @@
-import { useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  Dimensions,
-  Pressable,
-  StyleSheet,
-  Alert,
-} from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { View, Text, Dimensions, Pressable, Alert } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -31,13 +24,12 @@ import {
   authenticateWithBiometrics,
 } from "@/lib/biometrics";
 import { storage } from "@/lib/storage";
-import { colors } from "@/theme/colors";
 import { useColors } from "@/theme/ThemeContext";
+import type { ColorPalette } from "@/theme/colors";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const TOTAL_SLIDES = 3;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
-const HAIRLINE = "rgba(243,238,225,0.09)";
 
 // ─── Feature data ─────────────────────────────────────────────────────────────
 const FEATURES = [
@@ -61,6 +53,206 @@ const FEATURES = [
   },
 ] as const;
 
+// ─── Dynamic style factory ────────────────────────────────────────────────────
+
+function createStyles(c: ColorPalette) {
+  return {
+    // ── Carousel track ──
+    track: {
+      flexDirection: "row" as const,
+      width: SCREEN_WIDTH * TOTAL_SLIDES,
+      flex: 1,
+    },
+    slide: {
+      width: SCREEN_WIDTH,
+      flex: 1,
+    },
+    // Matches mockup .screen: padding 56px 22px 28px
+    // paddingTop handled by SafeAreaView edges=top; we add 12 for brand mark breathing room
+    slideInner: {
+      flex: 1,
+      paddingHorizontal: 22,
+      paddingTop: 12,
+    },
+
+    // ── Slide 1: Welcome ──
+    brandMark: {
+      fontFamily: "IBMPlexMono_400",
+      fontSize: 13,
+      letterSpacing: 1.44,
+      textTransform: "uppercase" as const,
+      color: c.brass,
+    },
+    welcomeIconWrapper: {
+      alignSelf: "center" as const,
+      marginTop: 8,
+      marginBottom: 30,
+      elevation: 14,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.35,
+      shadowRadius: 24,
+      borderRadius: 26,
+    },
+    welcomeHeadline: {
+      fontFamily: "Fraunces_450",
+      fontSize: 32,
+      lineHeight: 38,
+      letterSpacing: -0.3,
+      color: c.parchment,
+      textAlign: "center" as const,
+      marginBottom: 14,
+    },
+    welcomeBody: {
+      fontFamily: "Manrope_400",
+      fontSize: 15.5,
+      lineHeight: 24,
+      color: c.parchmentDim,
+      textAlign: "center" as const,
+      paddingHorizontal: 8,
+    },
+
+    // ── Slide 2: Privacy ──
+    eyebrow: {
+      fontFamily: "IBMPlexMono_400",
+      fontSize: 12.5,
+      letterSpacing: 1.1,
+      textTransform: "uppercase" as const,
+      color: c.parchmentDim,
+      marginBottom: 34,
+    },
+    privacyHeadline: {
+      fontFamily: "Fraunces_450",
+      fontSize: 27,
+      lineHeight: 33,
+      color: c.parchment,
+      marginBottom: 26,
+    },
+    featRow: {
+      flexDirection: "row" as const,
+      alignItems: "flex-start" as const,
+      gap: 14,
+      paddingVertical: 16,
+    },
+    featIcon: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      borderWidth: 1,
+      borderColor: "rgba(200,123,84,0.4)",
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+      flexShrink: 0,
+    },
+    featIconText: {
+      fontFamily: "IBMPlexMono_400",
+      fontSize: 15,
+      color: c.brass,
+    },
+    featTitle: {
+      fontFamily: "Manrope_700Bold",
+      fontSize: 15.5,
+      color: c.parchment,
+      marginBottom: 3,
+    },
+    featDesc: {
+      fontFamily: "Manrope_400",
+      fontSize: 14,
+      lineHeight: 21,
+      color: c.parchmentDim,
+    },
+
+    // ── Slide 3: Biometric ──
+    biometricHeadline: {
+      fontFamily: "Fraunces_450",
+      fontSize: 28,
+      lineHeight: 34,
+      color: c.parchment,
+      marginTop: 10,
+      marginBottom: 8,
+    },
+    biometricBody: {
+      fontFamily: "Manrope_400",
+      fontSize: 15,
+      lineHeight: 23,
+      color: c.parchmentDim,
+      marginBottom: 30,
+    },
+    biometricCaption: {
+      fontFamily: "IBMPlexMono_400",
+      fontSize: 13.5,
+      letterSpacing: 0.72,
+      textTransform: "uppercase" as const,
+      color: c.brass,
+      textAlign: "center" as const,
+      marginTop: 14,
+    },
+    biometricStack: {
+      gap: 10,
+      paddingBottom: 8,
+    },
+    pinFallbackText: {
+      fontFamily: "Manrope_400",
+      fontSize: 14,
+      color: c.parchmentDim,
+      textDecorationLine: "underline" as const,
+      textDecorationColor: "rgba(167,159,140,0.4)",
+      textAlign: "center" as const,
+      marginTop: 4,
+    },
+
+    // ── Shared: dots ──
+    dotsRow: {
+      flexDirection: "row" as const,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      gap: 6,
+      marginTop: 22,
+      marginBottom: 8,
+    },
+    dot: {
+      height: 6,
+      borderRadius: 3,
+    },
+    dotActive: {
+      width: 18,
+      backgroundColor: c.brass,
+    },
+    dotInactive: {
+      width: 6,
+      backgroundColor: c.hairline,
+    },
+
+    // ── Bottom bar ──
+    bottomBar: {
+      paddingHorizontal: 22,
+      paddingBottom: 16,
+      paddingTop: 4,
+    },
+    bottomBarDotsOnly: {
+      paddingHorizontal: 22,
+      paddingBottom: 16,
+      paddingTop: 4,
+    },
+
+    // ── Brass button ──
+    brassBtn: {
+      backgroundColor: c.brass,
+      borderRadius: 14,
+      paddingVertical: 16,
+      alignItems: "center" as const,
+    },
+    brassBtnLabel: {
+      fontFamily: "Manrope_700Bold",
+      fontSize: 16.5,
+      letterSpacing: 0.15,
+      color: c.ink,
+    },
+  };
+}
+
+type OnboardingStyles = ReturnType<typeof createStyles>;
+
 // ─── Step dots ────────────────────────────────────────────────────────────────
 function StepDots({
   activeIndex,
@@ -69,6 +261,9 @@ function StepDots({
   activeIndex: number;
   onDotPress: (i: number) => void;
 }) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.dotsRow}>
       {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
@@ -87,6 +282,9 @@ function StepDots({
 
 // ─── Brass button ─────────────────────────────────────────────────────────────
 function BrassBtn({ label, onPress }: { label: string; onPress: () => void }) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <Pressable
       style={({ pressed }: { pressed: boolean }) => [
@@ -112,12 +310,15 @@ function FeatureRow({
   description: string;
   isLast: boolean;
 }) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       style={[
         styles.featRow,
-        { borderTopWidth: 1, borderTopColor: HAIRLINE },
-        isLast && { borderBottomWidth: 1, borderBottomColor: HAIRLINE },
+        { borderTopWidth: 1, borderTopColor: colors.hairline },
+        isLast && { borderBottomWidth: 1, borderBottomColor: colors.hairline },
       ]}
     >
       <View style={styles.featIcon}>
@@ -132,21 +333,18 @@ function FeatureRow({
 }
 
 // ─── Slide 1: Welcome ─────────────────────────────────────────────────────────
-// FIX: No double flex:1 spacers. Content flows top-down, pinned to top.
-// Brand mark at top → icon immediately below (marginTop:8, marginBottom:30) →
-// headline → body → flex:1 pushes remainder to bottom bar.
-function SlideWelcome() {
+function SlideWelcome({ styles }: { styles: OnboardingStyles }) {
   return (
     <View style={styles.slideInner}>
       {/* "SLOTH" mono brand mark — top anchor */}
       <Text style={styles.brandMark}>Sloth</Text>
 
-      {/* Full-colour app icon at 120px — no DialFrame ring on this slide */}
+      {/* Full-colour app icon at 120px */}
       <View style={styles.welcomeIconWrapper}>
         <SlothAppIcon size={120} />
       </View>
 
-      {/* Headline: font-size 30, line-height 1.18×30=35, marginBottom 14 */}
+      {/* Headline: font-size 30, line-height 1.18×30=35 */}
       <Text style={styles.welcomeHeadline}>
         {"Your money.\nYour device.\nNobody else\u2019s."}
       </Text>
@@ -164,19 +362,18 @@ function SlideWelcome() {
 }
 
 // ─── Slide 2: Privacy explainer ───────────────────────────────────────────────
-// FIX: marginBottom:26 moves onto privacyHeadline itself; remove extra wrapper marginTop:24
-function SlidePrivacy() {
+function SlidePrivacy({ styles }: { styles: OnboardingStyles }) {
   return (
     <View style={styles.slideInner}>
-      {/* Eyebrow: "HOW IT WORKS" — parchment-dim, marginBottom:34 */}
+      {/* Eyebrow: "HOW IT WORKS" */}
       <Text style={styles.eyebrow}>How it works</Text>
 
-      {/* Headline: marginBottom:26 per mockup (.s2 h2 margin:0 0 26px) */}
+      {/* Headline */}
       <Text style={styles.privacyHeadline}>
         Three ways Sloth keeps this yours.
       </Text>
 
-      {/* Feature rows — no extra top margin, hairlines provide visual gap */}
+      {/* Feature rows */}
       <View>
         {FEATURES.map((f, i) => (
           <FeatureRow
@@ -195,8 +392,13 @@ function SlidePrivacy() {
 }
 
 // ─── Slide 3: Biometric setup ─────────────────────────────────────────────────
-// FIX: unicode dashes/apostrophes as actual chars, not escape sequences in JSX text
-function SlideBiometric({ onComplete }: { onComplete: () => void }) {
+function SlideBiometric({
+  styles,
+  onComplete,
+}: {
+  styles: OnboardingStyles;
+  onComplete: () => void;
+}) {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   const handleEnableBiometrics = useCallback(async () => {
@@ -232,7 +434,6 @@ function SlideBiometric({ onComplete }: { onComplete: () => void }) {
         {"Lock Sloth to your\nface or fingerprint."}
       </Text>
 
-      {/* FIX: actual em-dash and right-single-quote chars, not \u escape in JSX text */}
       <Text style={styles.biometricBody}>
         {
           "This unlocks the app only \u2014 it\u2019s separate from your device passcode and never leaves your phone."
@@ -244,7 +445,7 @@ function SlideBiometric({ onComplete }: { onComplete: () => void }) {
         <FingerprintIcon size={30} />
       </DialFrame>
 
-      {/* Caption: margin:14px 0 auto in mockup → marginTop:14, flex:1 below pushes stack down */}
+      {/* Caption */}
       <Text style={styles.biometricCaption}>Touch the sensor to continue</Text>
 
       <View style={{ flex: 1 }} />
@@ -275,6 +476,9 @@ function AnimatedSlide({
   translateX: SharedValue<number>;
   children: React.ReactNode;
 }) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const animStyle = useAnimatedStyle(() => {
     const offset = -translateX.value;
     const inputRange = [
@@ -314,6 +518,9 @@ function BottomBarCTA({
   onDotPress: (i: number) => void;
   onContinue: () => void;
 }) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const fadeStyle = useAnimatedStyle(() => ({
     opacity: withTiming(visible ? 1 : 0, { duration: 200 }),
     pointerEvents: visible ? "auto" : "none",
@@ -330,6 +537,7 @@ function BottomBarCTA({
 // ─── Root: Carousel host ──────────────────────────────────────────────────────
 export default function OnboardingCarousel() {
   const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const translateX = useSharedValue(0);
   const dragX = useSharedValue(0);
   const activeIndexSV = useSharedValue(0);
@@ -396,23 +604,20 @@ export default function OnboardingCarousel() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <View
-        className="flex-1 pt-safe"
-        style={{ backgroundColor: colors.ink }}
-      >
+      <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
         <View style={{ flex: 1, overflow: "hidden" }}>
           <GestureDetector gesture={componentPan}>
             <Animated.View style={[styles.track, trackStyle]}>
               <AnimatedSlide slideIndex={0} translateX={translateX}>
-                <SlideWelcome />
+                <SlideWelcome styles={styles} />
               </AnimatedSlide>
 
               <AnimatedSlide slideIndex={1} translateX={translateX}>
-                <SlidePrivacy />
+                <SlidePrivacy styles={styles} />
               </AnimatedSlide>
 
               <AnimatedSlide slideIndex={2} translateX={translateX}>
-                <SlideBiometric onComplete={handleComplete} />
+                <SlideBiometric styles={styles} onComplete={handleComplete} />
               </AnimatedSlide>
             </Animated.View>
           </GestureDetector>
@@ -436,224 +641,3 @@ export default function OnboardingCarousel() {
     </GestureHandlerRootView>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  // ── Carousel track ──
-  track: {
-    flexDirection: "row",
-    width: SCREEN_WIDTH * TOTAL_SLIDES,
-    flex: 1,
-  },
-  slide: {
-    width: SCREEN_WIDTH,
-    flex: 1,
-  },
-  // Matches mockup .screen: padding 56px 22px 28px
-  // paddingTop handled by SafeAreaView edges=top; we add 12 for brand mark breathing room
-  slideInner: {
-    flex: 1,
-    paddingHorizontal: 22,
-    paddingTop: 12,
-  },
-
-  // ── Slide 1: Welcome ──
-  brandMark: {
-    fontFamily: "IBMPlexMono_400",
-    fontSize: 13,
-    // 0.12em × 12px = 1.44
-    letterSpacing: 1.44,
-    textTransform: "uppercase",
-    color: colors.brass,
-    // No marginBottom — icon sits 8px below via welcomeIconWrapper marginTop
-  },
-  welcomeIconWrapper: {
-    alignSelf: "center",
-    // Mockup .s1 .dial: margin:8px auto 30px
-    marginTop: 8,
-    marginBottom: 30,
-    // Shadow — elevation is Android-only; shadow* props are iOS-only
-    elevation: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.35,
-    shadowRadius: 24,
-    // borderRadius must match icon rx so elevation shadow clips correctly
-    // icon rx = 220/1024 × 120 ≈ 26
-    borderRadius: 26,
-  },
-  welcomeHeadline: {
-    fontFamily: "Fraunces_450",
-    fontSize: 32,
-    // line-height: 1.18 × 30 = 35.4
-    lineHeight: 38,
-    letterSpacing: -0.3,
-    color: colors.parchment,
-    textAlign: "center",
-    // Mockup .s1 h2: margin:0 0 14px — NO top margin (was 32 before, causing excess space)
-    marginBottom: 14,
-  },
-  welcomeBody: {
-    fontFamily: "Manrope_400",
-    fontSize: 15.5,
-    // line-height: 1.55 × 14 = 21.7
-    lineHeight: 24,
-    color: colors.parchmentDim,
-    textAlign: "center",
-    // Mockup .s1 p.sub: padding:0 8px
-    paddingHorizontal: 8,
-  },
-
-  // ── Slide 2: Privacy ──
-  eyebrow: {
-    fontFamily: "IBMPlexMono_400",
-    fontSize: 12.5,
-    // 0.1em × 11 = 1.1
-    letterSpacing: 1.1,
-    textTransform: "uppercase",
-    color: colors.parchmentDim,
-    // Mockup .s2 .top-mark: margin-bottom:34px
-    marginBottom: 34,
-  },
-  privacyHeadline: {
-    fontFamily: "Fraunces_450",
-    fontSize: 27,
-    // line-height: 1.25 × 25 = 31.25
-    lineHeight: 33,
-    color: colors.parchment,
-    // Mockup .s2 h2: margin:0 0 26px — bottom gap before feature rows
-    marginBottom: 26,
-  },
-  featRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 14,
-    // Mockup .feat-row: padding:16px 0
-    paddingVertical: 16,
-  },
-  featIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 1,
-    borderColor: "rgba(200,123,84,0.4)",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  featIconText: {
-    fontFamily: "IBMPlexMono_400",
-    fontSize: 15,
-    color: colors.brass,
-  },
-  featTitle: {
-    fontFamily: "Manrope_700Bold",
-    fontSize: 15.5,
-    color: colors.parchment,
-    marginBottom: 3,
-  },
-  featDesc: {
-    fontFamily: "Manrope_400",
-    fontSize: 14,
-    // line-height: 1.5 × 12.5 = 18.75
-    lineHeight: 21,
-    color: colors.parchmentDim,
-  },
-
-  // ── Slide 3: Biometric ──
-  biometricHeadline: {
-    fontFamily: "Fraunces_450",
-    fontSize: 28,
-    lineHeight: 34,
-    color: colors.parchment,
-    // Mockup .s3 h2: margin:10px 0 8px
-    marginTop: 10,
-    marginBottom: 8,
-  },
-  biometricBody: {
-    fontFamily: "Manrope_400",
-    fontSize: 15,
-    // line-height: 1.55 × 13.5 = 20.9
-    lineHeight: 23,
-    color: colors.parchmentDim,
-    // Mockup .s3 p.sub: margin:0 0 30px
-    marginBottom: 30,
-  },
-  biometricCaption: {
-    fontFamily: "IBMPlexMono_400",
-    fontSize: 13.5,
-    // 0.06em × 12 = 0.72
-    letterSpacing: 0.72,
-    textTransform: "uppercase",
-    color: colors.brass,
-    textAlign: "center",
-    // Mockup .s3 .caption: margin:14px 0 auto → marginTop:14, flex:1 below handles "auto"
-    marginTop: 14,
-  },
-  biometricStack: {
-    gap: 10,
-    paddingBottom: 8,
-  },
-  pinFallbackText: {
-    fontFamily: "Manrope_400",
-    fontSize: 14,
-    color: colors.parchmentDim,
-    textDecorationLine: "underline",
-    textDecorationColor: "rgba(167,159,140,0.4)",
-    textAlign: "center",
-    // Mockup .pin-fallback: margin-top:4px
-    marginTop: 4,
-  },
-
-  // ── Shared: dots ──
-  dotsRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 6,
-    // Mockup .dots: margin:22px 0 8px
-    marginTop: 22,
-    marginBottom: 8,
-  },
-  dot: {
-    height: 6,
-    borderRadius: 3,
-  },
-  dotActive: {
-    // Mockup .dots span.on: width:18px, background:brass, border-radius:3px
-    width: 18,
-    backgroundColor: colors.brass,
-  },
-  dotInactive: {
-    // Mockup .dots span: width:6px, background:rgba(237,233,224,0.2)
-    width: 6,
-    backgroundColor: "rgba(243,238,225,0.2)",
-  },
-
-  // ── Bottom bar ──
-  bottomBar: {
-    paddingHorizontal: 22,
-    paddingBottom: 16,
-    paddingTop: 4,
-  },
-  bottomBarDotsOnly: {
-    paddingHorizontal: 22,
-    paddingBottom: 16,
-    paddingTop: 4,
-  },
-
-  // ── Brass button ──
-  brassBtn: {
-    backgroundColor: colors.brass,
-    // Mockup .brass-btn: border-radius:14px, padding:16px
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: "center",
-  },
-  brassBtnLabel: {
-    fontFamily: "Manrope_700Bold",
-    fontSize: 16.5,
-    letterSpacing: 0.15,
-    color: colors.ink,
-  },
-});

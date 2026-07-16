@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     height: INNER_SIZE,
     borderRadius: INNER_SIZE / 2,
     // ink-3 rather than ink-2 so the icon circle reads as a distinct layer
-    backgroundColor: "#2E3428",
+    // Overridden at runtime by useColors() inline style
     alignItems: "center",
     justifyContent: "center",
   },

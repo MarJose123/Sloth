@@ -103,10 +103,7 @@ export default function AccountsScreen() {
   const isLoading = state.status === "loading";
 
   return (
-    <View
-      className="flex-1 pt-safe"
-      style={{ backgroundColor: colors.ink }}
-    >
+    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 110 }}
@@ -145,7 +142,10 @@ export default function AccountsScreen() {
 
         {/* ── Empty state ── */}
         {!isLoading && accounts.length === 0 && (
-          <View className="items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10">
+          <View
+            className="items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10"
+            style={{ backgroundColor: colors.ink2 }}
+          >
             <Text className="mb-2 font-fraunces-medium text-xl text-parchment">
               No accounts yet
             </Text>

@@ -7,6 +7,7 @@ import { DialFrame } from "@/components/DialFrame";
 import { FingerprintIcon } from "@/components/ui/FingerprintIcon";
 import { BrassButton } from "@/components/ui/BrassButton";
 import { TextLink } from "@/components/ui/TextLink";
+import { useColors } from "@/theme/ThemeContext";
 import { hashPin } from "@/lib/pin";
 import { storage } from "@/lib/storage";
 import {
@@ -21,6 +22,7 @@ type ViewState =
   { screen: "biometric" } | { screen: "pin_verify"; error?: string };
 
 export default function LockScreen() {
+  const colors = useColors();
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode: LockMode = params.mode === "set" ? "set" : "lock";
 

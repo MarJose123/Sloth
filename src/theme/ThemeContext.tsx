@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { Appearance } from "react-native";
-import { colorScheme as rnCssColorScheme } from "react-native-css/native";
+import { StatusBar } from "expo-status-bar";
 import { storage, type ThemePreference } from "@/lib/storage";
 import { darkColors, lightColors } from "@/theme/colors";
 import type { ColorPalette } from "@/theme/colors";
@@ -71,12 +71,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const resolved = preference === "auto" ? systemScheme : preference;
 
-  // ── sync react-native-css colorScheme with resolved theme ───────────────
-  // This makes @media (prefers-color-scheme: light/dark) in global.css
-  // re-evaluate, which swaps all CSS variables and thus all Tailwind utilities.
+  // ── sync React Native Appearance with resolved theme ───────────────
+  // Appearance.setColorScheme() triggers @media (prefers-color-scheme)
+  // in react-native-css, which swaps --sloth-* CSS variables and makes
+  // all Tailwind utility classes (bg-ink, text-parchment, etc.) update.
   useEffect(() => {
     if (loaded) {
-      rnCssColorScheme.set(resolved);
+      Appearance.setColorScheme(resolved);
     }
   }, [resolved, loaded]);
 
@@ -88,7 +89,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+    <>
+      <StatusBar style={resolved === "dark" ? "light" : "dark"} />
+      <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+    </>
   );
 }
 

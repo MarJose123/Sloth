@@ -1,13 +1,16 @@
 import { Stack } from "expo-router";
+import { useColors } from "@/theme/ThemeContext";
 
 export default function OnboardingLayout() {
+  const colors = useColors();
+
   return (
     <Stack
       screenOptions={{
         headerShown: false,
         gestureEnabled: false,
         animation: "none", // Carousel manages its own transitions
-        contentStyle: { backgroundColor: "#1B1F1A" },
+        contentStyle: { backgroundColor: colors.ink },
       }}
     >
       {/* welcome.tsx hosts the full carousel (all 3 onboarding slides) */}

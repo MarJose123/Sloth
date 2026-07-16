@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { useTheme } from "@/theme/ThemeContext";
 
 interface DialFrameProps {
   size?: number;
@@ -18,14 +19,20 @@ export function DialFrame({
   children,
   variant = "default",
 }: DialFrameProps) {
+  const { resolved, palette: colors } = useTheme();
+  const isLight = resolved === "light";
   const outerStyle =
     variant === "brass"
       ? {
-          borderColor: "rgba(200,123,84,0.55)",
-          backgroundColor: "rgba(200,123,84,0.1)",
+          borderColor: isLight
+            ? "rgba(200,123,84,0.7)"
+            : "rgba(200,123,84,0.55)",
+          backgroundColor: isLight
+            ? "rgba(200,123,84,0.15)"
+            : "rgba(200,123,84,0.1)",
         }
       : {
-          borderColor: "rgba(243,238,225,0.1)",
+          borderColor: colors.hairline,
           backgroundColor: "transparent",
         };
 
@@ -38,12 +45,16 @@ export function DialFrame({
     variant === "brass"
       ? {
           borderWidth: 1,
-          borderColor: "rgba(200,123,84,0.6)",
-          backgroundColor: "rgba(200,123,84,0.12)",
+          borderColor: isLight
+            ? "rgba(200,123,84,0.75)"
+            : "rgba(200,123,84,0.6)",
+          backgroundColor: isLight
+            ? "rgba(200,123,84,0.18)"
+            : "rgba(200,123,84,0.12)",
         }
       : {
           borderWidth: 0,
-          backgroundColor: "#242920",
+          backgroundColor: colors.ink2,
         };
 
   return (

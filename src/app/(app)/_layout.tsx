@@ -21,8 +21,8 @@ export default function AppLayout() {
       <View
         className="absolute bottom-6 left-1/2 -ml-[150px] w-[300px] h-[64px] flex-row items-center border rounded-[32px] overflow-visible shadow-2xl px-2"
         style={{
-          backgroundColor: colors.tabBar ?? "rgba(18,20,28,0.95)",
-          borderColor: colors.hairline ?? "rgba(255,255,255,0.09)",
+          backgroundColor: colors.tabBar,
+          borderColor: colors.hairline,
         }}
       >
         <TabBarButton

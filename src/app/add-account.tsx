@@ -14,15 +14,21 @@ import {
   insertAccount,
   type AccountType,
 } from "@/lib/db/repositories/accounts";
+import { Lucide } from "@react-native-vector-icons/lucide";
+import type { LucideIconName } from "@react-native-vector-icons/lucide";
 import { useColors } from "@/theme/ThemeContext";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
-const ACCOUNT_TYPES: { type: AccountType; label: string; icon: string }[] = [
-  { type: "checking", label: "Checking", icon: "▢" },
-  { type: "savings", label: "Savings", icon: "◑" },
-  { type: "credit", label: "Credit card", icon: "▤" },
-  { type: "cash", label: "Cash", icon: "¢" },
+const ACCOUNT_TYPES: {
+  type: AccountType;
+  label: string;
+  icon: LucideIconName;
+}[] = [
+  { type: "checking", label: "Checking", icon: "landmark" },
+  { type: "savings", label: "Savings", icon: "piggy-bank" },
+  { type: "credit", label: "Credit card", icon: "credit-card" },
+  { type: "cash", label: "Cash", icon: "banknote" },
 ];
 
 const BADGE_COLORS = [
@@ -126,10 +132,7 @@ export default function AddAccountScreen() {
   }, [name, selectedType, selectedColor, balanceText]);
 
   return (
-    <View
-      className="flex-1 pt-safe"
-      style={{ backgroundColor: colors.ink }}
-    >
+    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -198,11 +201,11 @@ export default function AddAccountScreen() {
                       : "border-hairline bg-ink-2"
                   }`}
                 >
-                  <Text
-                    className={`text-base ${active ? "text-brass" : "text-parchment-dim"}`}
-                  >
-                    {icon}
-                  </Text>
+                  <Lucide
+                    name={icon}
+                    size={20}
+                    color={active ? colors.brass : colors.parchmentDim}
+                  />
                   <Text
                     className={`text-[12.5px] font-manrope-semibold ${
                       active ? "text-parchment" : "text-parchment-dim"

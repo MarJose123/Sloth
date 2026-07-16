@@ -32,6 +32,7 @@ function CategoryListRing({
   category: CategorySpend;
   totalExpenseCents: number;
 }) {
+  const colors = useColors();
   // Income categories always show a full ring
   const percent =
     category.kind === "income"
@@ -53,7 +54,7 @@ function CategoryListRing({
           cy={CENTER}
           r={RING_RADIUS}
           fill="none"
-          stroke="rgba(243,238,225,0.09)"
+          stroke={colors.hairline}
           strokeWidth={2}
         />
         {percent > 0 && (
@@ -141,10 +142,7 @@ export default function CategoriesScreen() {
     state.status === "ready" ? state.data.totalExpenseCents : 0;
 
   return (
-    <View
-      className="flex-1 pt-safe"
-      style={{ backgroundColor: colors.ink }}
-    >
+    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
@@ -196,7 +194,10 @@ export default function CategoriesScreen() {
 
         {/* ── Empty state ── */}
         {!isLoading && state.status !== "error" && categories.length === 0 && (
-          <View className="items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10">
+          <View
+            className="items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10"
+            style={{ backgroundColor: colors.ink2 }}
+          >
             <Text className="mb-2 font-fraunces-medium text-xl text-parchment">
               No categories yet
             </Text>

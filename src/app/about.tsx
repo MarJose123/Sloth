@@ -23,6 +23,7 @@ function AboutRow({
   value?: string;
   onPress?: () => void;
 }) {
+  const colors = useColors();
   const content = (
     <View className="flex-row items-center justify-between border-t border-hairline py-[13px]">
       <View className="flex-1 pr-4">
@@ -54,6 +55,7 @@ function AboutRow({
 // ─── screen ───────────────────────────────────────────────────────────────────
 
 export default function AboutScreen() {
+  const colors = useColors();
   const openUrl = (url: string) => {
     Linking.openURL(url).catch(() => {
       /* silent — link errors are non-critical */
@@ -61,10 +63,7 @@ export default function AboutScreen() {
   };
 
   return (
-    <View
-      className="flex-1 pt-safe"
-      style={{ backgroundColor: colors.ink }}
-    >
+    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { Lucide } from "@react-native-vector-icons/lucide";
 import { ArrowRightIcon, XIcon } from "@/components/navigation/icons";
 import { useColors } from "@/theme/ThemeContext";
 import { extractReceiptData, type OcrResult } from "@/lib/ocr";
@@ -32,7 +33,7 @@ export default function ReceiptScanScreen() {
     if (permission && !permission.granted && permission.canAskAgain) {
       requestPermission();
     }
-  }, [permission]);
+  }, [permission, requestPermission]);
 
   const handleShutter = async () => {
     if (isProcessing || !camera) return;
@@ -85,15 +86,39 @@ export default function ReceiptScanScreen() {
 
   if (!permission.granted) {
     return (
-      <View style={[styles.root, { backgroundColor: colors.ink, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
-        <Text style={{ color: colors.parchment, textAlign: 'center', marginBottom: 20, fontFamily: 'Manrope_400Regular' }}>
+      <View
+        style={[
+          styles.root,
+          {
+            backgroundColor: colors.ink,
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
+          },
+        ]}
+      >
+        <Text
+          style={{
+            color: colors.parchment,
+            textAlign: "center",
+            marginBottom: 20,
+            fontFamily: "Manrope_400Regular",
+          }}
+        >
           Sloth needs camera access to scan receipts.
         </Text>
         <Pressable
           onPress={requestPermission}
-          style={{ backgroundColor: colors.brass, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 }}
+          style={{
+            backgroundColor: colors.brass,
+            paddingHorizontal: 20,
+            paddingVertical: 12,
+            borderRadius: 12,
+          }}
         >
-          <Text style={{ color: colors.ink, fontFamily: 'Manrope_700Bold' }}>Grant Permission</Text>
+          <Text style={{ color: colors.ink, fontFamily: "Manrope_700Bold" }}>
+            Grant Permission
+          </Text>
         </Pressable>
       </View>
     );
@@ -127,7 +152,9 @@ export default function ReceiptScanScreen() {
           <XIcon size={24} color={colors.parchmentDim} />
         </Pressable>
 
-        <Text style={[styles.flashLabel, { color: colors.parchmentDim }]}>Flash: Auto</Text>
+        <Text style={[styles.flashLabel, { color: colors.parchmentDim }]}>
+          Flash: Auto
+        </Text>
       </View>
 
       {/* ── Scan caption ── */}
@@ -148,10 +175,17 @@ export default function ReceiptScanScreen() {
       {/* ── Detected card ── */}
       {detected && (
         <View style={[styles.detectedCard, detectedStyle]}>
-          <Text style={[styles.detectedTag, { color: colors.sage }]}>◉ Detected on-device</Text>
+          <View className="flex-row items-center gap-1.5">
+            <Lucide name="circle-dot" size={14} color={colors.sage} />
+            <Text style={[styles.detectedTag, { color: colors.sage }]}>
+              Detected on-device
+            </Text>
+          </View>
 
           <View style={styles.detectedRow}>
-            <Text style={[styles.detectedLabel, { color: colors.parchmentDim }]}>
+            <Text
+              style={[styles.detectedLabel, { color: colors.parchmentDim }]}
+            >
               Merchant
             </Text>
             <Text style={[styles.detectedValue, { color: colors.parchment }]}>
@@ -159,7 +193,9 @@ export default function ReceiptScanScreen() {
             </Text>
           </View>
           <View style={styles.detectedRow}>
-            <Text style={[styles.detectedLabel, { color: colors.parchmentDim }]}>
+            <Text
+              style={[styles.detectedLabel, { color: colors.parchmentDim }]}
+            >
               Amount
             </Text>
             <Text style={[styles.detectedValue, { color: colors.parchment }]}>
@@ -167,7 +203,9 @@ export default function ReceiptScanScreen() {
             </Text>
           </View>
           <View style={styles.detectedRow}>
-            <Text style={[styles.detectedLabel, { color: colors.parchmentDim }]}>
+            <Text
+              style={[styles.detectedLabel, { color: colors.parchmentDim }]}
+            >
               Date
             </Text>
             <Text style={[styles.detectedValue, { color: colors.parchment }]}>
@@ -191,9 +229,15 @@ export default function ReceiptScanScreen() {
           <Pressable
             onPress={() => setDetected(null)}
             className="mt-3 active:opacity-60"
-            style={{ alignItems: 'center' }}
+            style={{ alignItems: "center" }}
           >
-            <Text style={{ color: colors.parchmentDim, fontFamily: 'Manrope_400Regular', fontSize: 13 }}>
+            <Text
+              style={{
+                color: colors.parchmentDim,
+                fontFamily: "Manrope_400Regular",
+                fontSize: 13,
+              }}
+            >
               Retake photo
             </Text>
           </Pressable>
@@ -214,10 +258,7 @@ export default function ReceiptScanScreen() {
             className="active:opacity-80"
           >
             <View
-              style={[
-                styles.shutterInner,
-                { backgroundColor: colors.brass },
-              ]}
+              style={[styles.shutterInner, { backgroundColor: colors.brass }]}
             />
           </Pressable>
         </View>

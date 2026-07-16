@@ -9,6 +9,7 @@ import {
   SettingsIcon,
   TransactionsIcon,
 } from "./icons";
+import { useColors } from "@/theme/ThemeContext";
 
 // ── Tab bar types ─────────────────────────────────────────────────────
 // We define a minimal interface compatible with expo-router's <Tabs>
@@ -56,6 +57,7 @@ const TAB_LABELS: Record<string, string> = {
  */
 export function CustomTabBar({ state, navigation }: CustomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const colors = useColors();
 
   return (
     <View
@@ -64,9 +66,9 @@ export function CustomTabBar({ state, navigation }: CustomTabBarProps) {
         alignItems: "center",
         paddingTop: 8,
         paddingBottom: (insets.bottom || 0) + 18,
-        backgroundColor: "rgba(18,20,28,0.92)",
+        backgroundColor: colors.tabBar,
         borderTopWidth: 1,
-        borderTopColor: "rgba(243,238,225,0.09)",
+        borderTopColor: colors.hairline,
       }}
     >
       {/* Left two tabs: Home, Accounts */}

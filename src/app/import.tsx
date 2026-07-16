@@ -3,12 +3,18 @@ import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
+import { Lucide } from "@react-native-vector-icons/lucide";
 import {
   ArrowRightIcon,
   ChevronRightIcon,
 } from "@/components/navigation/icons";
 import { useColors } from "@/theme/ThemeContext";
-import { parseCsv, parseOfx, ofxAmountToCents, ofxDateToEpochMs } from "@/lib/csvParser";
+import {
+  parseCsv,
+  parseOfx,
+  ofxAmountToCents,
+  ofxDateToEpochMs,
+} from "@/lib/csvParser";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import { insertTransaction } from "@/lib/db/repositories/transactions";
 
@@ -29,10 +35,10 @@ type FieldOption = "Date" | "Merchant" | "Amount" | "Category" | "Note" | "—";
 
 const DEFAULT_MAPPING: Record<string, FieldOption> = {
   "Trans. Date": "Date",
-  "Date": "Date",
-  "Description": "Merchant",
-  "Merchant": "Merchant",
-  "Amount": "Amount",
+  Date: "Date",
+  Description: "Merchant",
+  Merchant: "Merchant",
+  Amount: "Amount",
 };
 
 // ─── screen ───────────────────────────────────────────────────────────────────
@@ -47,7 +53,9 @@ export default function ImportScreen() {
   const colors = useColors();
   const { state: accountsState } = useAccountsData();
   const [parsedFile, setParsedFile] = useState<ParsedFile | null>(null);
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
+    null,
+  );
   const [columnMapping, setColumnMapping] =
     useState<Record<string, FieldOption>>(DEFAULT_MAPPING);
   const [isImporting, setIsImporting] = useState(false);
@@ -55,7 +63,13 @@ export default function ImportScreen() {
   const handlePickFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ["text/csv", "text/comma-separated-values", "application/vnd.ms-excel", "application/x-ofx", "application/ofx"],
+        type: [
+          "text/csv",
+          "text/comma-separated-values",
+          "application/vnd.ms-excel",
+          "application/x-ofx",
+          "application/ofx",
+        ],
         copyToCacheDirectory: true,
       });
 
@@ -78,15 +92,19 @@ export default function ImportScreen() {
 
         // Try to auto-map common headers
         const newMapping = { ...DEFAULT_MAPPING };
-        headers.forEach(h => {
+        headers.forEach((h) => {
           if (h.toLowerCase().includes("date")) newMapping[h] = "Date";
-          if (h.toLowerCase().includes("desc") || h.toLowerCase().includes("merch")) newMapping[h] = "Merchant";
+          if (
+            h.toLowerCase().includes("desc") ||
+            h.toLowerCase().includes("merch")
+          )
+            newMapping[h] = "Merchant";
           if (h.toLowerCase().includes("amount")) newMapping[h] = "Amount";
         });
         setColumnMapping(newMapping);
       } else if (fileName.endsWith(".ofx") || fileName.endsWith(".qfx")) {
         const transactions = parseOfx(content);
-        const rows = transactions.map(t => ({
+        const rows = transactions.map((t) => ({
           Date: t.datePosted,
           Merchant: t.name,
           Amount: t.amount,
@@ -166,26 +184,32 @@ export default function ImportScreen() {
         importedCount++;
       }
 
-      Alert.alert("Import complete", `Successfully imported ${importedCount} transactions.`);
+      Alert.alert(
+        "Import complete",
+        `Successfully imported ${importedCount} transactions.`,
+      );
       router.back();
     } catch (err) {
-      Alert.alert("Import failed", err instanceof Error ? err.message : "An error occurred during import.");
+      Alert.alert(
+        "Import failed",
+        err instanceof Error ? err.message : "An error occurred during import.",
+      );
     } finally {
       setIsImporting(false);
     }
   };
 
-  const selectedAccountName = accountsState.status === "ready"
-    ? (accountsState.accounts.find(a => a.id === selectedAccountId)?.name ?? "Select account…")
-    : "Loading accounts…";
+  const selectedAccountName =
+    accountsState.status === "ready"
+      ? (accountsState.accounts.find((a) => a.id === selectedAccountId)?.name ??
+        "Select account…")
+      : "Loading accounts…";
 
-  const canImport = parsedFile !== null && selectedAccountId !== null && !isImporting;
+  const canImport =
+    parsedFile !== null && selectedAccountId !== null && !isImporting;
 
   return (
-    <View
-      className="flex-1 pt-safe"
-      style={{ backgroundColor: colors.ink }}
-    >
+    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
@@ -224,8 +248,9 @@ export default function ImportScreen() {
           {parsedFile ? (
             <>
               <View className="mb-1 flex-row items-center gap-2">
+                <Lucide name="file-text" size={16} color={colors.brass} />
                 <Text className="text-[14.5px] font-manrope-bold text-parchment">
-                  ▤ {parsedFile.name}
+                  {parsedFile.name}
                 </Text>
               </View>
               <Text className="text-[12px] text-parchment-dim">
@@ -248,11 +273,15 @@ export default function ImportScreen() {
             <Pressable
               onPress={() => {
                 if (accountsState.status === "ready") {
-                  Alert.alert("Select Account", "Choose an account to import into:",
-                    accountsState.accounts.map(a => ({
-                      text: a.name,
-                      onPress: () => setSelectedAccountId(a.id)
-                    })).concat([{ text: "Cancel", style: "cancel" }])
+                  Alert.alert(
+                    "Select Account",
+                    "Choose an account to import into:",
+                    accountsState.accounts
+                      .map((a) => ({
+                        text: a.name,
+                        onPress: () => setSelectedAccountId(a.id),
+                      }))
+                      .concat([{ text: "Cancel", style: "cancel" }]),
                   );
                 }
               }}
@@ -278,18 +307,38 @@ export default function ImportScreen() {
                         i > 0 ? "border-t border-hairline" : ""
                       }`}
                     >
-                      <Text className="flex-1 font-mono text-[13px] text-parchment-dim" numberOfLines={1}>
-                        {'"'}{col}{'"'}
+                      <Text
+                        className="flex-1 font-mono text-[13px] text-parchment-dim"
+                        numberOfLines={1}
+                      >
+                        {'"'}
+                        {col}
+                        {'"'}
                       </Text>
                       <ArrowRightIcon size={14} color={colors.brass} />
                       <Pressable
                         onPress={() => {
-                          const options: FieldOption[] = ["Date", "Merchant", "Amount", "Category", "Note", "—"];
-                          Alert.alert("Map to Field", `What does "${col}" represent?`,
-                            options.map(opt => ({
-                              text: opt,
-                              onPress: () => setColumnMapping(prev => ({ ...prev, [col]: opt }))
-                            })).concat([{ text: "Cancel", style: "cancel" }])
+                          const options: FieldOption[] = [
+                            "Date",
+                            "Merchant",
+                            "Amount",
+                            "Category",
+                            "Note",
+                            "—",
+                          ];
+                          Alert.alert(
+                            "Map to Field",
+                            `What does "${col}" represent?`,
+                            options
+                              .map((opt) => ({
+                                text: opt,
+                                onPress: () =>
+                                  setColumnMapping((prev) => ({
+                                    ...prev,
+                                    [col]: opt,
+                                  })),
+                              }))
+                              .concat([{ text: "Cancel", style: "cancel" }]),
                           );
                         }}
                         className="flex-1"
@@ -309,9 +358,16 @@ export default function ImportScreen() {
               {"Preview — first rows"}
             </Text>
             {parsedFile.preview.map((row, idx) => {
-              const merchant = row["Merchant"] || row["Description"] || Object.values(row)[1] || "—";
+              const merchant =
+                row["Merchant"] ||
+                row["Description"] ||
+                Object.values(row)[1] ||
+                "—";
               const amount = row["Amount"] || Object.values(row)[2] || "";
-              const isPositive = amount.toString().startsWith("+") || (!amount.toString().startsWith("-") && parseFloat(amount.toString()) > 0);
+              const isPositive =
+                amount.toString().startsWith("+") ||
+                (!amount.toString().startsWith("-") &&
+                  parseFloat(amount.toString()) > 0);
               return (
                 <View
                   key={idx}
@@ -319,7 +375,12 @@ export default function ImportScreen() {
                     idx > 0 ? "border-t border-hairline" : ""
                   }`}
                 >
-                  <Text className="flex-1 text-[13px] text-parchment" numberOfLines={1}>{merchant}</Text>
+                  <Text
+                    className="flex-1 text-[13px] text-parchment"
+                    numberOfLines={1}
+                  >
+                    {merchant}
+                  </Text>
                   <Text
                     className="font-mono text-[13px]"
                     style={{

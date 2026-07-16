@@ -33,10 +33,7 @@ export default function DashboardScreen() {
     : accounts.reduce((sum, a) => sum + a.balanceCents, 0);
 
   return (
-    <View
-      className="flex-1 pt-safe"
-      style={{ backgroundColor: colors.ink }}
-    >
+    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 110 }}

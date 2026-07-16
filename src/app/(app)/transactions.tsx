@@ -31,9 +31,7 @@ function TransactionLedgerRow({
       <View
         className="h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
         style={{
-          backgroundColor: transaction.categoryIcon
-            ? "rgba(243,238,225,0.07)"
-            : "rgba(243,238,225,0.05)",
+          backgroundColor: transaction.categoryIcon ? colors.ink3 : colors.ink2,
         }}
       >
         <Text style={{ fontSize: 18 }}>{transaction.categoryIcon ?? "·"}</Text>
@@ -93,10 +91,7 @@ export default function TransactionsScreen() {
   const isLoading = state.status === "loading";
 
   return (
-    <View
-      className="flex-1 pt-safe"
-      style={{ backgroundColor: colors.ink }}
-    >
+    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
@@ -135,7 +130,10 @@ export default function TransactionsScreen() {
 
         {/* ── Empty state ── */}
         {!isLoading && transactions.length === 0 && (
-          <View className="items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10">
+          <View
+            className="items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10"
+            style={{ backgroundColor: colors.ink2 }}
+          >
             <Text className="mb-2 font-fraunces-medium text-xl text-parchment">
               No transactions yet
             </Text>

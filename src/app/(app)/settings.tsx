@@ -1,18 +1,13 @@
 import type { ReactNode } from "react";
 import { useCallback, useState, useEffect } from "react";
-import {
-  Alert,
-  Linking,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import { storage } from "@/lib/storage";
 import { Toggle } from "@/components/ui/Toggle";
 import { DonateQRModal } from "@/components/modals/DonateQRModal";
 import * as Application from "expo-application";
+import { Lucide } from "@react-native-vector-icons/lucide";
+import type { LucideIconName } from "@react-native-vector-icons/lucide";
 import { ChevronRightIcon } from "@/components/navigation/icons";
 import { useTheme, useColors } from "@/theme/ThemeContext";
 import type { ThemePreference } from "@/lib/storage";
@@ -30,7 +25,10 @@ function SegmentedThemeControl({
 }) {
   const colors = useColors();
   return (
-    <View className="flex-row rounded-[10px] bg-ink-3 p-0.5">
+    <View
+      className="flex-row rounded-[10px] bg-ink-3 p-0.5"
+      style={{ backgroundColor: colors.ink3 }}
+    >
       {THEME_OPTIONS.map((option) => (
         <Pressable
           key={option}
@@ -41,7 +39,9 @@ function SegmentedThemeControl({
         >
           <Text
             className="text-[11.5px] font-manrope-bold capitalize"
-            style={{ color: option === value ? colors.ink : colors.parchmentDim }}
+            style={{
+              color: option === value ? colors.ink : colors.parchmentDim,
+            }}
           >
             {option}
           </Text>
@@ -65,7 +65,7 @@ function Chevron() {
 }
 
 interface SettingsRowProps {
-  icon: string;
+  icon: LucideIconName;
   title: string;
   description?: string;
   right?: ReactNode;
@@ -83,8 +83,11 @@ function SettingsRow({
   const content = (
     <View className="flex-row items-center border-b border-hairline py-[13px]">
       <View className="mr-3 flex-1 flex-row items-center gap-3">
-        <View className="h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[9px] bg-ink-3">
-          <Text className="text-[14px] text-brass">{icon}</Text>
+        <View
+          className="h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[9px] bg-ink-3"
+          style={{ backgroundColor: colors.ink3 }}
+        >
+          <Lucide name={icon} size={14} color={colors.brass} />
         </View>
         <View className="flex-1">
           <Text
@@ -173,16 +176,6 @@ export default function SettingsScreen() {
 
   // ── navigation / action helpers ──────────────────────────────────────────────
 
-  const openUrl = (url: string) => {
-    Linking.openURL(url).catch(() =>
-      Alert.alert(
-        "Could not open link",
-        "Check your internet connection and try again.",
-        [{ text: "OK" }],
-      ),
-    );
-  };
-
   const comingSoon = (feature: string) => {
     Alert.alert(
       "Coming soon",
@@ -194,10 +187,7 @@ export default function SettingsScreen() {
   // ── render ───────────────────────────────────────────────────────────────────
 
   return (
-    <View
-      className="flex-1 pt-safe"
-      style={{ backgroundColor: colors.ink }}
-    >
+    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 48 }}
@@ -213,7 +203,7 @@ export default function SettingsScreen() {
         {/* ── Appearance ──────────────────────────────────────────────────── */}
         <SectionLabel label="Appearance" />
         <SettingsRow
-          icon="◑"
+          icon="palette"
           title="Theme"
           description="Dark, light, or match device"
           right={
@@ -229,7 +219,7 @@ export default function SettingsScreen() {
         {/* ── Security ────────────────────────────────────────────────────── */}
         <SectionLabel label="Security" />
         <SettingsRow
-          icon="◎"
+          icon="fingerprint"
           title="Face / Touch ID"
           description="Unlock Sloth with biometrics"
           right={
@@ -242,14 +232,14 @@ export default function SettingsScreen() {
           }
         />
         <SettingsRow
-          icon="#"
+          icon="key-round"
           title="Backup PIN"
           description="Fallback when biometrics fail"
           onPress={() => comingSoon("PIN management")}
           right={<Chevron />}
         />
         <SettingsRow
-          icon="▦"
+          icon="shield"
           title="Allow screenshots"
           description={
             screenshotsEnabled
@@ -269,21 +259,21 @@ export default function SettingsScreen() {
         {/* ── Data ────────────────────────────────────────────────────────── */}
         <SectionLabel label="Data" />
         <SettingsRow
-          icon="▤"
+          icon="wallet"
           title="Accounts"
           description="Manage your accounts"
           onPress={() => router.navigate("/(app)/accounts")}
           right={<Chevron />}
         />
         <SettingsRow
-          icon="◐"
+          icon="tags"
           title="Categories"
           description="Manage expense types"
           onPress={() => router.push("/(app)/categories")}
           right={<Chevron />}
         />
         <SettingsRow
-          icon="↓"
+          icon="download"
           title="Export data"
           description="CSV or encrypted backup file"
           onPress={() => comingSoon("Data export")}
@@ -293,7 +283,7 @@ export default function SettingsScreen() {
         {/* ── Support ─────────────────────────────────────────────────────── */}
         <SectionLabel label="Support" />
         <SettingsRow
-          icon="♥"
+          icon="heart"
           title="Donate"
           description="Support development directly"
           onPress={() => setShowDonate(true)}
@@ -303,7 +293,7 @@ export default function SettingsScreen() {
         {/* ── About ───────────────────────────────────────────────────────── */}
         <SectionLabel label="About" />
         <SettingsRow
-          icon="🦥"
+          icon="info"
           title="About Sloth"
           description={`Version ${APP_VERSION} · license, source code`}
           onPress={() => router.push("/about")}
