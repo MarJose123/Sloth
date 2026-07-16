@@ -333,8 +333,7 @@ existing `SafeAreaProvider`.
   (Fraunces 450 20px), "Version 1.0.0" (IBM Plex Mono 11px dim), description paragraph
   (12.5px dim centered lh:1.6), about rows (label + value or chevron), footer "Made
   slowly, on purpose." (11px dim centered)
-- **Rows:** Check for updates / License (GPLv3) / Source code / Request a feature /
-  Report an error / Privacy & security / Acknowledgments
+- **Rows:** Check for updates / License (GPLv3) / Source code / Acknowledgments
 
 ---
 

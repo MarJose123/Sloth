@@ -10,10 +10,7 @@ interface SlothMarkProps {
  * Simplified sloth icon mark — the curvaceous "S" monogram.
  * Defaults to brass but accepts an explicit colour override.
  */
-export function SlothMark({
-  size = 34,
-  color: explicitColor,
-}: SlothMarkProps) {
+export function SlothMark({ size = 34, color: explicitColor }: SlothMarkProps) {
   const colors = useColors();
   const strokeColor = explicitColor ?? colors.brass;
 

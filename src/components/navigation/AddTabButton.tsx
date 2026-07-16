@@ -1,4 +1,10 @@
-import { Pressable, View, type PressableProps } from "react-native";
+import {
+  Pressable,
+  View,
+  type PressableProps,
+  type ViewStyle,
+  type StyleProp,
+} from "react-native";
 import { useColors } from "@/theme/ThemeContext";
 import { PlusIcon } from "@/components/navigation/icons";
 
@@ -10,30 +16,37 @@ export function AddTabButton(props: PressableProps) {
   const colors = useColors();
 
   return (
-    <Pressable
-      {...props}
-      className="active:opacity-80"
-      style={[
-        {
-          width: 48,
-          height: 48,
-          borderRadius: 999, // Use a large value for full rounding
-          backgroundColor: colors.brass,
-          marginTop: -24,
-          alignItems: "center",
-          justifyContent: "center",
-          shadowColor: colors.brass,
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.5,
-          shadowRadius: 24,
-          elevation: 10,
-        },
-        props.style as any,
-      ]}
+    <View
+      style={{
+        width: 72,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
-      <View>
+      <Pressable
+        {...props}
+        className="active:opacity-80"
+        style={[
+          {
+            width: 48,
+            height: 48,
+            borderRadius: 24, // Use exactly half of width/height for perfect circle
+            backgroundColor: colors.brass,
+            marginTop: -24,
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden", // Ensure content doesn't break the circle
+            shadowColor: colors.brass,
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.5,
+            shadowRadius: 24,
+            elevation: 10,
+          },
+          props.style as StyleProp<ViewStyle>,
+        ]}
+      >
         <PlusIcon size={26} color={colors.parchment} />
-      </View>
-    </Pressable>
+      </Pressable>
+    </View>
   );
 }

@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import {
-  Pressable,
   RefreshControl,
   ScrollView,
   Text,

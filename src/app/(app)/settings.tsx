@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import {
   Alert,
   Linking,
@@ -287,26 +287,6 @@ export default function SettingsScreen() {
           title="Donate"
           description="Support development directly"
           onPress={() => setShowDonate(true)}
-          right={<Chevron />}
-        />
-        <SettingsRow
-          icon="✦"
-          title="Request a feature"
-          description="Opens an issue on GitHub"
-          onPress={() =>
-            openUrl(
-              "https://github.com/MarJose123/sloth/issues/new?labels=enhancement",
-            )
-          }
-          right={<Chevron />}
-        />
-        <SettingsRow
-          icon="!"
-          title="Report an error"
-          description="Opens an issue on GitHub"
-          onPress={() =>
-            openUrl("https://github.com/MarJose123/sloth/issues/new?labels=bug")
-          }
           right={<Chevron />}
         />
 

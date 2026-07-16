@@ -4,7 +4,6 @@ import * as Application from "expo-application";
 import { SlothAppIcon } from "@/components/SlothAppIcon";
 import { ArrowLeftIcon, ChevronRightIcon } from "@/components/navigation/icons";
 import { colors } from "@/theme/colors";
-import { useColors } from "@/theme/ThemeContext";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 

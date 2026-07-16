@@ -329,7 +329,6 @@ function BottomBarCTA({
 
 // ─── Root: Carousel host ──────────────────────────────────────────────────────
 export default function OnboardingCarousel() {
-  const colors = useColors();
   const translateX = useSharedValue(0);
   const dragX = useSharedValue(0);
   const activeIndexSV = useSharedValue(0);

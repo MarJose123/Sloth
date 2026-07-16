@@ -12,10 +12,7 @@ import {
 import { router } from "expo-router";
 import { useAddTransactionData } from "@/hooks/useAddTransactionData";
 import { insertTransaction } from "@/lib/db/repositories/transactions";
-import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
-import type { Category } from "@/lib/db/repositories/categories";
 import { formatCurrency } from "@/lib/format";
-import { colors } from "@/theme/colors";
 import { useColors } from "@/theme/ThemeContext";
 
 type Method = "manual" | "scan" | "import";

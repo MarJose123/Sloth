@@ -12,7 +12,6 @@ import Svg, { Circle, G } from "react-native-svg";
 import { useCategoriesData } from "@/hooks/useCategoriesData";
 import type { CategorySpend } from "@/lib/db/repositories/categories";
 import { formatCurrency } from "@/lib/format";
-import { colors } from "@/theme/colors";
 import { useColors } from "@/theme/ThemeContext";
 
 // ─── ring geometry ────────────────────────────────────────────────────────────

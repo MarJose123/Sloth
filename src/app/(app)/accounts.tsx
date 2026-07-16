@@ -175,8 +175,8 @@ export default function AccountsScreen() {
             </Pressable>
 
             <Text className="mt-5 text-center text-[12px] leading-[1.5] text-parchment-dim">
-              Every account&apos;s balance and history is stored only on this
-              device — nothing is uploaded, ever.
+              {"Every account's balance and history is stored only on this"}
+              {"device — nothing is uploaded, ever."}
             </Text>
           </>
         )}

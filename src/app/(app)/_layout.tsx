@@ -1,5 +1,5 @@
 import { Tabs, TabList, TabTrigger, TabSlot } from "expo-router/ui";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router } from "expo-router";
 import { AddTabButton } from "@/components/navigation/AddTabButton";
 import { TabBarButton } from "@/components/navigation/TabBarButton";
 import {
@@ -10,8 +10,6 @@ import {
 } from "@/components/navigation/icons";
 
 export default function AppLayout() {
-  const insets = useSafeAreaInsets();
-
   return (
     <Tabs style={{ flex: 1, backgroundColor: "#1B1F1A" }}>
       <TabSlot style={{ flex: 1 }} />
@@ -33,9 +31,9 @@ export default function AppLayout() {
         >
           <TabBarButton Icon={AccountsIcon} />
         </TabTrigger>
-        <TabTrigger name="fab-sheet" href="/fab-sheet" asChild style={{ width: 72 }}>
-          <AddTabButton />
-        </TabTrigger>
+
+        <AddTabButton onPress={() => router.push("/fab-sheet")} />
+
         <TabTrigger
           name="transactions"
           href="/(app)/transactions"

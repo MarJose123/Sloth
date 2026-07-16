@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
-import { ArrowRightIcon, ChevronRightIcon } from "@/components/navigation/icons";
+import {
+  ArrowRightIcon,
+  ChevronRightIcon,
+} from "@/components/navigation/icons";
 import { useColors } from "@/theme/ThemeContext";
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -112,10 +115,10 @@ export default function ImportScreen() {
             onPress={() => router.back()}
             className="active:opacity-60"
           >
-            <Text className="text-[14.5px] text-parchment-dim">Cancel</Text>
+            <Text className="text-[14.5px] text-parchment-dim">{"Cancel"}</Text>
           </Pressable>
           <Text className="font-fraunces-medium text-[22px] text-parchment">
-            Import
+            {"Import"}
           </Text>
           <Pressable
             onPress={handleImport}
@@ -126,7 +129,7 @@ export default function ImportScreen() {
               className="font-manrope-bold text-[14.5px] text-brass"
               style={{ opacity: canImport ? 1 : 0.35 }}
             >
-              Import
+              {"Import"}
             </Text>
           </Pressable>
         </View>
@@ -144,12 +147,12 @@ export default function ImportScreen() {
                 </Text>
               </View>
               <Text className="text-[12px] text-parchment-dim">
-                {parsedFile.rowCount} rows detected · parsed on this device
+                {parsedFile.rowCount} {"rows detected · parsed on this device"}
               </Text>
             </>
           ) : (
             <Text className="text-center text-[14.5px] text-parchment-dim">
-              Tap to choose a CSV or OFX file
+              {"Tap to choose a CSV or OFX file"}
             </Text>
           )}
         </Pressable>
@@ -158,18 +161,18 @@ export default function ImportScreen() {
           <>
             {/* ── Target account ── */}
             <Text className="mb-2 font-mono text-[11.5px] uppercase tracking-[0.08em] text-brass">
-              Import into
+              {"Import into"}
             </Text>
             <Pressable className="mb-5 flex-row items-center justify-between rounded-2xl border border-white/[0.09] bg-ink-2 px-4 py-3.5 active:opacity-70">
               <Text className="text-[14.5px] text-parchment">
-                Select account…
+                {"Select account…"}
               </Text>
               <ChevronRightIcon size={18} color={colors.parchmentDim} />
             </Pressable>
 
             {/* ── Column mapping ── */}
             <Text className="mb-2 font-mono text-[11.5px] uppercase tracking-[0.08em] text-brass">
-              Column mapping
+              {"Column mapping"}
             </Text>
             <View className="mb-5 overflow-hidden rounded-2xl border border-white/[0.09] bg-ink-2">
               {parsedFile.columns.map((col, i) => (
@@ -180,7 +183,9 @@ export default function ImportScreen() {
                   }`}
                 >
                   <Text className="flex-1 font-mono text-[13px] text-parchment-dim">
-                    &quot;{col}&quot;
+                    {'"'}
+                    {col}
+                    {'"'}
                   </Text>
                   <ArrowRightIcon size={14} color={colors.brass} />
                   <Text className="flex-1 text-right text-[13.5px] font-manrope-semibold text-parchment">
@@ -192,7 +197,7 @@ export default function ImportScreen() {
 
             {/* ── Preview ── */}
             <Text className="mb-2 font-mono text-[12px] uppercase tracking-[1px] text-parchment-dim">
-              Preview — first rows
+              {"Preview — first rows"}
             </Text>
             {parsedFile.preview.map((row, idx) => {
               const merchant = row["Description"] ?? row["Merchant"] ?? "—";

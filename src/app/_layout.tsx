@@ -31,7 +31,10 @@ function RootLayoutInner() {
         <Stack.Screen name="import" />
         <Stack.Screen name="lock" />
         <Stack.Screen name="donate" />
-        <Stack.Screen name="(app)/fab-sheet" />
+        <Stack.Screen
+          name="fab-sheet"
+          options={{ presentation: "transparentModal", animation: "fade" }}
+        />
       </Stack>
     </View>
   );

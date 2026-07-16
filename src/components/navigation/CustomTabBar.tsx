@@ -22,7 +22,6 @@ interface TabRoute {
 }
 
 interface TabEmitter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (event: Record<string, any>): { defaultPrevented?: boolean };
 }
 
@@ -154,9 +153,10 @@ export function CustomTabBar({ state, navigation }: CustomTabBarProps) {
  * richer types than our minimal interface. The cast through unknown
  * silences the type mismatch without suppressing other errors.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createCustomTabBar(): (props: any) => React.ReactElement {
-  return (props) => (
+  const CustomTabBarWrapper = (props: any) => (
     <CustomTabBar state={props.state} navigation={props.navigation} />
   );
+  CustomTabBarWrapper.displayName = "CustomTabBarWrapper";
+  return CustomTabBarWrapper;
 }
