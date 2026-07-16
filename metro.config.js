@@ -1,12 +1,7 @@
 const { getDefaultConfig } = require("expo/metro-config");
-const { withUniwindConfig } = require("uniwind/metro");
+const { withNativewind } = require("nativewind/metro");
 
+/** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
-module.exports = withUniwindConfig(config, {
-  cssEntryFile: "./src/global.css",
-  dtsFile: "./src/uniwind-types.d.ts",
-  polyfills: {
-    rem: 14,
-  },
-});
+module.exports = withNativewind(config);
