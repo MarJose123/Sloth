@@ -11,7 +11,6 @@ import { useAccountsData } from "@/hooks/useAccountsData";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { formatCurrency } from "@/lib/format";
 
-
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
 function getInitials(name: string): string {

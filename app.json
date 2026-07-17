@@ -4,7 +4,7 @@
     "slug": "sloth",
     "icon": "./assets/icons/icon.png",
     "scheme": "sloth",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "githubUrl": "https://github.com/MarJose123/Sloth",
     "orientation": "portrait",
     "plugins": [

@@ -2,7 +2,6 @@ import { Stack } from "expo-router";
 import { lightColors } from "@/theme/lightColors";
 
 export default function OnboardingLayout() {
-
   return (
     <Stack
       screenOptions={{

@@ -16,9 +16,7 @@ export default function AppLayout() {
     <View style={{ flex: 1 }} className="bg-surface-bg">
       <Slot />
 
-      <View
-        className="absolute bg-surface-bg bottom-6 left-1/2 -ml-[150px] w-[300px] h-[64px] flex-row items-center border border-hairline rounded-[32px] overflow-visible shadow-2xl px-2"
-      >
+      <View className="absolute bg-surface-bg bottom-6 left-1/2 -ml-[150px] w-[300px] h-[64px] flex-row items-center border border-hairline rounded-[32px] overflow-visible shadow-2xl px-2">
         <TabBarButton
           Icon={HomeIcon}
           isFocused={

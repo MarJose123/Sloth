@@ -18,7 +18,6 @@ export function DialFrame({
   children,
   variant = "default",
 }: DialFrameProps) {
-
   const isLight = useColorScheme() === "light";
   const outerStyle =
     variant === "brass"

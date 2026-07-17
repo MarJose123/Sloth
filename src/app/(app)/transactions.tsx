@@ -3,14 +3,14 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
-  Text, useColorScheme,
-  View
+  Text,
+  useColorScheme,
+  View,
 } from "react-native";
 import { router } from "expo-router";
 import { useTransactionsData } from "@/hooks/useTransactionsData";
 import type { TransactionLedgerItem } from "@/lib/db/repositories/transactions";
 import { formatRelativeDate, formatSignedCurrency } from "@/lib/format";
-import { useColors } from "@/theme/ThemeContext";
 import { lightColors } from "@/theme/lightColors";
 import { darkColors } from "@/theme/darkColors";
 

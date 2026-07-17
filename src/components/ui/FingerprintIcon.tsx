@@ -3,7 +3,6 @@ import { useColorScheme } from "react-native";
 import { lightColors } from "@/theme/lightColors";
 import { darkColors } from "@/theme/colors";
 
-
 interface FingerprintIconProps {
   size?: number;
   color?: string;

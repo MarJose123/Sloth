@@ -73,7 +73,8 @@
     "start": "expo start -c",
     "android": "expo start -c --android",
     "ios": "expo start -c --ios",
-    "lint": "prettier --write . && expo lint"
+    "lint": "prettier --write . && expo lint",
+    "eas:build:dev": "bunx eas-cli build --platform=android --profile=development"
   },
   "private": true,
   "overrides": {

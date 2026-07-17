@@ -3,9 +3,9 @@ import {
   View,
   type PressableProps,
   type ViewStyle,
-  type StyleProp, useColorScheme
+  type StyleProp,
+  useColorScheme,
 } from "react-native";
-import { useColors } from "@/theme/ThemeContext";
 import { PlusIcon } from "@/components/navigation/icons";
 import { lightColors } from "@/theme/lightColors";
 import { darkColors } from "@/theme/darkColors";

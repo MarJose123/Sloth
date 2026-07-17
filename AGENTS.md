@@ -40,7 +40,9 @@ SQLCipher. There is no cloud sync, no analytics endpoint, no third-party login.
 | Build | EAS CLI ≥ 20.5.1, `eas build --local` | GH Actions ubuntu-latest |
 | Java | JDK 17 (hard requirement for AGP + RN 0.86) | |
 | Android SDK | Compile/target 36, minSdk 31, buildTools 36.0.0 (via `expo-build-properties` in `app.json`) | |
-| Additional Expo plugins | `expo-router`, `expo-secure-store`, `expo-font`, `expo-local-authentication`, `expo-splash-screen`, `expo-camera`, `expo-build-properties` | All configured in `app.json` plugins array |
+| Additional Expo plugins | `expo-router`, `expo-secure-store`, `expo-font`, `expo-local-authentication`, `expo-splash-screen`, `expo-camera`, `expo-build-properties`, `expo-image`, `expo-status-bar`, `expo-web-browser`, `@react-native-vector-icons/lucide` | All configured in `app.json` plugins array |
+| Runtime helpers | `react-native-reanimated` 4.5.0, `react-native-gesture-handler` ~2.32.0, `react-native-worklets` 0.10.0, `react-native-safe-area-context` 5.7.0 | |
+| Dev client | `expo-dev-client` ~57.0.7 | Used in development profile |
 
 ### Registered font names (must match exactly in code)
 
@@ -69,28 +71,36 @@ React Native requires exact font-file key names, no fallbacks.
 
 ### 2.1 Color Tokens
 
-| Token | CSS variable | Hex | Usage |
-|---|---|---|---|
-| Ink | `--color-ink` | `#1B1F1A` | Primary background |
-| Ink-2 | `--color-ink-2` | `#242920` | Card surface |
-| Ink-3 | `--color-ink-3` | `#2E3428` | Input bg, icon bg |
-| Parchment | `--color-parchment` | `#F3EEE1` | Primary text |
-| Parchment dim | `--color-parchment-dim` | `#A79F8C` | Secondary text, labels |
-| Brass | `--color-brass` | `#C87B54` | Primary accent, CTA buttons |
-| Brass soft | `--color-brass-soft` | `#8F5636` | Pressed state |
-| Sage | `--color-sage` | `#7FA06B` | Income, success, secondary accent |
-| Rust | `--color-rust` | `#9C4A3D` | Alerts, negative balance, errors |
-| Hairline | — | `rgba(243,238,225,0.09)` | Borders, dividers (utility: `hairline`) |
-| Dusty blue | `--color-dusty-blue` | `#6E8FB0` | Transit category ring |
-| Ochre | `--color-ochre` | `#C9A227` | Dining category ring |
+The theme uses a two-layer system: `--sloth-*` CSS variables defined in `:root` / `@media (prefers-color-scheme: dark)` in `global.css`, aliased to `--color-*` Tailwind utilities via `@theme`. Components should use the Tailwind utility names (`bg-surface-bg`, `text-text-primary`, `text-brass`, etc.).
 
-JS counterpart: `src/theme/colors.ts` exports the same values for inline `style={}` use.
+| Token | CSS variable (`@theme` alias) | `--sloth-*` variable | Usage |
+|---|---|---|---|
+| Surface bg | `--color-surface-bg` | `--sloth-surface-bg` | Screen background |
+| Surface card | `--color-surface-card` | `--sloth-surface-card` | Card surface |
+| Surface elevated | `--color-surface-elevated` | `--sloth-surface-elevated` | Input bg, icon bg |
+| Text primary | `--color-text-primary` | `--sloth-text-primary` | Primary text |
+| Text secondary | `--color-text-secondary` | `--sloth-text-secondary` | Secondary text, labels |
+| Brass | `--color-brass` | `--sloth-brass` | Primary accent, CTA buttons |
+| Brass soft | `--color-brass-soft` | `--sloth-brass-soft` | Pressed state |
+| Sage | `--color-sage` | `--sloth-sage` | Income, success, secondary accent |
+| Rust | `--color-rust` | `--sloth-rust` | Alerts, negative balance, errors |
+| Hairline | `--color-hairline` | `--sloth-hairline` | Borders, dividers (utility: `hairline`) |
+| Dusty blue | `--color-dusty-blue` | `--sloth-dusty-blue` | Transit category ring |
+| Ochre | `--color-ochre` | `--sloth-ochre` | Dining category ring |
+| Ink (static) | `--color-ink` | `--sloth-ink` | CTA text on brass (#1B1F1A, same in both themes) |
+| Parchment (static) | `--color-parchment` | `--sloth-parchment` | QR / badge bg (#F3EEE1, same in both themes) |
+
+**Dark mode defaults:** surfaceBg=#1B1F1A, surfaceCard=#242920, surfaceElevated=#2E3428, textPrimary=#F3EEE1, textSecondary=#A79F8C, hairline=rgba(243,238,225,0.09), tabBar=rgba(18,20,28,0.95), sage=#7FA06B, brassSoft=#8F5636.
+
+**Light mode defaults:** surfaceBg=#F5F0E4, surfaceCard=#EBE6D8, surfaceElevated=#E0DBCB, textPrimary=#1B1F1A, textSecondary=#6B6352, hairline=rgba(27,31,26,0.09), tabBar=rgba(235,230,216,0.95), sage=#6B8D58, brassSoft=#A96B42.
+
+JS counterpart: `src/theme/colors.ts` exports the same values as typed `ColorPalette` for inline `style={}` use. The `useColors()` hook (imported from `ThemeContext`) returns the active palette at runtime — but note this hook is currently **imported but not yet implemented**; see §8.
 
 ### 2.2 Typography
 
 | Role | CSS font key (class) | Weight | Size (reference) |
 |---|---|---|---|
-| Balance / headline | `font-fraunces` or `font-fraunces-medium` | 400 / 450 (500) | 44 px (dashboard), 30 px (onboarding) |
+| Balance / headline | `font-fraunces` or `font-fraunces-medium` | 400 / 450 (500) | 44 px (dashboard), 32 px (onboarding) |
 | UI body / bold | `font-manrope` / `font-manrope-bold` | 400 / 700 | 13–15 px |
 | Labels / mono data | `font-mono` / `font-mono-medium` | 400 / 500 | 10–12 px |
 
@@ -107,7 +117,7 @@ JS counterpart: `src/theme/colors.ts` exports the same values for inline `style=
 
 - **Progress / biometric ring:** plain soft ring only — **no dashed ticks, no segments**.
   Border only: `border: 1px solid rgba(200,123,84,0.3)`.
-- **FAB:** Tab bar variant, centered pill button within the `TabList`, `margin-top:-20px`
+- **FAB:** Tab bar variant, centered pill button within the custom tab bar, `margin-top:-20px`
   effect applied by `AddTabButton` component. Floating variant `bottom:94px right:22px`
   on Dashboard with `brass-glow` shadow utility.
 - **Lottie badge:** screens 01, 02, 03, 13 use `lottie-react-native` animations, not
@@ -144,13 +154,13 @@ Onboarding Layout (src/app/onboarding/_layout.tsx):
     └── biometric       → redirects to welcome (legacy compat)
 
 Tab Group (src/app/(app)/_layout.tsx):
-  Tabs (expo-router/ui headless):
+  Custom pill tab bar (Slot + manual navigation buttons):
     [dashboard] [accounts] [+/FAB] [transactions] [settings]
 
-  Tab mapping (expo-router/ui TabList):
+  Tab mapping:
     dashboard    → src/app/(app)/dashboard.tsx   (Screen 04)
     accounts     → src/app/(app)/accounts.tsx    (Screen 06)
-    add (FAB)    → src/app/(app)/fab-sheet.tsx   (Action Sheet / Screen 12)
+    add (FAB)    → /fab-sheet.tsx                (Screen 12, pushed via router)
     transactions → src/app/(app)/transactions.tsx
     settings     → src/app/(app)/settings.tsx    (Screen 07)
 
@@ -186,7 +196,7 @@ existing `SafeAreaProvider`.
 - **Layout:** centered column, `bg: #1B1F1A`
 - **Elements:** SlothAppIcon SVG 112×112 (`drop-shadow`), wordmark "Sloth" (Fraunces 450
   26px), tagline "Private by default" (IBM Plex Mono 10.5px uppercase 0.1em
-  `--parchment-dim`), three loading dots `bottom:64px` (dot 2 active `--brass`, others
+  `--text-secondary`), three loading dots `bottom:64px` (dot 2 active `--brass`, others
   `rgba(200,123,84,0.35)`)
 - **Behaviour:** On mount → opens encrypted DB (runs migrations) → checks
   `storage.getOnboardingComplete()` → redirects to `/onboarding/welcome` (first run)
@@ -196,10 +206,10 @@ existing `SafeAreaProvider`.
 - **File:** `src/app/onboarding/welcome.tsx` (carousel slide 0)
 - **Elements:** Lottie animation zone, "Sloth" mono eyebrow (`--brass`), SlothAppIcon
   fallback 120×120, H2 "Your money.\nYour device.\nNobody else's." (Fraunces 450 30px
-  lh:1.18), subtext (Manrope 14px `--parchment-dim` lh:1.55), pagination dots (3 dots,
+  lh:1.18), subtext (Manrope 14px `--text-secondary` lh:1.55), pagination dots (3 dots,
   dot 1 active: `--brass` w:18px r:3px), "Continue" brass button
 - **Carousel:** Shared horizontal swipe carousel for slides 01–02–03 (all in
-  `welcome.tsx`). `GestureDetector` + `Gesture.Pan()`, `makeMutable` at **module scope**.
+  `welcome.tsx`). Uses `useColorScheme()` + inline `createStyles()` factory at module scope.
 
 ### Screen 02 — Privacy Explainer
 - **File:** `src/app/onboarding/welcome.tsx` (carousel slide 1)
@@ -214,7 +224,7 @@ existing `SafeAreaProvider`.
 ### Screen 03 — Biometric Setup
 - **File:** `src/app/onboarding/welcome.tsx` (carousel slide 2)
 - **Elements:** Lottie badge, "Step 3 of 3" eyebrow, H2 "Lock Sloth to your face or
-  fingerprint.", sub paragraph (13.5px `--parchment-dim`), biometric ring (150px plain
+  fingerprint.", sub paragraph (13.5px `--text-secondary`), biometric ring (150px plain
   soft ring `border:1px solid rgba(200,123,84,0.55)`), fingerprint SVG inner circle
   78×78 (component: `FingerprintIcon.tsx`), caption "Touch the sensor to continue" (brass
   mono 12px 0.06em), "Enable Face / Touch ID" brass button, "Use a 6-digit PIN instead"
@@ -223,44 +233,44 @@ existing `SafeAreaProvider`.
 ### Screen 04 — Dashboard
 - **File:** `src/app/(app)/dashboard.tsx`
 - **Elements:**
-    - Greeting "Good morning/afternoon/evening" (12.5px `--parchment-dim`)
+    - Greeting "Good morning/afternoon/evening" (12.5px `--text-secondary`)
     - Account switcher chips (horizontal scroll; component: `AccountSwitcher.tsx`)
     - "Total balance" label (12px dim), balance (Fraunces 450 44px -0.01em tracking)
-    - Ring row: 3 ring cards (`--ink-2`, 16px radius), rings are `border:3px solid <color>`
+    - Ring row: 3 ring cards (`--surface-card`, 16px radius), rings are `border:3px solid <color>`
       circles with percentage text (IBM Plex Mono 10px) — no fill (component: `CategoryRingCard.tsx`)
     - Recent section header with inline "+ Add" brass pill button (700, 11px, 14px radius)
     - Transaction rows: name (Manrope 600 13.5px) + meta (11px dim); amount (IBM Plex Mono
-      13.5px; negative=`--parchment`, positive=`--sage`) (component: `TransactionRow.tsx`)
+      13.5px; negative=`--parchment`, positive=`--sage`) (component: `TransactionRow.tsx`)\`;
     - Empty state card when no accounts exist (component: `EmptyAccountsCard.tsx`)
-    - **No** tab bar (tabs are rendered by `TabList` in `(app)/_layout.tsx`)
+    - **No** tab bar (tabs are rendered by the custom pill bar in `(app)/_layout.tsx`)
 
-### Screen 05 — Add Transaction (tab + push route)
-- **File:** `src/app/(app)/fab-sheet.tsx` (action sheet) and `src/app/transaction/new.tsx` (push form)
+### Screen 05 — Add Transaction (push route)
+- **File:** `src/app/transaction/new.tsx` (push form); action sheet at `src/app/fab-sheet.tsx`
 - **Elements:** Cancel / "New expense" / Save header, amount display (Fraunces 450 46px,
   cursor `--brass`), method pills (Manual/Scan receipt/Import; active:
-  `rgba(200,123,84,0.14)` bg brass border), four field blocks (`--ink-2`, 14px radius),
+  `rgba(200,123,84,0.14)` bg brass border), four field blocks (`--surface-card`, 14px radius),
   scan hint row (sage, "◎" prefix), **no** tab bar
 - **Hook:** `useAddTransactionData` (custom hook, plain `useEffect` — no state flash on back)
 
 ### Screen 06 — Accounts List
 - **File:** `src/app/(app)/accounts.tsx`
 - **Elements:** "Accounts" (Fraunces 450 20px) + "+ Add" brass link, account cards
-  (`--ink-2`, 16px radius, 38×38 logo tile 11px radius), balance (IBM Plex Mono 14px),
+  (`--surface-card`, 16px radius, 38×38 logo tile 11px radius), balance (IBM Plex Mono 14px),
   "Add another account" dashed card, footnote (11px dim centered), tab bar
 - **Logo tile:** solid colour bg + 2-char initials (IBM Plex Mono 12px 700 `--ink` text)
 
 ### Screen 07 — Settings
 - **File:** `src/app/(app)/settings.tsx`
 - **Groups:** Appearance, Security, Data, Support, About
-- **Toggle:** on=`rgba(200,123,84,0.9)` thumb right; off=`--ink-3` + hairline border thumb
-  left `--parchment-dim` (component: `Toggle.tsx`)
-- **Segment control (Theme):** `--ink-3` bg, active segment `--brass` bg `--ink` text,
+- **Toggle:** on=`rgba(200,123,84,0.9)` thumb right; off=`--surface-elevated` + hairline border thumb
+  left `--text-secondary` (component: `Toggle.tsx`)
+- **Segment control (Theme):** `--surface-elevated` bg, active segment `--brass` bg `--ink` text,
   10.5px 700
 
 ### Screen 08 — Categories / Expense Types
 - **File:** `src/app/(app)/categories.tsx`
 - **Elements:** "Categories" title + "+ Add" link, "This month · ring shows share of total
-  spend" sub label (11px dim), category rows with conic-gradient ring, inner `--ink-2`
+  spend" sub label (11px dim), category rows with conic-gradient ring, inner `--surface-card`
   circle with emoji, name (13.5px 700) + type badge (IBM Plex Mono 11px dim), spend +
   tx count (IBM Plex Mono 12.5px), dashed "Create a new expense type" card
 - **Ring formula:** `background: conic-gradient(var(--ring-color) var(--pct), rgba(243,238,225,0.09) 0)`
@@ -268,7 +278,7 @@ existing `SafeAreaProvider`.
 ### Screen 09 — Add Account
 - **File:** `src/app/add-account.tsx` (flat route)
 - **Elements:** Cancel / "New account" / Save header, name field, type grid (2×2:
-  Checking/Savings/Credit card/Cash), logo preview (64×64 `--ink-2` dashed), logo grid
+  Checking/Savings/Credit card/Cash), logo preview (64×64 `--surface-card` dashed), logo grid
   (4×2 tiles), upload tile (dashed brass text), starting balance field, "Add account" brass
   button
 - **Active type tile:** `rgba(200,123,84,0.1)` bg, brass border, `--parchment` text
@@ -292,9 +302,9 @@ existing `SafeAreaProvider`.
 
 ### Screen 12 — FAB Action Sheet
 - **File:** `src/app/(app)/fab-sheet.tsx` (modal action sheet)
-- **Elements:** scrim `rgba(8,9,13,0.6)`, bottom sheet (`--ink-2`, 22px top radius,
+- **Elements:** scrim `rgba(8,9,13,0.6)`, bottom sheet (`--surface-card`, 22px top radius,
   hairline border), drag handle (36×4px `rgba(237,233,224,0.2)`), "Add to Sloth" title
-  (Fraunces 450 18px), 4 action rows (icon tile `--ink-3` brass border + bold label + dim
+  (Fraunces 450 18px), 4 action rows (icon tile `--surface-elevated` brass border + bold label + dim
   description)
 - **Actions:** Manual transaction / Scan receipt / New account / Import CSV/OFX
 
@@ -303,7 +313,7 @@ existing `SafeAreaProvider`.
 - **Camera:** `expo-camera@~57.0.0` still-image capture — **not** `react-native-vision-camera`
 - **Elements:** camera viewport overlay gradient, ✕ close + "Flash: Auto" top bar,
   "◈ Lottie — align receipt in frame" caption, dashed receipt frame with brass scan-line
-  animation (Lottie), detected results card (`--ink-2`, sage "Detected on-device" tag),
+  animation (Lottie), detected results card (`--surface-card`, sage "Detected on-device" tag),
   shutter ring (64px, 3px parchment border, brass fill circle)
 
 ### Screen 14 — CSV / OFX Import
@@ -321,10 +331,10 @@ existing `SafeAreaProvider`.
 
 ### Screen 16 — Donate QR Modal
 - **File:** `src/app/donate.tsx`
-- **Elements:** scrim, modal card (82% width, `--ink-2`, 22px radius), ✕ close,
+- **Elements:** scrim, modal card (82% width, `--surface-card`, 22px radius), ✕ close,
   "Support Sloth" (Fraunces 450 19px), descriptor paragraph (12px dim lh:1.5), QR box
   (168×168 `--parchment` bg 14px radius 12px padding), address (IBM Plex Mono 10.5px
-  `--ink-3` bg), "⬇ Save to Photos" brass button, sage toast "✓ Saved to gallery"
+  `--surface-elevated` bg), "⬇ Save to Photos" brass button, sage toast "✓ Saved to gallery"
 - **Hook/helper:** `src/lib/export.ts` (download/save QR)
 
 ### Screen 18 — About
@@ -358,45 +368,55 @@ src/lib/db/
 
 ### 5.2 Database Schema (op-sqlite + SQLCipher, STRICT mode)
 
+All ids are TEXT UUIDs generated via `expo-crypto`'s `randomUUID()`. Amounts are integer cents only. The running balance is computed at query time (`starting_balance + SUM(transactions.amount_cents)`), not stored in a cached column.
+
 ```sql
 PRAGMA journal_mode = WAL;
-
-CREATE TABLE accounts (
-  id            INTEGER PRIMARY KEY,
-  name          TEXT    NOT NULL,
-  type          TEXT    NOT NULL CHECK(type IN ('checking','savings','credit','cash')),
-  logo_key      TEXT,
-  color_hex     TEXT,
-  balance_cents INTEGER NOT NULL DEFAULT 0,
-  created_at    INTEGER NOT NULL,
-  updated_at    INTEGER NOT NULL
-) STRICT;
-
-CREATE TABLE categories (
-  id         INTEGER PRIMARY KEY,
-  name       TEXT    NOT NULL,
-  icon       TEXT    NOT NULL,
-  color_hex  TEXT    NOT NULL,
-  type       TEXT    NOT NULL CHECK(type IN ('expense','income')),
-  sort_order INTEGER NOT NULL DEFAULT 0
-) STRICT;
-
-CREATE TABLE transactions (
-  id           INTEGER PRIMARY KEY,
-  account_id   INTEGER NOT NULL REFERENCES accounts(id),
-  category_id  INTEGER REFERENCES categories(id),
-  amount_cents INTEGER NOT NULL,   -- positive=income, negative=expense
-  merchant     TEXT,
-  note         TEXT,
-  date_unix    INTEGER NOT NULL,
-  source       TEXT CHECK(source IN ('manual','scan','import')),
-  created_at   INTEGER NOT NULL
-) STRICT;
 
 CREATE TABLE settings (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL
 ) STRICT;
+
+CREATE TABLE accounts (
+  id               TEXT PRIMARY KEY NOT NULL,
+  name             TEXT NOT NULL,
+  type             TEXT NOT NULL CHECK (type IN ('checking','savings','credit','cash')),
+  starting_balance INTEGER NOT NULL DEFAULT 0,
+  logo_key         TEXT,
+  color_hex        TEXT NOT NULL,
+  created_at       INTEGER NOT NULL,
+  archived_at      INTEGER
+) STRICT;
+
+CREATE TABLE categories (
+  id         TEXT PRIMARY KEY NOT NULL,
+  name       TEXT NOT NULL,
+  icon       TEXT NOT NULL,
+  color_hex  TEXT NOT NULL,
+  kind       TEXT NOT NULL CHECK (kind IN ('expense','income')),
+  created_at INTEGER NOT NULL,
+  archived_at INTEGER
+) STRICT;
+
+CREATE TABLE transactions (
+  id           TEXT PRIMARY KEY NOT NULL,
+  account_id   TEXT NOT NULL REFERENCES accounts(id),
+  category_id  TEXT REFERENCES categories(id),
+  merchant     TEXT NOT NULL,
+  amount_cents INTEGER NOT NULL,
+  occurred_at  INTEGER NOT NULL,
+  note         TEXT,
+  source       TEXT NOT NULL CHECK (source IN ('manual','scan','import')),
+  created_at   INTEGER NOT NULL
+) STRICT;
+
+CREATE INDEX IF NOT EXISTS idx_transactions_account
+  ON transactions(account_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_category
+  ON transactions(category_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_occurred_at
+  ON transactions(occurred_at);
 
 PRAGMA user_version = 1;  -- increment on each migration
 ```
@@ -404,7 +424,7 @@ PRAGMA user_version = 1;  -- increment on each migration
 **Rules:**
 - Amounts: **integer cents only** — never floats.
 - Migrations: `PRAGMA user_version` gate pattern in `migrations.ts`.
-- Key storage: `expo-crypto` random 256-bit hex → `SecureStore`, key name `sloth_db_key`,
+- Key storage: `expo-crypto` random 256-bit hex → `SecureStore`, key name `sloth.db_encryption_key`,
   accessibility `WHEN_UNLOCKED_THIS_DEVICE_ONLY` (see `key.ts`).
 
 ### 5.3 Hook Rules
@@ -428,13 +448,12 @@ PRAGMA user_version = 1;  -- increment on each migration
 
 | Pattern | Implementation |
 |---|---|
-| Swipe gesture (onboarding carousel) | `GestureDetector` + `Gesture.Pan()` + `makeMutable` at **module scope** |
+| Swipe gesture (onboarding carousel) | `useColorScheme()` + `createStyles()` factory at module scope |
 | Lottie screens (01, 02, 03, 13) | `lottie-react-native` — not static graphics |
 | Progress / biometric rings | SVG `<Circle>` strokeDasharray or `Animated`; biometric ring = plain border |
 | Bottom sheet dismiss | `react-native-reanimated` v4 translateY + `Gesture.Pan()` |
 
-**Reanimated ESLint rule:** Use `makeMutable(value)` at module scope for shared values —
-never `useSharedValue` inside component body if it triggers the immutability lint error.
+**Reanimated ESLint rule:** If you encounter the Reanimated immutability lint error, use `makeMutable(value)` at module scope instead of `useSharedValue` inside the component body.
 
 ---
 
@@ -464,84 +483,86 @@ Layer 3: Screenshot Prevention
 
 ### 8.1 Architecture
 
-Theming uses a **React Context** approach with a `ThemeProvider` at the root layout:
+Theming uses a **`VariableContextProvider`** from NativeWind, wrapping the app at the root layout:
 
 ```
 src/theme/
-  ThemeContext.tsx      ← React context + Provider + useTheme() / useColors() hooks
-  darkColors.ts        ← Dark palette (default)
-  lightColors.ts       ← Light palette
-  colors.ts            ← Re-exports darkColors as default + exports both palettes
+  ThemeContext.tsx      ← Simple ThemeProvider wrapping VariableContextProvider
+  darkColors.ts         ← Dark palette (default)
+  lightColors.ts        ← Light palette
+  colors.ts             ← Re-exports darkColors as default + exports both palettes
 ```
 
-### 8.2 ThemeContext
+### 8.2 ThemeProvider
 
 **File:** `src/theme/ThemeContext.tsx`
 
-The `ThemeProvider` wraps the entire app in `src/app/_layout.tsx`. It:
+The ThemeProvider is a straightforward component that:
 
-- Reads the stored preference from `SecureStore` via `storage.getThemePreference()` on mount
-- Resolves `"auto"` mode by subscribing to `Appearance.addChangeListener` (React Native's system colour scheme API)
-- Calls **`Appearance.setColorScheme(resolved)`** from React Native whenever the resolved theme changes — this triggers the `@media (prefers-color-scheme: light/dark)` media query in `global.css`, swapping all `--sloth-*` CSS variables and making Tailwind utilities update at runtime.
-- Provides `useTheme()` (full context: preference, resolved, palette, setter) and `useColors()` (just the active palette)
+- Receives a theme `name` prop (currently only `"default"`)
+- Reads the device color scheme via `useColorScheme()` from React Native
+- Selects the matching palette (`darkColors` or `lightColors` from the theme map)
+- Maps the palette's JS values to `--sloth-*` CSS variable names
+- Passes them into NativeWind's `<VariableContextProvider>`, which overrides the `var(--sloth-*)` references in `global.css` at runtime
 
 ```tsx
-// Access the full theme context
-const { preference, resolved, palette, setPreference, loaded } = useTheme();
+import { useColorScheme } from "react-native";
+import { VariableContextProvider } from "nativewind";
+```
 
-// Or just get the active color palette
-const colors = useColors();
+The CSS variables it provides are:
+```
+--sloth-surface-bg, --sloth-surface-card, --sloth-surface-elevated
+--sloth-text-primary, --sloth-text-secondary
+--sloth-brass, --sloth-brass-soft, --sloth-sage, --sloth-rust
+--sloth-dusty-blue, --sloth-ochre
+--sloth-ink, --sloth-parchment
+--sloth-hairline, --sloth-tab-bar
 ```
 
 ### 8.3 Color Palettes
 
-**Dark (default):** `darkColors.ts` — the original Sloth palette: deep ink backgrounds, warm parchment text, brass accents. Defined as `--sloth-*` CSS variables on `:root` in `global.css`.
+**Dark (default):** `darkColors.ts` — deep ink backgrounds (#1B1F1A), warm parchment text (#F3EEE1), brass accents (#C87B54).
 
-**Light:** `lightColors.ts` — warm-light surfaces (`#F5F0E4`), dark ink text (`#1B1F1A`), with slightly adjusted accent colours (sage `#6B8D58`) for contrast on light backgrounds. Defined inside `@media (prefers-color-scheme: light)` in `global.css`.
+**Light:** `lightColors.ts` — warm-light surfaces (#F5F0E4), dark ink text (#1B1F1A), adjusted accents (sage #6B8D58) for contrast.
 
 ### 8.4 How Runtime Theme Switching Works
 
-Theme switching works via a two-layer mechanism that is reliable on native:
+The theme switching uses a CSS-variable-override approach via React context:
 
-1. **Static defaults in `global.css`** — The `:root` block defines the **light** defaults for all `--sloth-*` CSS variables. These provide initial values at build time and serve as fallbacks for web.
+1. **`global.css` defaults** — `:root` defines **light-mode** defaults for all `--sloth-*` CSS variables. The `@media (prefers-color-scheme: dark)` block provides dark-mode overrides.
 
-2. **`VariableContextProvider` in React** — `ThemeContext.tsx` wraps the app in a `<VariableContextProvider>` from NativeWind. It maps the JS palette (`darkColors` / `lightColors`) to `--sloth-*` CSS variable names and provides them via React context. When the resolved theme changes, the context value updates, and all descendant components using `var(--sloth-ink)` in their Tailwind classes resolve the new value.
+2. **`VariableContextProvider` overrides** — `ThemeContext.tsx` wraps the app and injects the JS palette values into CSS variables via React context. When the device color scheme changes, `useColorScheme()` updates, and the new palette takes effect immediately.
 
-```tsx
-// ThemeContext.tsx — simplified
-const cssVars = {
-  "--sloth-ink": palette.ink,        // changes with theme
-  "--sloth-parchment": palette.parchment,
-  // ...
-};
-<VariableContextProvider value={cssVars}>
-  {children}
-</VariableContextProvider>
+3. **`@theme` aliases** — The `@theme` block in `global.css` maps `--sloth-*` variables to `--color-*` Tailwind utility names (e.g., `--color-surface-bg: var(--sloth-surface-bg)`). Components use semantic Tailwind classes like `bg-surface-bg`, `text-text-primary`, `text-brass`.
+
+### 8.5 Known Gap: `useColors()` hook
+
+`useColors()` is **imported from `@/theme/ThemeContext` by ~20 components** but is **not currently exported or defined** there. ThemeContext.tsx only exports `ThemeProvider`. The hook needs to be implemented (likely a React context consumer returning the active `ColorPalette`). Until then, components that import it will **fail at runtime** if the import is not tree-shaken.
+
+The intended interface (per imports already in code) is:
+```ts
+const colors = useColors(); // → ColorPalette (darkColors or lightColors)
 ```
 
-3. **`Appearance.setColorScheme()`** — Called in a `useEffect` to sync the system color scheme. This enables the `dark:` Tailwind variant for any edge cases and updates the system StatusBar, but the CSS variable values from step 2 take priority over any `@media`-based overrides.
+### 8.6 Styling Components — Prefer Tailwind Classes
 
-**Result:** ALL Tailwind utility classes (`bg-ink`, `text-parchment`, `bg-ink-2`, `text-brass`, etc.) switch with the theme automatically — no component changes needed. The `VariableContextProvider` in React context always wins over the `:root` / `@media` CSS cascade (which is only a fallback on native).
-
-### 8.5 Styling Components — Prefer Tailwind Classes
-
-**The CSS variable mechanism (§8.4) means Tailwind utility classes like `bg-ink`,
-`text-parchment`, `border-hairline`, etc. automatically switch with the theme.**
-Components should use these classes rather than `useColors()` + inline `style={{}}` for
-static colour properties.
+**The CSS variable mechanism (§8.4) means Tailwind utility classes like `bg-surface-bg`,
+`text-text-primary`, `border-hairline`, etc. automatically switch with the theme.**
+Components should use these classes rather than inline `style={{}}` for static colour properties.
 
 **✅ DO this (preferred):**
 ```tsx
-<View className="flex-1 bg-ink">
-  <Text className="text-parchment">Hello</Text>
+<View className="flex-1 bg-surface-bg">
+  <Text className="text-text-primary">Hello</Text>
 </View>
 ```
 
 **❌ NOT this (unnecessary indirection):**
 ```tsx
 const colors = useColors();
-<View className="flex-1" style={{ backgroundColor: colors.ink }}>
-  <Text style={{ color: colors.parchment }}>Hello</Text>
+<View className="flex-1" style={{ backgroundColor: colors.surfaceBg }}>
+  <Text style={{ color: colors.textPrimary }}>Hello</Text>
 </View>
 ```
 
@@ -549,11 +570,11 @@ const colors = useColors();
 
 | Use case | Example |
 |---|---|
-| Native component props (not `style`) | `tintColor={colors.brass}` on RefreshControl, `placeholderTextColor={colors.parchmentDim}` on TextInput |
+| Native component props (not `style`) | `tintColor={colors.brass}` on RefreshControl, `placeholderTextColor={colors.textSecondary}` on TextInput |
 | Icon / SVG component props | `color={colors.brass}` on Lucide/XIcon, `stroke={colors.hairline}` on Circle |
 | Dynamic icon/SVG colour with alpha | `colors.brass + "80"` (alpha concatenation — no Tailwind equivalent) |
-| RN-specific style props | `shadowColor: colors.brass` (RN shadow props don't map to Tailwind) |
-| expo-router config objects | `contentStyle: { backgroundColor: colors.ink }` |
+| RN-specific style props | `shadowColor: colors.brass` (RN shadow props map to Tailwind poorly) |
+| expo-router config objects | `contentStyle: { backgroundColor: colors.surfaceBg }` |
 | Module-level/initialiser constants | `export const BADGE_COLORS = [colors.brass, ...]`, `useState<string>(colors.brass)` |
 | `createStyles(c: ColorPalette)` factories | Stylesheet-like factory patterns (e.g. onboarding/welcome.tsx) |
 | `colors.tabBar` | No Tailwind utility exists for this token |
@@ -562,21 +583,21 @@ const colors = useColors();
 
 ```tsx
 // ✅ DO: dynamic className
-<Text className={isIncome ? "text-sage" : "text-parchment"}>Amount</Text>
-<View className={value ? "bg-brass" : "bg-ink-3"} />
+<Text className={isIncome ? "text-sage" : "text-text-primary"}>Amount</Text>
+<View className={value ? "bg-brass" : "bg-surface-elevated"} />
 
 // ❌ NOT: useColors() for conditional colours
 const colors = useColors();
-<Text style={{ color: isIncome ? colors.sage : colors.parchment }}>Amount</Text>
+<Text style={{ color: isIncome ? colors.sage : colors.textPrimary }}>Amount</Text>
 ```
 
 **Never** use `useColors()` for a static colour that has a direct Tailwind equivalent
-(e.g., `style={{ backgroundColor: colors.ink }}` when `className="bg-ink"` works).
+(e.g., `style={{ backgroundColor: colors.surfaceBg }}` when `className="bg-surface-bg"` works).
 
 **Never** duplicate a Tailwind class with an inline style — if `className` already has
-`bg-ink-2`, don't add `style={{ backgroundColor: colors.ink2 }}`.
+`bg-surface-card`, don't add `style={{ backgroundColor: colors.surfaceCard }}`.
 
-### 8.6 Module-Level Constants
+### 8.7 Module-Level Constants
 
 Files that define colour arrays at module scope (e.g. `BADGE_COLORS`, `RING_COLORS`) import from the static `colors` export:
 
@@ -586,27 +607,27 @@ const BADGE_COLORS = [colors.brass, colors.sage, colors.rust];
 
 These accent colours (brass, rust, dustyBlue) are identical in both themes, so the static import is safe.
 
-### 8.7 Settings Integration
+### 8.8 Settings Integration
 
-The Appearance section in Settings uses `useTheme()` for the Theme segment control (Light / Dark / Auto). The preference is persisted to `SecureStore` under key `sloth.theme_preference`. On change, `ThemeContext` calls `colorScheme.set()` which triggers the CSS variable swap across the entire app.
+The Appearance section in Settings uses a segmented control (Light / Dark) that persists to SecureStore via `storage.setThemePreference()`. The actual theme switching is handled by React Native's `Appearance.setColorScheme()` (imported in settings.tsx). Future work: connect this to `ThemeContext` to support theme preference persistence and "auto" mode.
 
-### 8.8 Key Files
+### 8.9 Key Files
 
 | File | Role |
 |---|---|
-| `src/global.css` | `:root` + `@media (prefers-color-scheme: light)` CSS variables + `@theme` |
-| `src/theme/ThemeContext.tsx` | React context + `colorScheme.set()` bridge |
+| `src/global.css` | `:root` + `@media (prefers-color-scheme: dark)` CSS variables + `@theme` |
+| `src/theme/ThemeContext.tsx` | VariableContextProvider bridge (simple, no hooks yet) |
 | `src/theme/darkColors.ts` | JS dark palette for inline styles |
 | `src/theme/lightColors.ts` | JS light palette for inline styles |
 | `src/theme/colors.ts` | Exports both palettes + default `colors` (dark) |
-| `src/app/(app)/settings.tsx` | Theme segment control (Light / Dark / Auto) |
+| `src/app/(app)/settings.tsx` | Theme segment control (Light / Dark); calls `Appearance.setColorScheme()` |
 
-### 8.9 The `dark:` Tailwind Variant
+### 8.10 The `dark:` Tailwind Variant
 
 NativeWind v5 supports the `dark:` variant, which maps to
 `@media (prefers-color-scheme: dark)`. It is **available** in this project but
 **rarely needed** because the project uses semantic colour tokens
-(`bg-ink`, `text-parchment`, etc.) that already auto-switch via the CSS variable
+(`bg-surface-bg`, `text-text-primary`, etc.) that already auto-switch via the CSS variable
 mechanism (§8.4).
 
 **When `dark:` may be useful:**
@@ -615,15 +636,12 @@ mechanism (§8.4).
   a border that only appears in dark mode.
 
 **Why `dark:` is normally unnecessary here:**
-- `bg-ink` already means "the background surface colour" and swaps automatically.
-- `text-parchment` already means "the primary text colour" and swaps automatically.
-- There is no need to write `bg-ink-light dark:bg-ink-dark` — the semantic token
-  approach handles both modes in a single class.
+- `bg-surface-bg` already means "the background surface colour" and swaps automatically.
+- `text-text-primary` already means "the primary text colour" and swaps automatically.
+- There is no need to write `bg-surface-bg-light dark:bg-surface-bg-dark` — the semantic token approach handles both modes in a single class.
 
 **Never** mix the two approaches on the same element — don't write
-`bg-ink dark:bg-ink-2` (confusing: the dark value of one token is another token's
-light value). If a genuine one-off override is needed, use `dark:` with a literal
-colour or a purpose-specific token.
+`bg-surface-bg dark:bg-surface-card` (confusing: the dark value of one token is another token's light value). If a genuine one-off override is needed, use `dark:` with a literal colour or a purpose-specific token.
 
 ## 9 · Build & CI
 
@@ -678,8 +696,9 @@ Key notes:
 ```yaml
 timeout-minutes: 50
 triggers:
-  - pull_request on main
+  - push on main
   - workflow_dispatch
+  - (pull_request triggers a check-skip job, but build-and-deploy runs only on push)
 
 env:
   EXPO_TOKEN: [redacted]   # from secrets
@@ -721,14 +740,14 @@ This runs `prettier --write . && expo lint` (see `package.json` scripts).
 | 5 | Never store amounts as floats. Integer cents only |
 | 6 | Never create `tailwind.config.js`. Use CSS-first `@theme` in `global.css` only |
 | 7 | Never edit `android/` files directly — changes are wiped by `expo prebuild --clean`. Use config plugins |
-| 8 | Never use `useSharedValue` inside component body if it triggers Reanimated immutability ESLint error. Use module-scope `makeMutable` |
+| 8 | If you encounter the Reanimated immutability ESLint error, use module-scope `makeMutable` instead of `useSharedValue` inside the component body |
 | 9 | Always wrap Unicode escape sequences in JSX text nodes inside `{"..."}` JS string expressions |
 | 10 | EAS manages all Android credentials — no manual keystore handling in workflow files |
 | 11 | Never import from `src/db/` — database code lives under `src/lib/db/` |
 | 12 | Never create routes under `(tabs)` — the route group is `(app)` |
 | 13 | Font alias names in `global.css` (`--font-*`) MUST match the alias keys in `useAppFonts.ts` exactly |
 | 14 | **Never use `npm`, `yarn`, or `pnpm`** — only `bun` commands (`bun install`, `bun add`, `bun remove`, `bun lint`, etc.). The lock file is `bun.lock`, not `package-lock.json` |
-| 15 | **Never use `useColors()` + inline `style` for a static colour** that has a Tailwind utility equivalent. Use `className="bg-ink"` instead of `style={{ backgroundColor: colors.ink }}`. See §8.5 for the full rule and legitimate exceptions. |
+| 15 | **Never use `useColors()` + inline `style` for a static colour** that has a Tailwind utility equivalent. Use `className="bg-surface-bg"` instead of `style={{ backgroundColor: colors.surfaceBg }}`. See §8.6 for the full rule and legitimate exceptions. |
 
 ---
 
@@ -756,7 +775,7 @@ Each phase requires explicit approval before implementation begins.
 
 ### Phase 2 — Core Finance Screens ✅ Complete
 - [x] Screen 04: Dashboard (`dashboard.tsx`, `AccountSwitcher`, `CategoryRingCard`, `TransactionRow`, `EmptyAccountsCard`)
-- [x] Screen 05: Add Transaction (`add.tsx` tab variant + `transaction/new.tsx` push)
+- [x] Screen 05: Add Transaction (`transaction/new.tsx` push)
 - [x] Screen 06: Accounts list (`accounts.tsx`)
 - [x] Screen 07: Settings (`settings.tsx`, `Toggle.tsx`)
 - [x] Repositories: accounts, transactions, categories, settings (under `src/lib/db/repositories/`)
@@ -842,11 +861,10 @@ sloth/
     │   ├── _layout.tsx             ← root layout (fonts → SplashScreen → Stack)
     │   ├── index.tsx               ← Screen 00: Splash + boot routing
     │   │
-    │   ├── (app)/                  ← Tab group (expo-router/ui Tabs)
-    │   │   ├── _layout.tsx         ← TabList: dashboard/accounts/add/transactions/settings
+    │   ├── (app)/                  ← Tab group (Slot + custom pill tab bar)
+    │   │   ├── _layout.tsx         ← Custom tab bar: dashboard/accounts/+/transactions/settings
     │   │   ├── dashboard.tsx       ← Screen 04
     │   │   ├── accounts.tsx        ← Screen 06
-    │   │   ├── add.tsx             ← Screen 05 (Add Transaction, tab variant)
     │   │   ├── transactions.tsx    ← Transaction list
     │   │   ├── settings.tsx        ← Screen 07
     │   │   └── categories.tsx      ← Screen 08

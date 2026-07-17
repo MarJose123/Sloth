@@ -1,6 +1,10 @@
-import { Pressable, View, type PressableProps, useColorScheme } from "react-native";
+import {
+  Pressable,
+  View,
+  type PressableProps,
+  useColorScheme,
+} from "react-native";
 import type { SvgProps } from "react-native-svg";
-import { useColors } from "@/theme/ThemeContext";
 import { lightColors } from "@/theme/lightColors";
 import { darkColors } from "@/theme/darkColors";
 

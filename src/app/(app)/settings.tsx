@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { useState, useEffect } from "react";
 import {
   Alert,
-  Appearance,
   Pressable,
   ScrollView,
   Text,
@@ -20,12 +19,11 @@ import { ChevronRightIcon } from "@/components/navigation/icons";
 import type { ThemePreference } from "@/lib/storage";
 import { lightColors } from "@/theme/lightColors";
 import { darkColors } from "@/theme/darkColors";
-import setColorScheme = Appearance.setColorScheme;
-import { getColorScheme } from "react-native/Libraries/Utilities/Appearance";
+import { useTheme } from "@/theme/ThemeContext";
 
 // ─── local primitives ────────────────────────────────────────────────────────
 
-const THEME_OPTIONS = ["light", "dark"] as const;
+const THEME_OPTIONS: ThemePreference[] = ["light", "dark", "auto"];
 
 function SegmentedThemeControl({
   value,
@@ -134,6 +132,8 @@ export default function SettingsScreen() {
   const [screenshotsEnabled, setScreenshotsEnabled] = useState(false);
   const [showDonate, setShowDonate] = useState(false);
 
+  const { preference, loaded, setPreference } = useTheme();
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -162,8 +162,8 @@ export default function SettingsScreen() {
     await storage.setScreenshotsEnabled(value);
   };
 
-  const handleThemeChange = (colorScheme: ThemePreference) => {
-    setColorScheme(colorScheme);
+  const handleThemeChange = (newPreference: ThemePreference) => {
+    setPreference(newPreference);
   };
 
   // ── navigation / action helpers ──────────────────────────────────────────────
@@ -194,12 +194,20 @@ export default function SettingsScreen() {
         <SettingsRow
           icon="palette"
           title="Theme"
-          description="Dark, light, or match device"
+          description={
+            preference === "auto"
+              ? "Auto — follows your device theme"
+              : preference === "dark"
+                ? "Dark theme active"
+                : "Light theme active"
+          }
           right={
-            <SegmentedThemeControl
-              value={getColorScheme()}
-              onChange={handleThemeChange}
-            />
+            loaded ? (
+              <SegmentedThemeControl
+                value={preference}
+                onChange={handleThemeChange}
+              />
+            ) : null
           }
         />
 

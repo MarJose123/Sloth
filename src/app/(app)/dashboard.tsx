@@ -1,5 +1,11 @@
 import { useCallback, useState } from "react";
-import { RefreshControl, ScrollView, Text, useColorScheme, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native";
 import { router } from "expo-router";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { AccountSwitcher } from "@/components/dashboard/AccountSwitcher";
