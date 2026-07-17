@@ -25,17 +25,16 @@ export function AddTabButton(props: PressableProps) {
     >
       <Pressable
         {...props}
-        className="active:opacity-80"
+        className="active:opacity-80 bg-brass"
         style={[
           {
             width: 48,
             height: 48,
-            borderRadius: 24, // Use exactly half of width/height for perfect circle
-            backgroundColor: colors.brass,
+            borderRadius: 24,
             marginTop: -24,
             alignItems: "center",
             justifyContent: "center",
-            overflow: "hidden", // Ensure content doesn't break the circle
+            overflow: "hidden",
             shadowColor: colors.brass,
             shadowOffset: { width: 0, height: 10 },
             shadowOpacity: 0.5,

@@ -19,7 +19,7 @@ export function DialFrame({
   children,
   variant = "default",
 }: DialFrameProps) {
-  const { resolved, palette: colors } = useTheme();
+  const { resolved } = useTheme();
   const isLight = resolved === "light";
   const outerStyle =
     variant === "brass"
@@ -32,7 +32,6 @@ export function DialFrame({
             : "rgba(200,123,84,0.1)",
         }
       : {
-          borderColor: colors.hairline,
           backgroundColor: "transparent",
         };
 
@@ -54,11 +53,11 @@ export function DialFrame({
         }
       : {
           borderWidth: 0,
-          backgroundColor: colors.ink2,
         };
 
   return (
     <View
+      className={variant !== "brass" ? "border-hairline" : ""}
       style={[
         {
           width: size,
@@ -73,6 +72,7 @@ export function DialFrame({
       ]}
     >
       <View
+        className={variant !== "brass" ? "bg-surface-card" : ""}
         style={[
           {
             width: innerSize,

@@ -17,6 +17,7 @@ import {
 import { Lucide } from "@react-native-vector-icons/lucide";
 import type { LucideIconName } from "@react-native-vector-icons/lucide";
 import { useColors } from "@/theme/ThemeContext";
+import { colors } from "@/theme/colors";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -32,11 +33,11 @@ const ACCOUNT_TYPES: {
 ];
 
 const BADGE_COLORS = [
-  "#C87B54", // brass
-  "#7FA06B", // sage
-  "#9C4A3D", // rust
-  "#6E8FB0", // dustyBlue
-  "#A79F8C", // parchmentDim
+  colors.brass,
+  colors.sage,
+  colors.rust,
+  colors.dustyBlue,
+  colors.textSecondary,
 ] as const;
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -67,15 +68,14 @@ function ColorSwatch({
   selected: boolean;
   onPress: () => void;
 }) {
-  const colors = useColors();
   return (
     <Pressable onPress={onPress} className="active:opacity-70">
       <View
+        className="border-brass"
         style={{
           padding: selected ? 3 : 0,
           borderRadius: 15,
           borderWidth: selected ? 2 : 0,
-          borderColor: colors.brass,
         }}
       >
         <View
@@ -101,7 +101,7 @@ export default function AddAccountScreen() {
   const [balanceText, setBalanceText] = useState("0.00");
   const [isSaving, setIsSaving] = useState(false);
 
-  const selectedColor = BADGE_COLORS[selectedColorIdx] ?? "#C87B54";
+  const selectedColor = BADGE_COLORS[selectedColorIdx] ?? colors.brass;
   const initials = getInitials(name) || "·";
 
   const handleSave = useCallback(async () => {
@@ -132,7 +132,7 @@ export default function AddAccountScreen() {
   }, [name, selectedType, selectedColor, balanceText]);
 
   return (
-    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
+    <View className="flex-1 pt-safe bg-surface-bg">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -149,9 +149,9 @@ export default function AddAccountScreen() {
               onPress={() => router.back()}
               className="active:opacity-60"
             >
-              <Text className="text-[14.5px] text-parchment-dim">Cancel</Text>
+              <Text className="text-[14.5px] text-text-secondary">Cancel</Text>
             </Pressable>
-            <Text className="font-fraunces-medium text-[20px] text-parchment">
+            <Text className="font-fraunces-medium text-[20px] text-text-primary">
               New account
             </Text>
             <Pressable
@@ -169,16 +169,16 @@ export default function AddAccountScreen() {
           </View>
 
           {/* ── Account name ── */}
-          <View className="mb-5 rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
-            <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
+          <View className="mb-5 rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
+            <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
               Account name
             </Text>
             <TextInput
               value={name}
               onChangeText={setName}
               placeholder="e.g. Chase Checking"
-              placeholderTextColor={colors.parchmentDim}
-              className="text-sm text-parchment"
+              placeholderTextColor={colors.textSecondary}
+              className="text-sm text-text-primary"
               autoCapitalize="words"
               returnKeyType="next"
             />
@@ -198,17 +198,17 @@ export default function AddAccountScreen() {
                   className={`flex-1 basis-[45%] flex-col gap-2 rounded-[13px] border p-3.5 active:opacity-80 ${
                     active
                       ? "border-brass/50 bg-brass/10"
-                      : "border-hairline bg-ink-2"
+                      : "border-hairline bg-surface-card"
                   }`}
                 >
                   <Lucide
                     name={icon}
                     size={20}
-                    color={active ? colors.brass : colors.parchmentDim}
+                    color={active ? colors.brass : colors.textSecondary}
                   />
                   <Text
                     className={`text-[12.5px] font-manrope-semibold ${
-                      active ? "text-parchment" : "text-parchment-dim"
+                      active ? "text-text-primary" : "text-text-secondary"
                     }`}
                   >
                     {label}
@@ -229,10 +229,7 @@ export default function AddAccountScreen() {
               className="h-16 w-16 items-center justify-center rounded-2xl"
               style={{ backgroundColor: selectedColor }}
             >
-              <Text
-                className="font-mono-medium text-base"
-                style={{ color: colors.ink }}
-              >
+              <Text className="font-mono-medium text-base text-ink">
                 {initials}
               </Text>
             </View>
@@ -251,17 +248,17 @@ export default function AddAccountScreen() {
           </View>
 
           {/* ── Starting balance ── */}
-          <View className="mb-8 rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
-            <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
+          <View className="mb-8 rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
+            <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
               Starting balance
             </Text>
             <TextInput
               value={balanceText}
               onChangeText={setBalanceText}
               placeholder="0.00"
-              placeholderTextColor={colors.parchmentDim}
+              placeholderTextColor={colors.textSecondary}
               keyboardType="decimal-pad"
-              className="font-fraunces-medium text-[20px] text-parchment"
+              className="font-fraunces-medium text-[20px] text-text-primary"
               returnKeyType="done"
             />
           </View>

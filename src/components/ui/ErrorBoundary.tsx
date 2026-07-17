@@ -33,11 +33,11 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <View className="flex-1 items-center justify-center bg-ink px-8 pt-safe">
-          <Text className="mb-2 text-center font-fraunces-medium text-xl text-parchment">
+        <View className="flex-1 items-center justify-center bg-surface-bg px-8 pt-safe">
+          <Text className="mb-2 text-center font-fraunces-medium text-xl text-text-primary">
             Something went wrong
           </Text>
-          <Text className="mb-8 text-center text-[13px] leading-[19px] text-parchment-dim">
+          <Text className="mb-8 text-center text-[13px] leading-[19px] text-text-secondary">
             {this.state.errorMessage ??
               this.props.fallbackMessage ??
               "An unexpected error occurred while loading this screen."}

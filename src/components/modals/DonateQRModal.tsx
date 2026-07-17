@@ -30,11 +30,7 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
           onPress={() => {
             /* prevent dismiss when interacting with the card */
           }}
-          className="w-full items-center px-[22px] pb-[22px] pt-5"
-          style={{
-            backgroundColor: colors.ink2,
-            borderRadius: 22,
-          }}
+          className="w-full items-center rounded-[22px] bg-surface-card px-[22px] pb-[22px] pt-5"
         >
           {/* ── close button ── */}
           <Pressable
@@ -42,20 +38,16 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
             className="self-end active:opacity-60"
             accessibilityLabel="Close"
           >
-            <XIcon size={24} color={colors.parchmentDim} />
+            <XIcon size={24} color={colors.textSecondary} />
           </Pressable>
 
           {/* ── title ── */}
-          <Text
-            className="mb-2 mt-1 text-center font-fraunces-medium text-xl"
-            style={{ color: colors.parchment }}
-          >
+          <Text className="mb-2 mt-1 text-center font-fraunces-medium text-xl text-text-primary">
             Support Sloth
           </Text>
           <Text
-            className="mb-5 text-center leading-relaxed"
+            className="mb-5 text-center leading-relaxed text-text-secondary"
             style={{
-              color: colors.parchmentDim,
               fontSize: 12,
               lineHeight: 18,
             }}
@@ -68,9 +60,8 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
 
           {/* ── QR placeholder card ── */}
           <View
-            className="mb-4 items-center"
+            className="mb-4 items-center bg-parchment"
             style={{
-              backgroundColor: colors.parchment,
               borderRadius: 14,
               padding: 12,
               width: 168,
@@ -78,18 +69,18 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
             }}
           >
             <View
+              className="bg-surface-elevated"
               style={{
                 width: 144,
                 height: 144,
-                backgroundColor: colors.ink3,
                 borderRadius: 8,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
               <Text
+                className="text-text-secondary"
                 style={{
-                  color: colors.parchmentDim,
                   fontSize: 11,
                   fontFamily: "IBMPlexMono_400",
                 }}
@@ -100,14 +91,10 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
           </View>
 
           {/* ── address display ── */}
-          <View
-            className="mb-5 w-full rounded-lg px-3 py-2.5"
-            style={{ backgroundColor: colors.ink3 }}
-          >
+          <View className="mb-5 w-full rounded-lg bg-surface-elevated px-3 py-2.5">
             <Text
-              className="text-center"
+              className="text-center text-text-secondary"
               style={{
-                color: colors.parchmentDim,
                 fontFamily: "IBMPlexMono_400",
                 fontSize: 10.5,
               }}
@@ -123,22 +110,15 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
             onPress={() => {
               /* TODO: save QR to gallery */
             }}
-            className="w-full items-center rounded-xl py-3 active:opacity-70"
-            style={{ backgroundColor: colors.brass }}
+            className="w-full items-center rounded-xl bg-brass py-3 active:opacity-70"
           >
-            <Text
-              className="font-manrope-bold text-sm"
-              style={{ color: colors.parchment }}
-            >
+            <Text className="font-manrope-bold text-sm text-text-primary">
               ⬇ Save to Photos
             </Text>
           </Pressable>
 
           {/* ── toast placeholder ── */}
-          <Text
-            className="mt-3 font-mono"
-            style={{ color: colors.sage, fontSize: 11 }}
-          >
+          <Text className="mt-3 font-mono text-sage" style={{ fontSize: 11 }}>
             ✓ Saved to gallery
           </Text>
         </Pressable>

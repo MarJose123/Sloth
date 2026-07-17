@@ -1,5 +1,4 @@
 import { Pressable, Text } from "react-native";
-import { useColors } from "@/theme/ThemeContext";
 
 interface BrassButtonProps {
   label: string;
@@ -7,19 +6,12 @@ interface BrassButtonProps {
 }
 
 export function BrassButton({ label, onPress }: BrassButtonProps) {
-  const colors = useColors();
   return (
     <Pressable
       onPress={onPress}
-      className="items-center rounded-[14px] p-4 active:opacity-80"
-      style={{ backgroundColor: colors.brass }}
+      className="items-center rounded-[14px] bg-brass p-4 active:opacity-80"
     >
-      <Text
-        className="font-manrope-bold text-[15px]"
-        style={{ color: colors.ink }}
-      >
-        {label}
-      </Text>
+      <Text className="font-manrope-bold text-[15px] text-ink">{label}</Text>
     </Pressable>
   );
 }

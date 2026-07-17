@@ -209,7 +209,7 @@ export default function ImportScreen() {
     parsedFile !== null && selectedAccountId !== null && !isImporting;
 
   return (
-    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
+    <View className="flex-1 pt-safe bg-surface-bg">
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
@@ -221,9 +221,11 @@ export default function ImportScreen() {
             onPress={() => router.back()}
             className="active:opacity-60"
           >
-            <Text className="text-[14.5px] text-parchment-dim">{"Cancel"}</Text>
+            <Text className="text-[14.5px] text-text-secondary">
+              {"Cancel"}
+            </Text>
           </Pressable>
-          <Text className="font-fraunces-medium text-[22px] text-parchment">
+          <Text className="font-fraunces-medium text-[22px] text-text-primary">
             {"Import"}
           </Text>
           <Pressable
@@ -243,22 +245,22 @@ export default function ImportScreen() {
         {/* ── File drop zone ── */}
         <Pressable
           onPress={handlePickFile}
-          className="mb-5 rounded-2xl border border-dashed border-hairline bg-ink-2 px-4 py-5 active:opacity-70"
+          className="mb-5 rounded-2xl border border-dashed border-hairline bg-surface-card px-4 py-5 active:opacity-70"
         >
           {parsedFile ? (
             <>
               <View className="mb-1 flex-row items-center gap-2">
                 <Lucide name="file-text" size={16} color={colors.brass} />
-                <Text className="text-[14.5px] font-manrope-bold text-parchment">
+                <Text className="text-[14.5px] font-manrope-bold text-text-primary">
                   {parsedFile.name}
                 </Text>
               </View>
-              <Text className="text-[12px] text-parchment-dim">
+              <Text className="text-[12px] text-text-secondary">
                 {parsedFile.rowCount} {"rows detected · parsed on this device"}
               </Text>
             </>
           ) : (
-            <Text className="text-center text-[14.5px] text-parchment-dim">
+            <Text className="text-center text-[14.5px] text-text-secondary">
               {"Tap to choose a CSV or OFX file"}
             </Text>
           )}
@@ -285,12 +287,12 @@ export default function ImportScreen() {
                   );
                 }
               }}
-              className="mb-5 flex-row items-center justify-between rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5 active:opacity-70"
+              className="mb-5 flex-row items-center justify-between rounded-2xl border border-hairline bg-surface-card px-4 py-3.5 active:opacity-70"
             >
-              <Text className="text-[14.5px] text-parchment">
+              <Text className="text-[14.5px] text-text-primary">
                 {selectedAccountName}
               </Text>
-              <ChevronRightIcon size={18} color={colors.parchmentDim} />
+              <ChevronRightIcon size={18} color={colors.textSecondary} />
             </Pressable>
 
             {/* ── Column mapping ── */}
@@ -299,7 +301,7 @@ export default function ImportScreen() {
                 <Text className="mb-2 font-mono text-[11.5px] uppercase tracking-[0.08em] text-brass">
                   {"Column mapping"}
                 </Text>
-                <View className="mb-5 overflow-hidden rounded-2xl border border-hairline bg-ink-2">
+                <View className="mb-5 overflow-hidden rounded-2xl border border-hairline bg-surface-card">
                   {parsedFile.columns.map((col, i) => (
                     <View
                       key={col}
@@ -308,7 +310,7 @@ export default function ImportScreen() {
                       }`}
                     >
                       <Text
-                        className="flex-1 font-mono text-[13px] text-parchment-dim"
+                        className="flex-1 font-mono text-[13px] text-text-secondary"
                         numberOfLines={1}
                       >
                         {'"'}
@@ -343,7 +345,7 @@ export default function ImportScreen() {
                         }}
                         className="flex-1"
                       >
-                        <Text className="text-right text-[13.5px] font-manrope-semibold text-parchment">
+                        <Text className="text-right text-[13.5px] font-manrope-semibold text-text-primary">
                           {columnMapping[col] ?? "—"}
                         </Text>
                       </Pressable>
@@ -354,7 +356,7 @@ export default function ImportScreen() {
             )}
 
             {/* ── Preview ── */}
-            <Text className="mb-2 font-mono text-[12px] uppercase tracking-[1px] text-parchment-dim">
+            <Text className="mb-2 font-mono text-[12px] uppercase tracking-[1px] text-text-secondary">
               {"Preview — first rows"}
             </Text>
             {parsedFile.preview.map((row, idx) => {
@@ -376,16 +378,13 @@ export default function ImportScreen() {
                   }`}
                 >
                   <Text
-                    className="flex-1 text-[13px] text-parchment"
+                    className="flex-1 text-[13px] text-text-primary"
                     numberOfLines={1}
                   >
                     {merchant}
                   </Text>
                   <Text
-                    className="font-mono text-[13px]"
-                    style={{
-                      color: isPositive ? colors.sage : colors.parchmentDim,
-                    }}
+                    className={`font-mono text-[13px] ${isPositive ? "text-sage" : "text-text-secondary"}`}
                   >
                     {amount}
                   </Text>

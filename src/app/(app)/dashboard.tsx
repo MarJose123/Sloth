@@ -33,7 +33,7 @@ export default function DashboardScreen() {
     : accounts.reduce((sum, a) => sum + a.balanceCents, 0);
 
   return (
-    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
+    <View className="flex-1 pt-safe bg-surface-bg">
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 110 }}
@@ -45,7 +45,7 @@ export default function DashboardScreen() {
           />
         }
       >
-        <Text className="mb-0.5 text-[17px] text-parchment-dim">
+        <Text className="mb-0.5 text-[17px] text-text-secondary">
           {getGreeting()}
         </Text>
 
@@ -66,12 +66,12 @@ export default function DashboardScreen() {
               onSelect={setSelectedAccountId}
             />
 
-            <Text className="mb-1.5 text-[13px] text-parchment-dim">
+            <Text className="mb-1.5 text-[13px] text-text-secondary">
               {selectedAccount
                 ? `${selectedAccount.name} balance`
                 : "Total balance"}
             </Text>
-            <Text className="mb-[26px] font-fraunces-medium text-[48px] leading-[52px] text-parchment">
+            <Text className="mb-[26px] font-fraunces-medium text-[48px] leading-[52px] text-text-primary">
               {formatCurrency(totalBalanceCents)}
             </Text>
 
@@ -88,7 +88,7 @@ export default function DashboardScreen() {
             )}
 
             <View className="mb-3 flex-row items-center justify-between">
-              <Text className="font-mono text-xs uppercase tracking-[1px] text-parchment-dim">
+              <Text className="font-mono text-xs uppercase tracking-[1px] text-text-secondary">
                 Recent
               </Text>
             </View>
@@ -98,7 +98,7 @@ export default function DashboardScreen() {
                 <TransactionRow key={tx.id} transaction={tx} />
               ))
             ) : (
-              <Text className="py-4 text-center text-sm text-parchment-dim">
+              <Text className="py-4 text-center text-sm text-text-secondary">
                 No transactions yet — tap Add to record your first one.
               </Text>
             )}

@@ -99,7 +99,7 @@ function createStyles(c: ColorPalette) {
       fontSize: 32,
       lineHeight: 38,
       letterSpacing: -0.3,
-      color: c.parchment,
+      color: c.textPrimary,
       textAlign: "center" as const,
       marginBottom: 14,
     },
@@ -107,7 +107,7 @@ function createStyles(c: ColorPalette) {
       fontFamily: "Manrope_400",
       fontSize: 15.5,
       lineHeight: 24,
-      color: c.parchmentDim,
+      color: c.textSecondary,
       textAlign: "center" as const,
       paddingHorizontal: 8,
     },
@@ -118,14 +118,14 @@ function createStyles(c: ColorPalette) {
       fontSize: 12.5,
       letterSpacing: 1.1,
       textTransform: "uppercase" as const,
-      color: c.parchmentDim,
+      color: c.textSecondary,
       marginBottom: 34,
     },
     privacyHeadline: {
       fontFamily: "Fraunces_450",
       fontSize: 27,
       lineHeight: 33,
-      color: c.parchment,
+      color: c.textPrimary,
       marginBottom: 26,
     },
     featRow: {
@@ -152,14 +152,14 @@ function createStyles(c: ColorPalette) {
     featTitle: {
       fontFamily: "Manrope_700Bold",
       fontSize: 15.5,
-      color: c.parchment,
+      color: c.textPrimary,
       marginBottom: 3,
     },
     featDesc: {
       fontFamily: "Manrope_400",
       fontSize: 14,
       lineHeight: 21,
-      color: c.parchmentDim,
+      color: c.textSecondary,
     },
 
     // ── Slide 3: Biometric ──
@@ -167,7 +167,7 @@ function createStyles(c: ColorPalette) {
       fontFamily: "Fraunces_450",
       fontSize: 28,
       lineHeight: 34,
-      color: c.parchment,
+      color: c.textPrimary,
       marginTop: 10,
       marginBottom: 8,
     },
@@ -175,7 +175,7 @@ function createStyles(c: ColorPalette) {
       fontFamily: "Manrope_400",
       fontSize: 15,
       lineHeight: 23,
-      color: c.parchmentDim,
+      color: c.textSecondary,
       marginBottom: 30,
     },
     biometricCaption: {
@@ -194,7 +194,7 @@ function createStyles(c: ColorPalette) {
     pinFallbackText: {
       fontFamily: "Manrope_400",
       fontSize: 14,
-      color: c.parchmentDim,
+      color: c.textSecondary,
       textDecorationLine: "underline" as const,
       textDecorationColor: "rgba(167,159,140,0.4)",
       textAlign: "center" as const,
@@ -604,7 +604,7 @@ export default function OnboardingCarousel() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
+      <View className="flex-1 pt-safe bg-surface-bg">
         <View style={{ flex: 1, overflow: "hidden" }}>
           <GestureDetector gesture={componentPan}>
             <Animated.View style={[styles.track, trackStyle]}>

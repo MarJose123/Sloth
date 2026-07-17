@@ -37,7 +37,7 @@ export function CategoryRingCard({
   const strokeDashoffset = CIRCUMFERENCE * (1 - percent / 100);
 
   return (
-    <View className="flex-1 items-center rounded-2xl border border-hairline bg-ink-2 p-3.5">
+    <View className="flex-1 items-center rounded-2xl border border-hairline bg-surface-card p-3.5">
       {/* ── Progress ring ────────────────────────────────────────────── */}
       <View style={styles.ringContainer}>
         {/* SVG layer: background track + progress arc */}
@@ -76,12 +76,12 @@ export function CategoryRingCard({
 
         {/* Inner icon circle — absolutely positioned over the SVG */}
         <View
+          className="bg-surface-elevated"
           style={[
             styles.innerCircle,
             {
               top: INNER_OFFSET,
               left: INNER_OFFSET,
-              backgroundColor: colors.ink3,
             },
           ]}
         >
@@ -91,7 +91,7 @@ export function CategoryRingCard({
 
       {/* ── Category label ───────────────────────────────────────────── */}
       <Text
-        className="mt-2 font-mono text-[12px] uppercase text-parchment-dim"
+        className="mt-2 font-mono text-[12px] uppercase text-text-secondary"
         numberOfLines={1}
       >
         {category.name}

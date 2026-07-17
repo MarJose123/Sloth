@@ -19,20 +19,19 @@ function TransactionLedgerRow({
 }: {
   transaction: TransactionLedgerItem;
 }) {
-  const colors = useColors();
   const isIncome =
     transaction.categoryKind === "income" || transaction.amountCents > 0;
 
-  const amountColor = isIncome ? colors.sage : colors.parchment;
+  const amountClassName = isIncome ? "text-sage" : "text-text-primary";
+  const badgeClassName = transaction.categoryIcon
+    ? "bg-surface-elevated"
+    : "bg-surface-card";
 
   return (
     <View className="flex-row items-center gap-3 border-b border-hairline py-[11px]">
       {/* ── Category icon badge ── */}
       <View
-        className="h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
-        style={{
-          backgroundColor: transaction.categoryIcon ? colors.ink3 : colors.ink2,
-        }}
+        className={`h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${badgeClassName}`}
       >
         <Text style={{ fontSize: 18 }}>{transaction.categoryIcon ?? "·"}</Text>
       </View>
@@ -40,25 +39,25 @@ function TransactionLedgerRow({
       {/* ── Details ── */}
       <View className="flex-1 pr-2">
         <Text
-          className="text-[14.5px] font-manrope-semibold text-parchment"
+          className="text-[14.5px] font-manrope-semibold text-text-primary"
           numberOfLines={1}
         >
           {transaction.merchant}
         </Text>
         <Text
-          className="mt-0.5 text-[12px] text-parchment-dim"
+          className="mt-0.5 text-[12px] text-text-secondary"
           numberOfLines={1}
         >
           {transaction.categoryName ?? "Uncategorized"} ·{" "}
           {formatRelativeDate(transaction.occurredAt)}
           {transaction.source !== "manual" && (
-            <Text className="text-parchment-dim"> · {transaction.source}</Text>
+            <Text className="text-text-secondary"> · {transaction.source}</Text>
           )}
         </Text>
       </View>
 
       {/* ── Amount ── */}
-      <Text className="font-mono text-[14.5px]" style={{ color: amountColor }}>
+      <Text className={`font-mono text-[14.5px] ${amountClassName}`}>
         {formatSignedCurrency(transaction.amountCents)}
       </Text>
     </View>
@@ -77,10 +76,7 @@ export default function TransactionsScreen() {
 
   if (state.status === "error") {
     return (
-      <View
-        className="flex-1 items-center justify-center px-8 pt-safe"
-        style={{ backgroundColor: colors.ink }}
-      >
+      <View className="flex-1 items-center justify-center px-8 pt-safe bg-surface-bg">
         <Text className="text-center text-sm text-rust">{state.message}</Text>
       </View>
     );
@@ -91,7 +87,7 @@ export default function TransactionsScreen() {
   const isLoading = state.status === "loading";
 
   return (
-    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
+    <View className="flex-1 pt-safe bg-surface-bg">
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
@@ -106,7 +102,7 @@ export default function TransactionsScreen() {
       >
         {/* ── Header ── */}
         <View className="mb-5 flex-row items-center justify-between">
-          <Text className="font-fraunces-medium text-[22px] text-parchment">
+          <Text className="font-fraunces-medium text-[22px] text-text-primary">
             Transactions
           </Text>
           <Pressable
@@ -122,7 +118,7 @@ export default function TransactionsScreen() {
         {/* ── Loading ── */}
         {isLoading && (
           <View className="items-center py-14">
-            <Text className="text-sm text-parchment-dim">
+            <Text className="text-sm text-text-secondary">
               Loading transactions…
             </Text>
           </View>
@@ -130,14 +126,11 @@ export default function TransactionsScreen() {
 
         {/* ── Empty state ── */}
         {!isLoading && transactions.length === 0 && (
-          <View
-            className="items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10"
-            style={{ backgroundColor: colors.ink2 }}
-          >
-            <Text className="mb-2 font-fraunces-medium text-xl text-parchment">
+          <View className="items-center rounded-2xl border border-hairline bg-surface-card px-6 py-10">
+            <Text className="mb-2 font-fraunces-medium text-xl text-text-primary">
               No transactions yet
             </Text>
-            <Text className="mb-6 text-center text-sm leading-[1.55] text-parchment-dim">
+            <Text className="mb-6 text-center text-sm leading-[1.55] text-text-secondary">
               Tap Add to record your first transaction, scan a receipt, or
               import from a CSV file.
             </Text>
@@ -160,7 +153,7 @@ export default function TransactionsScreen() {
 
         {/* ── End of list note ── */}
         {!isLoading && transactions.length > 0 && (
-          <Text className="mt-5 text-center font-mono text-[11px] text-parchment-dim">
+          <Text className="mt-5 text-center font-mono text-[11px] text-text-secondary">
             {transactions.length} transaction
             {transactions.length !== 1 ? "s" : ""} · all stored on this device
           </Text>

@@ -30,12 +30,12 @@ function MethodPill({
     <Pressable
       onPress={onPress}
       className={`rounded-full px-4 py-2 ${
-        active ? "border border-brass/50 bg-brass/10" : "bg-ink-3"
+        active ? "border border-brass/50 bg-brass/10" : "bg-surface-elevated"
       }`}
     >
       <Text
         className={`text-[12px] font-manrope-semibold ${
-          active ? "text-brass" : "text-parchment-dim"
+          active ? "text-brass" : "text-text-secondary"
         }`}
       >
         {label}
@@ -56,12 +56,14 @@ function PickerRow({
   return (
     <Pressable
       onPress={onPress}
-      className="rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5 active:opacity-70"
+      className="rounded-2xl border border-hairline bg-surface-card px-4 py-3.5 active:opacity-70"
     >
-      <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
+      <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
         {label}
       </Text>
-      <Text className="text-[13.5px] text-parchment">{value || "Select…"}</Text>
+      <Text className="text-[13.5px] text-text-primary">
+        {value || "Select…"}
+      </Text>
     </Pressable>
   );
 }
@@ -166,21 +168,15 @@ export default function AddTransactionScreen() {
 
   if (formData.status === "loading") {
     return (
-      <View
-        className="flex-1 items-center justify-center pt-safe"
-        style={{ backgroundColor: colors.ink }}
-      >
-        <Text className="text-sm text-parchment-dim">Loading…</Text>
+      <View className="flex-1 items-center justify-center pt-safe bg-surface-bg">
+        <Text className="text-sm text-text-secondary">Loading…</Text>
       </View>
     );
   }
 
   if (formData.status === "error") {
     return (
-      <View
-        className="flex-1 items-center justify-center px-8 pt-safe"
-        style={{ backgroundColor: colors.ink }}
-      >
+      <View className="flex-1 items-center justify-center px-8 pt-safe bg-surface-bg">
         <Text className="text-center text-sm text-rust">
           {formData.message}
         </Text>
@@ -191,7 +187,7 @@ export default function AddTransactionScreen() {
   const { accounts, categories } = formData.data;
 
   return (
-    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
+    <View className="flex-1 pt-safe bg-surface-bg">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -208,9 +204,9 @@ export default function AddTransactionScreen() {
               onPress={() => router.back()}
               className="active:opacity-60"
             >
-              <Text className="text-[14.5px] text-parchment-dim">Cancel</Text>
+              <Text className="text-[14.5px] text-text-secondary">Cancel</Text>
             </Pressable>
-            <Text className="font-fraunces-medium text-[18px] text-parchment">
+            <Text className="font-fraunces-medium text-[18px] text-text-primary">
               New expense
             </Text>
             <Pressable
@@ -234,12 +230,12 @@ export default function AddTransactionScreen() {
               onChangeText={setAmountText}
               keyboardType="decimal-pad"
               placeholder="0.00"
-              placeholderTextColor={colors.parchmentDim}
+              placeholderTextColor={colors.textSecondary}
               className="text-center font-fraunces-medium text-[46px] text-brass"
               style={{ minWidth: 120 }}
             />
             {selectedAccount && (
-              <Text className="mt-1 font-mono text-[11px] text-parchment-dim">
+              <Text className="mt-1 font-mono text-[11px] text-text-secondary">
                 {selectedAccount.name} · Balance{" "}
                 {formatCurrency(selectedAccount.balanceCents)}
               </Text>
@@ -307,45 +303,45 @@ export default function AddTransactionScreen() {
               }}
             />
 
-            <View className="rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
-              <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
+            <View className="rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
+              <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
                 Merchant
               </Text>
               <TextInput
                 value={merchant}
                 onChangeText={setMerchant}
                 placeholder="e.g. Whole Foods"
-                placeholderTextColor={colors.parchmentDim}
-                className="text-[13.5px] text-parchment"
+                placeholderTextColor={colors.textSecondary}
+                className="text-[13.5px] text-text-primary"
                 autoCapitalize="words"
                 returnKeyType="next"
               />
             </View>
 
-            <View className="rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
-              <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
+            <View className="rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
+              <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
                 Note (optional)
               </Text>
               <TextInput
                 value={note}
                 onChangeText={setNote}
                 placeholder="Groceries for the week"
-                placeholderTextColor={colors.parchmentDim}
-                className="text-[13.5px] text-parchment"
+                placeholderTextColor={colors.textSecondary}
+                className="text-[13.5px] text-text-primary"
                 returnKeyType="done"
               />
             </View>
 
-            <View className="rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
-              <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
+            <View className="rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
+              <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
                 Date
               </Text>
               <TextInput
                 value={dateText}
                 onChangeText={setDateText}
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor={colors.parchmentDim}
-                className="text-[13.5px] text-parchment"
+                placeholderTextColor={colors.textSecondary}
+                className="text-[13.5px] text-text-primary"
                 keyboardType="numbers-and-punctuation"
               />
             </View>

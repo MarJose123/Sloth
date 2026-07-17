@@ -6,84 +6,101 @@
 
 /* ─────────────────────────────────────────────────────────────────
    SLOTH THEME CSS VARIABLES
-   Light mode is the :root default (no media query needed).
-   Dark mode activates via @media (prefers-color-scheme: dark),
-   which is the native Tailwind / NativeWind v5 dark: mechanism.
-   ThemeContext calls Appearance.setColorScheme() to switch.
+   Dark-first default. At runtime, ThemeContext uses a
+   VariableContextProvider to inject the correct --sloth-* values
+   based on the resolved theme (light/dark/auto), which overrides
+   whatever is set here.
    ───────────────────────────────────────────────────────────────── */
 
 :root {
-  /* ── Surfaces ────────────────────────────────────────────────── */
-  --sloth-ink: #f5f0e4;
-  --sloth-ink-2: #ebe6d8;
-  --sloth-ink-3: #e0dbcb;
+  /* ── Dark mode surfaces ─────────────────────────────────────── */
+  --sloth-surface-bg: #1b1f1a;
+  --sloth-surface-card: #242920;
+  --sloth-surface-elevated: #2e3428;
 
-  /* ── Text ────────────────────────────────────────────────────── */
-  --sloth-parchment: #1b1f1a;
-  --sloth-parchment-dim: #6b6352;
+  /* ── Dark mode text ─────────────────────────────────────────── */
+  --sloth-text-primary: #f3eee1;
+  --sloth-text-secondary: #a79f8c;
 
-  /* ── Accents ─────────────────────────────────────────────────── */
+  /* ── Brand accents (mode-invariant) ─────────────────────────── */
   --sloth-brass: #c87b54;
-  --sloth-brass-soft: #a96b42;
-  --sloth-sage: #6b8d58;
+  --sloth-brass-soft: #8f5636;
+  --sloth-sage: #7fa06b;
   --sloth-rust: #9c4a3d;
 
-  /* ── Category ring extras ────────────────────────────────────── */
+  /* ── Category ring extras ───────────────────────────────────── */
   --sloth-dusty-blue: #6e8fb0;
   --sloth-ochre: #c9a227;
-  --sloth-tab-bar: rgba(235, 230, 216, 0.95);
-  --sloth-hairline: rgba(27, 31, 26, 0.09);
+
+  /* ── Static tokens (mode-invariant) ─────────────────────────── */
+  --sloth-ink: #1b1f1a; /* CTA text on brass       */
+  --sloth-parchment: #f3eee1; /* QR / badge backgrounds */
+
+  /* ── Utility tokens ─────────────────────────────────────────── */
+  --sloth-hairline: rgba(243, 238, 225, 0.09);
+  --sloth-tab-bar: rgba(18, 20, 28, 0.95);
 }
 
-/* ── Dark theme overrides ─────────────────────────────────────────
-     Activated when the device is in dark mode, or when
-     Appearance.setColorScheme("dark") is called by ThemeContext. */
-@media (prefers-color-scheme: dark) {
+/* ── Light mode overrides ───────────────────────────────────────── */
+@media (prefers-color-scheme: light) {
   :root {
-    --sloth-ink: #1b1f1a;
-    --sloth-ink-2: #242920;
-    --sloth-ink-3: #2e3428;
-    --sloth-parchment: #f3eee1;
-    --sloth-parchment-dim: #a79f8c;
-    --sloth-sage: #7fa06b;
+    --sloth-surface-bg: #f5f0e4;
+    --sloth-surface-card: #ebe6d8;
+    --sloth-surface-elevated: #e0dbcb;
+
+    --sloth-text-primary: #1b1f1a;
+    --sloth-text-secondary: #6b6352;
+
     --sloth-brass: #c87b54;
-    --sloth-brass-soft: #8f5636;
+    --sloth-brass-soft: #a96b42;
+    --sloth-sage: #6b8d58;
     --sloth-rust: #9c4a3d;
+
     --sloth-dusty-blue: #6e8fb0;
     --sloth-ochre: #c9a227;
-    --sloth-tab-bar: rgba(18, 20, 28, 0.95);
-    --sloth-hairline: rgba(243, 238, 225, 0.09);
+
+    /* ── Static tokens (mode-invariant) ─────────────────────────── */
+    --sloth-ink: #1b1f1a; /* CTA text on brass       */
+    --sloth-parchment: #f3eee1; /* QR / badge backgrounds */
+
+    --sloth-hairline: rgba(27, 31, 26, 0.09);
+    --sloth-tab-bar: rgba(235, 230, 216, 0.95);
   }
 }
 
 /* ─────────────────────────────────────────────────────────────────
    SLOTH DESIGN TOKENS (@theme)
-   These reference the CSS variables above with light defaults as
-   fallbacks. When dark mode is active (system or user-set),
-   var() resolves to the dark values and all utility classes
-   (bg-ink, text-parchment, etc.) update automatically.
+   Semantic utility names that reference the --sloth-* vars above.
+   At runtime ThemeContext's VariableContextProvider overrides the
+   --sloth-* values to match the resolved theme, and all utility
+   classes update automatically via the VariableContext cascade.
    ───────────────────────────────────────────────────────────────── */
 
 @theme {
   /* ── Surfaces ──────────────────────────────────────────────────── */
-  --color-ink: var(--sloth-ink, #f5f0e4);
-  --color-ink-2: var(--sloth-ink-2, #ebe6d8);
-  --color-ink-3: var(--sloth-ink-3, #e0dbcb);
+  --color-surface-bg: var(--sloth-surface-bg, #1b1f1a);
+  --color-surface-card: var(--sloth-surface-card, #242920);
+  --color-surface-elevated: var(--sloth-surface-elevated, #2e3428);
 
   /* ── Text ──────────────────────────────────────────────────────── */
-  --color-parchment: var(--sloth-parchment, #1b1f1a);
-  --color-parchment-dim: var(--sloth-parchment-dim, #6b6352);
+  --color-text-primary: var(--sloth-text-primary, #f3eee1);
+  --color-text-secondary: var(--sloth-text-secondary, #a79f8c);
 
   /* ── Accents ───────────────────────────────────────────────────── */
   --color-brass: var(--sloth-brass, #c87b54);
-  --color-brass-soft: var(--sloth-brass-soft, #a96b42);
-  --color-sage: var(--sloth-sage, #6b8d58);
+  --color-brass-soft: var(--sloth-brass-soft, #8f5636);
+  --color-sage: var(--sloth-sage, #7fa06b);
   --color-rust: var(--sloth-rust, #9c4a3d);
 
   /* ── Category ring extras ──────────────────────────────────────── */
   --color-dusty-blue: var(--sloth-dusty-blue, #6e8fb0);
   --color-ochre: var(--sloth-ochre, #c9a227);
-  --color-hairline: var(--sloth-hairline, rgba(27, 31, 26, 0.09));
+  --color-hairline: var(--sloth-hairline, rgba(243, 238, 225, 0.09));
+  --color-tab-bar: var(--sloth-tab-bar, rgba(18, 20, 28, 0.95));
+
+  /* ── Static tokens (mode-invariant) ────────────────────────────── */
+  --color-ink: var(--sloth-ink, #1b1f1a); /* CTA text on brass */
+  --color-parchment: var(--sloth-parchment, #f3eee1); /* QR / badge bg      */
 
   /* ── Typography ────────────────────────────────────────────────────
        React Native requires exact font-file key names, no fallbacks.
@@ -108,8 +125,8 @@
    ───────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    background-color: var(--sloth-ink, #f5f0e4);
-    color: var(--sloth-parchment, #1b1f1a);
+    background-color: var(--sloth-surface-bg, #1b1f1a);
+    color: var(--sloth-text-primary, #f3eee1);
   }
 }
 

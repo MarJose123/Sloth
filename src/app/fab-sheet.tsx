@@ -68,24 +68,14 @@ export default function FabSheetScreen() {
       />
 
       {/* Bottom sheet */}
-      <View
-        className="rounded-t-[22px] px-5 pb-8 pt-2"
-        style={{
-          backgroundColor: colors.ink2,
-          borderTopWidth: 1,
-          borderTopColor: colors.hairline,
-        }}
-      >
+      <View className="rounded-t-[22px] border-t border-t-hairline bg-surface-card px-5 pb-8 pt-2">
         {/* Drag handle */}
         <View className="mb-5 items-center">
-          <View
-            className="h-1 w-9 rounded-full"
-            style={{ backgroundColor: colors.hairline }}
-          />
+          <View className="h-1 w-9 rounded-full bg-hairline" />
         </View>
 
         {/* Title */}
-        <Text className="mb-6 text-center font-fraunces-medium text-lg text-parchment">
+        <Text className="mb-6 text-center font-fraunces-medium text-lg text-text-primary">
           Add to Sloth
         </Text>
 
@@ -94,27 +84,27 @@ export default function FabSheetScreen() {
           <Pressable
             key={action.label}
             onPress={() => handleAction(action.route)}
-            className="mb-2.5 flex-row items-center gap-4 rounded-2xl border border-hairline bg-ink-3 px-4 py-3.5 active:opacity-70"
+            className="mb-2.5 flex-row items-center gap-4 rounded-2xl border border-hairline bg-surface-elevated px-4 py-3.5 active:opacity-70"
             accessibilityRole="button"
             accessibilityLabel={action.label}
           >
             {/* Icon tile */}
-            <View className="h-11 w-11 items-center justify-center rounded-xl border border-brass/30 bg-ink-3">
+            <View className="h-11 w-11 items-center justify-center rounded-xl border border-brass/30 bg-surface-elevated">
               <Lucide name={action.icon} size={20} color={colors.brass} />
             </View>
 
             {/* Label + description */}
             <View className="flex-1">
-              <Text className="font-manrope-bold text-[13px] text-parchment">
+              <Text className="font-manrope-bold text-[13px] text-text-primary">
                 {action.label}
               </Text>
-              <Text className="text-[11.5px] leading-4 text-parchment-dim">
+              <Text className="text-[11.5px] leading-4 text-text-secondary">
                 {action.description}
               </Text>
             </View>
 
             {/* Chevron */}
-            <ChevronRightIcon size={18} color={colors.parchmentDim} />
+            <ChevronRightIcon size={18} color={colors.textSecondary} />
           </Pressable>
         ))}
       </View>

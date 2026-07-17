@@ -1,5 +1,4 @@
 import { Pressable, View } from "react-native";
-import { useColors } from "@/theme/ThemeContext";
 
 interface ToggleProps {
   value: boolean;
@@ -9,40 +8,36 @@ interface ToggleProps {
 
 /**
  * A minimal two-state toggle that matches the Sloth design system.
- * Uses inline styles intentionally — the thumb position is a boolean
- * switch between two discrete states, not a Tailwind utility concern.
- * Colours react to the active theme via useColors().
+ * Uses dynamic className for colour switching — no hook needed.
+ * Thumb position and borderWidth remain as inline styles (layout concerns).
  */
 export function Toggle({
   value,
   onValueChange,
   disabled = false,
 }: ToggleProps) {
-  const colors = useColors();
-
   return (
     <Pressable
       onPress={() => !disabled && onValueChange(!value)}
       accessibilityRole="switch"
       accessibilityState={{ checked: value, disabled }}
+      className={`border-hairline ${value ? "bg-brass" : "bg-surface-elevated"}`}
       style={{
         width: 40,
         height: 24,
         borderRadius: 12,
         paddingHorizontal: 3,
         justifyContent: "center",
-        backgroundColor: value ? colors.brass : colors.ink3,
         borderWidth: value ? 0 : 1,
-        borderColor: colors.hairline,
         opacity: disabled ? 0.4 : 1,
       }}
     >
       <View
+        className={value ? "bg-text-primary" : "bg-text-secondary"}
         style={{
           width: 18,
           height: 18,
           borderRadius: 9,
-          backgroundColor: value ? colors.parchment : colors.parchmentDim,
           alignSelf: value ? "flex-end" : "flex-start",
         }}
       />

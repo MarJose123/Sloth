@@ -26,19 +26,9 @@ export default function DonateScreen() {
   }, []);
 
   return (
-    <View
-      className="flex-1 justify-center px-5"
-      style={{ backgroundColor: colors.ink + "99" }} // Use primary background with 60% opacity (0.6 * 255 = 153 ≈ 99 hex)
-    >
+    <View className="flex-1 justify-center bg-surface-bg/60 px-5">
       {/* Modal card */}
-      <View
-        className="w-[82%] self-center rounded-[22px] px-6 pb-8 pt-6"
-        style={{
-          backgroundColor: colors.ink2,
-          borderWidth: 1,
-          borderColor: colors.hairline,
-        }}
-      >
+      <View className="w-[82%] self-center rounded-[22px] border border-hairline bg-surface-card px-6 pb-8 pt-6">
         {/* Close button */}
         <View className="mb-4 flex-row justify-end">
           <Pressable
@@ -48,29 +38,25 @@ export default function DonateScreen() {
             accessibilityRole="button"
             hitSlop={12}
           >
-            <XIcon size={24} color={colors.parchmentDim} />
+            <XIcon size={24} color={colors.textSecondary} />
           </Pressable>
         </View>
 
         {/* Title */}
-        <Text className="mb-2 text-center font-fraunces-medium text-[21px] text-parchment">
+        <Text className="mb-2 text-center font-fraunces-medium text-[21px] text-text-primary">
           Support Sloth
         </Text>
 
         {/* Descriptor */}
-        <Text className="mb-6 text-center text-[13.5px] leading-[18px] text-parchment-dim">
+        <Text className="mb-6 text-center text-[13.5px] leading-[18px] text-text-secondary">
           Sloth is free, open-source, and will always be private. If you find it
           useful, consider donating to support ongoing development.
         </Text>
 
         {/* QR code box */}
-        <View
-          className="mb-4 items-center self-center rounded-[14px] p-3"
-          style={{ backgroundColor: colors.parchment }}
-        >
+        <View className="mb-4 items-center self-center rounded-[14px] bg-parchment p-3">
           <View
-            className="h-[168px] w-[168px] items-center justify-center rounded-[14px]"
-            style={{ backgroundColor: colors.parchment }}
+            className="h-[168px] w-[168px] items-center justify-center rounded-[14px] bg-parchment"
             accessibilityLabel="Donation QR code"
           >
             {/* Placeholder: QR code will render here via react-native-qrcode-svg */}
@@ -81,9 +67,9 @@ export default function DonateScreen() {
         </View>
 
         {/* Address */}
-        <View className="mb-6 rounded-lg bg-ink-3 px-3 py-2.5">
+        <View className="mb-6 rounded-lg bg-surface-elevated px-3 py-2.5">
           <Text
-            className="text-center font-mono text-[11.5px] text-parchment-dim"
+            className="text-center font-mono text-[11.5px] text-text-secondary"
             numberOfLines={1}
             adjustsFontSizeToFit
           >
@@ -108,7 +94,7 @@ export default function DonateScreen() {
         <View className="absolute bottom-12 left-0 right-0 items-center">
           <View className="flex-row items-center gap-1.5 rounded-full bg-sage/90 px-5 py-2.5">
             <Lucide name="check" size={14} color={colors.parchment} />
-            <Text className="font-manrope-bold text-[13.5px] text-parchment">
+            <Text className="font-manrope-bold text-[13.5px] text-text-primary">
               Saved to gallery
             </Text>
           </View>

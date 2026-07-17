@@ -9,7 +9,7 @@ interface TabBarButtonProps extends PressableProps {
 
 export function TabBarButton({ Icon, isFocused, ...props }: TabBarButtonProps) {
   const colors = useColors();
-  const color = isFocused ? colors.brass : colors.parchmentDim;
+  const color = isFocused ? colors.brass : colors.textSecondary;
 
   return (
     <Pressable

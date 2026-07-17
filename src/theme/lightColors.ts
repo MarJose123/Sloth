@@ -6,27 +6,21 @@
  * sufficient contrast on light backgrounds.
  */
 export const lightColors = {
-  /** Canvas / primary background */
-  ink: "#F5F0E4",
-  /** Card surface */
-  ink2: "#EBE6D8",
-  /** Input bg, icon bg */
-  ink3: "#E0DBCB",
-  /** Primary text */
-  parchment: "#1B1F1A",
-  /** Secondary text, labels */
-  parchmentDim: "#6B6352",
-  /** Primary accent, CTA buttons */
+  surfaceBg: "#F5F0E4",
+  surfaceCard: "#EBE6D8",
+  surfaceElevated: "#E0DBCB",
+  textPrimary: "#1B1F1A",
+  textSecondary: "#6B6352",
   brass: "#C87B54",
-  /** Pressed state */
   brassSoft: "#A96B42",
-  /** Income, success, secondary accent */
   sage: "#6B8D58",
-  /** Alerts, negative balance, errors */
   rust: "#9C4A3D",
-  /** Transit category ring */
   dustyBlue: "#6E8FB0",
   ochre: "#C9A227",
+  /** Static — always #1B1F1A (CTA text on brass) */
+  ink: "#1B1F1A",
+  /** Static — always #F3EEE1 (QR / badge backgrounds) */
+  parchment: "#F3EEE1",
   hairline: "rgba(27, 31, 26, 0.09)",
   tabBar: "rgba(235,230,216,0.95)",
 } as const;

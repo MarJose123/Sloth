@@ -7,7 +7,6 @@ import { DialFrame } from "@/components/DialFrame";
 import { FingerprintIcon } from "@/components/ui/FingerprintIcon";
 import { BrassButton } from "@/components/ui/BrassButton";
 import { TextLink } from "@/components/ui/TextLink";
-import { useColors } from "@/theme/ThemeContext";
 import { hashPin } from "@/lib/pin";
 import { storage } from "@/lib/storage";
 import {
@@ -22,7 +21,6 @@ type ViewState =
   { screen: "biometric" } | { screen: "pin_verify"; error?: string };
 
 export default function LockScreen() {
-  const colors = useColors();
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode: LockMode = params.mode === "set" ? "set" : "lock";
 
@@ -116,10 +114,7 @@ export default function LockScreen() {
 
   if (view.screen === "biometric") {
     return (
-      <View
-        className="flex-1 items-center justify-center px-5"
-        style={{ backgroundColor: colors.ink }}
-      >
+      <View className="flex-1 items-center justify-center px-5 bg-surface-bg">
         {/* Brass brand-mark */}
         <View className="mb-2">
           <Text className="text-center font-mono text-[12.5px] uppercase tracking-[2px] text-brass">
@@ -132,10 +127,10 @@ export default function LockScreen() {
           <FingerprintIcon size={32} />
         </DialFrame>
 
-        <Text className="mb-2 mt-8 text-center font-fraunces-medium text-[24px] text-parchment">
+        <Text className="mb-2 mt-8 text-center font-fraunces-medium text-[24px] text-text-primary">
           Welcome back
         </Text>
-        <Text className="mb-10 text-center text-[14.5px] text-parchment-dim">
+        <Text className="mb-10 text-center text-[14.5px] text-text-secondary">
           Unlock to see your accounts
         </Text>
 
@@ -155,17 +150,14 @@ export default function LockScreen() {
 
   // PIN verify screen
   return (
-    <View
-      className="flex-1 px-5 pb-5 pt-safe"
-      style={{ backgroundColor: colors.ink }}
-    >
+    <View className="flex-1 px-5 pb-5 pt-safe bg-surface-bg">
       {/* Sloth locked eyebrow */}
       <Text className="mb-2 mt-15 text-center font-mono text-[12.5px] uppercase tracking-[2px] text-brass">
         Sloth locked
       </Text>
 
       {/* Title */}
-      <Text className="mb-8 mt-2.5 text-center font-fraunces-medium text-[22px] text-parchment">
+      <Text className="mb-8 mt-2.5 text-center font-fraunces-medium text-[22px] text-text-primary">
         {mode === "set" ? "Create a 6-digit PIN" : "Enter your PIN"}
       </Text>
 

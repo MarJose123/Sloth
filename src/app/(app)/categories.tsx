@@ -104,19 +104,19 @@ function CategoryRow({
       />
 
       <View className="flex-1">
-        <Text className="text-[14.5px] font-manrope-semibold text-parchment">
+        <Text className="text-[14.5px] font-manrope-semibold text-text-primary">
           {category.name}
         </Text>
-        <Text className="mt-0.5 font-mono text-[12px] uppercase text-parchment-dim">
+        <Text className="mt-0.5 font-mono text-[12px] uppercase text-text-secondary">
           {category.kind}
         </Text>
       </View>
 
       <View className="items-end">
-        <Text className="font-mono text-[13.5px] text-parchment">
+        <Text className="font-mono text-[13.5px] text-text-primary">
           {formatCurrency(category.spendCents)}
         </Text>
-        <Text className="mt-0.5 font-mono text-[11px] text-parchment-dim">
+        <Text className="mt-0.5 font-mono text-[11px] text-text-secondary">
           {category.transactionCount}{" "}
           {category.transactionCount === 1 ? "transaction" : "transactions"}
         </Text>
@@ -142,7 +142,7 @@ export default function CategoriesScreen() {
     state.status === "ready" ? state.data.totalExpenseCents : 0;
 
   return (
-    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
+    <View className="flex-1 pt-safe bg-surface-bg">
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
@@ -157,7 +157,7 @@ export default function CategoriesScreen() {
       >
         {/* ── Header ── */}
         <View className="mb-1 flex-row items-center justify-between">
-          <Text className="font-fraunces-medium text-[22px] text-parchment">
+          <Text className="font-fraunces-medium text-[22px] text-text-primary">
             Categories
           </Text>
           <Pressable
@@ -170,14 +170,14 @@ export default function CategoriesScreen() {
           </Pressable>
         </View>
 
-        <Text className="mb-5 text-[12px] text-parchment-dim">
+        <Text className="mb-5 text-[12px] text-text-secondary">
           This month · ring shows share of total spend
         </Text>
 
         {/* ── Loading ── */}
         {isLoading && (
           <View className="items-center py-14">
-            <Text className="text-sm text-parchment-dim">
+            <Text className="text-sm text-text-secondary">
               Loading categories…
             </Text>
           </View>
@@ -194,14 +194,11 @@ export default function CategoriesScreen() {
 
         {/* ── Empty state ── */}
         {!isLoading && state.status !== "error" && categories.length === 0 && (
-          <View
-            className="items-center rounded-2xl border border-hairline bg-ink-2 px-6 py-10"
-            style={{ backgroundColor: colors.ink2 }}
-          >
-            <Text className="mb-2 font-fraunces-medium text-xl text-parchment">
+          <View className="items-center rounded-2xl border border-hairline bg-surface-card px-6 py-10">
+            <Text className="mb-2 font-fraunces-medium text-xl text-text-primary">
               No categories yet
             </Text>
-            <Text className="mb-6 text-center text-sm leading-[1.55] text-parchment-dim">
+            <Text className="mb-6 text-center text-sm leading-[1.55] text-text-secondary">
               Create expense and income types to organize your transactions.
             </Text>
             <Pressable
@@ -235,10 +232,10 @@ export default function CategoriesScreen() {
         {!isLoading && categories.length > 0 && (
           <Pressable
             onPress={() => router.push("/category-editor")}
-            className="mt-3.5 items-center rounded-2xl border border-dashed py-4 active:opacity-60"
-            style={{ borderColor: colors.parchmentDim, opacity: 0.5 }}
+            className="mt-3.5 items-center rounded-2xl border border-dashed border-text-secondary py-4 active:opacity-60"
+            style={{ opacity: 0.5 }}
           >
-            <Text className="text-[14.5px] text-parchment-dim">
+            <Text className="text-[14.5px] text-text-secondary">
               + Create a new expense type
             </Text>
           </Pressable>

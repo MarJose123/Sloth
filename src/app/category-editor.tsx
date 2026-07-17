@@ -19,6 +19,7 @@ import {
   type CategoryKind,
 } from "@/lib/db/repositories/categories";
 import { useColors } from "@/theme/ThemeContext";
+import { colors } from "@/theme/colors";
 
 // ─── icon library ─────────────────────────────────────────────────────────────
 
@@ -50,10 +51,10 @@ const ICONS = [
 // ─── color palette ────────────────────────────────────────────────────────────
 
 const RING_COLORS = [
-  "#C87B54", // brass
-  "#7FA06B", // sage
-  "#9C4A3D", // rust
-  "#6E8FB0", // dustyBlue
+  colors.brass,
+  colors.sage,
+  colors.rust,
+  colors.dustyBlue,
   "#9B9787",
 ] as const;
 
@@ -68,15 +69,14 @@ function ColorSwatch({
   selected: boolean;
   onPress: () => void;
 }) {
-  const colors = useColors();
   return (
     <Pressable onPress={onPress} className="active:opacity-70">
       <View
+        className="border-brass"
         style={{
           padding: selected ? 3 : 0,
           borderRadius: 15,
           borderWidth: selected ? 2 : 0,
-          borderColor: colors.brass,
         }}
       >
         <View
@@ -193,17 +193,14 @@ export default function CategoryEditorScreen() {
 
   if (isLoadingData) {
     return (
-      <View
-        className="flex-1 items-center justify-center pt-safe"
-        style={{ backgroundColor: colors.ink }}
-      >
-        <Text className="text-sm text-parchment-dim">Loading…</Text>
+      <View className="flex-1 items-center justify-center pt-safe bg-surface-bg">
+        <Text className="text-sm text-text-secondary">Loading…</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 pt-safe" style={{ backgroundColor: colors.ink }}>
+    <View className="flex-1 pt-safe bg-surface-bg">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -220,9 +217,9 @@ export default function CategoryEditorScreen() {
               onPress={() => router.back()}
               className="active:opacity-60"
             >
-              <Text className="text-[14.5px] text-parchment-dim">Cancel</Text>
+              <Text className="text-[14.5px] text-text-secondary">Cancel</Text>
             </Pressable>
-            <Text className="font-fraunces-medium text-[20px] text-parchment">
+            <Text className="font-fraunces-medium text-[20px] text-text-primary">
               {isEditing ? "Edit category" : "New category"}
             </Text>
             <Pressable
@@ -242,16 +239,16 @@ export default function CategoryEditorScreen() {
           {/* ── Preview + name ── */}
           <View className="mb-6 flex-row items-center gap-3.5">
             <PreviewRing icon={selectedIcon} color={selectedColor} />
-            <View className="flex-1 rounded-2xl border border-hairline bg-ink-2 px-4 py-3.5">
-              <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-parchment-dim">
+            <View className="flex-1 rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
+              <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
                 Name
               </Text>
               <TextInput
                 value={name}
                 onChangeText={setName}
                 placeholder="e.g. Groceries"
-                placeholderTextColor={colors.parchmentDim}
-                className="text-[14px] text-parchment"
+                placeholderTextColor={colors.textSecondary}
+                className="text-[14px] text-text-primary"
                 autoCapitalize="words"
                 returnKeyType="done"
               />
@@ -272,7 +269,7 @@ export default function CategoryEditorScreen() {
                   className={`h-11 w-11 items-center justify-center rounded-[11px] border active:opacity-70 ${
                     active
                       ? "border-brass/60 bg-brass/10"
-                      : "border-hairline bg-ink-2"
+                      : "border-hairline bg-surface-card"
                   }`}
                 >
                   <Text style={{ fontSize: 20 }}>{icon}</Text>
@@ -310,19 +307,19 @@ export default function CategoryEditorScreen() {
                   className={`flex-1 flex-row items-center gap-2 rounded-2xl border p-3.5 active:opacity-80 ${
                     active
                       ? "border-brass/50 bg-brass/10"
-                      : "border-hairline bg-ink-2"
+                      : "border-hairline bg-surface-card"
                   }`}
                 >
                   <Text
                     className={`text-base font-manrope-bold ${
-                      active ? "text-brass" : "text-parchment-dim"
+                      active ? "text-brass" : "text-text-secondary"
                     }`}
                   >
                     {kind === "expense" ? "−" : "+"}
                   </Text>
                   <Text
                     className={`text-[12.5px] font-manrope-semibold capitalize ${
-                      active ? "text-parchment" : "text-parchment-dim"
+                      active ? "text-text-primary" : "text-text-secondary"
                     }`}
                   >
                     {kind}

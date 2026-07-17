@@ -1,18 +1,15 @@
 import { View, Text } from "react-native";
 import { SlothAppIcon } from "@/components/SlothAppIcon";
-import { useColors } from "@/theme/ThemeContext";
 
 export function SplashScreen() {
-  const colors = useColors();
-
   return (
     <View
       style={{
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: colors.ink,
       }}
+      className="bg-surface-bg"
     >
       {/* Full-colour app icon — 112px, matches mockup Screen 00 exactly */}
       <View
@@ -34,9 +31,9 @@ export function SplashScreen() {
           fontFamily: "Fraunces_450",
           fontSize: 26,
           letterSpacing: 0.26,
-          color: colors.parchment,
           marginBottom: 6,
         }}
+        className="text-text-primary"
       >
         Sloth
       </Text>
@@ -46,8 +43,8 @@ export function SplashScreen() {
           fontSize: 10.5,
           letterSpacing: 1.05,
           textTransform: "uppercase",
-          color: colors.parchmentDim,
         }}
+        className="text-text-secondary"
       >
         Private by default
       </Text>
@@ -74,8 +71,8 @@ export function SplashScreen() {
             width: 5,
             height: 5,
             borderRadius: 3,
-            backgroundColor: colors.brass,
           }}
+          className="bg-brass"
         />
         <View
           style={{

@@ -13,10 +13,9 @@ export function PinDots({ length, filledCount }: PinDotsProps) {
       {Array.from({ length }).map((_, i) => (
         <View
           key={i}
-          className="h-3.5 w-3.5 rounded-full border-[1.5px]"
+          className={`h-3.5 w-3.5 rounded-full border-[1.5px] ${i < filledCount ? "border-brass bg-brass" : "bg-transparent"}`}
           style={{
-            borderColor: i < filledCount ? colors.brass : colors.brass + "80", // brass/50
-            backgroundColor: i < filledCount ? colors.brass : "transparent",
+            borderColor: i < filledCount ? undefined : colors.brass + "80", // brass/50 — alpha variant, no Tailwind equivalent
           }}
         />
       ))}

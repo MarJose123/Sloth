@@ -81,16 +81,16 @@ export default function ReceiptScanScreen() {
   };
 
   if (!permission) {
-    return <View style={[styles.root, { backgroundColor: colors.ink }]} />;
+    return <View className="bg-surface-bg" style={styles.root} />;
   }
 
   if (!permission.granted) {
     return (
       <View
+        className="bg-surface-bg"
         style={[
           styles.root,
           {
-            backgroundColor: colors.ink,
             justifyContent: "center",
             alignItems: "center",
             padding: 20,
@@ -98,8 +98,8 @@ export default function ReceiptScanScreen() {
         ]}
       >
         <Text
+          className="text-text-primary"
           style={{
-            color: colors.parchment,
             textAlign: "center",
             marginBottom: 20,
             fontFamily: "Manrope_400Regular",
@@ -109,14 +109,14 @@ export default function ReceiptScanScreen() {
         </Text>
         <Pressable
           onPress={requestPermission}
+          className="bg-brass"
           style={{
-            backgroundColor: colors.brass,
             paddingHorizontal: 20,
             paddingVertical: 12,
             borderRadius: 12,
           }}
         >
-          <Text style={{ color: colors.ink, fontFamily: "Manrope_700Bold" }}>
+          <Text className="text-ink" style={{ fontFamily: "Manrope_700Bold" }}>
             Grant Permission
           </Text>
         </Pressable>
@@ -124,14 +124,8 @@ export default function ReceiptScanScreen() {
     );
   }
 
-  const detectedStyle = {
-    backgroundColor: colors.ink2,
-    borderWidth: 1,
-    borderColor: colors.hairline,
-  };
-
   return (
-    <View style={[styles.root, { backgroundColor: colors.ink }]}>
+    <View className="bg-surface-bg" style={styles.root}>
       {/* ── Camera viewport ── */}
       <CameraView
         ref={(ref) => setCamera(ref)}
@@ -149,77 +143,83 @@ export default function ReceiptScanScreen() {
           hitSlop={20}
           className="active:opacity-60"
         >
-          <XIcon size={24} color={colors.parchmentDim} />
+          <XIcon size={24} color={colors.textSecondary} />
         </Pressable>
 
-        <Text style={[styles.flashLabel, { color: colors.parchmentDim }]}>
+        <Text className="text-text-secondary" style={[styles.flashLabel]}>
           Flash: Auto
         </Text>
       </View>
 
       {/* ── Scan caption ── */}
       {!detected && (
-        <Text style={[styles.caption, { color: colors.parchmentDim }]}>
+        <Text className="text-text-secondary" style={[styles.caption]}>
           Align receipt in frame · processed on-device
         </Text>
       )}
 
       {/* ── Receipt frame overlay ── */}
       {!detected && (
-        <View style={[styles.receiptFrame, { borderColor: colors.brass }]}>
+        <View className="border-brass" style={[styles.receiptFrame]}>
           {/* Animated scan-line — static in scaffold */}
-          <View style={[styles.scanLine, { backgroundColor: colors.brass }]} />
+          <View className="bg-brass" style={[styles.scanLine]} />
         </View>
       )}
 
       {/* ── Detected card ── */}
       {detected && (
-        <View style={[styles.detectedCard, detectedStyle]}>
+        <View
+          className="bg-surface-card border border-hairline"
+          style={[styles.detectedCard]}
+        >
           <View className="flex-row items-center gap-1.5">
             <Lucide name="circle-dot" size={14} color={colors.sage} />
-            <Text style={[styles.detectedTag, { color: colors.sage }]}>
+            <Text className="text-sage" style={[styles.detectedTag]}>
               Detected on-device
             </Text>
           </View>
 
           <View style={styles.detectedRow}>
             <Text
-              style={[styles.detectedLabel, { color: colors.parchmentDim }]}
+              className="text-text-secondary"
+              style={[styles.detectedLabel]}
             >
               Merchant
             </Text>
-            <Text style={[styles.detectedValue, { color: colors.parchment }]}>
+            <Text className="text-text-primary" style={[styles.detectedValue]}>
               {detected.merchant ?? "—"}
             </Text>
           </View>
           <View style={styles.detectedRow}>
             <Text
-              style={[styles.detectedLabel, { color: colors.parchmentDim }]}
+              className="text-text-secondary"
+              style={[styles.detectedLabel]}
             >
               Amount
             </Text>
-            <Text style={[styles.detectedValue, { color: colors.parchment }]}>
+            <Text className="text-text-primary" style={[styles.detectedValue]}>
               {detected.formattedAmount}
             </Text>
           </View>
           <View style={styles.detectedRow}>
             <Text
-              style={[styles.detectedLabel, { color: colors.parchmentDim }]}
+              className="text-text-secondary"
+              style={[styles.detectedLabel]}
             >
               Date
             </Text>
-            <Text style={[styles.detectedValue, { color: colors.parchment }]}>
+            <Text className="text-text-primary" style={[styles.detectedValue]}>
               {detected.date ?? "—"}
             </Text>
           </View>
 
           <Pressable
             onPress={handleConfirm}
-            style={[styles.confirmBtn, { backgroundColor: colors.brass }]}
-            className="active:opacity-80"
+            className="bg-brass active:opacity-80"
+            style={[styles.confirmBtn]}
           >
             <View className="flex-row items-center gap-2">
-              <Text style={[styles.confirmBtnLabel, { color: colors.ink }]}>
+              <Text className="text-ink" style={[styles.confirmBtnLabel]}>
                 Use these details
               </Text>
               <ArrowRightIcon size={16} color={colors.ink} />
@@ -232,8 +232,8 @@ export default function ReceiptScanScreen() {
             style={{ alignItems: "center" }}
           >
             <Text
+              className="text-text-secondary"
               style={{
-                color: colors.parchmentDim,
                 fontFamily: "Manrope_400Regular",
                 fontSize: 13,
               }}
@@ -250,16 +250,10 @@ export default function ReceiptScanScreen() {
           <Pressable
             onPress={handleShutter}
             disabled={isProcessing}
-            style={[
-              styles.shutterRing,
-              { borderColor: colors.parchment },
-              isProcessing && { opacity: 0.5 },
-            ]}
-            className="active:opacity-80"
+            className="border-parchment active:opacity-80"
+            style={[styles.shutterRing, isProcessing && { opacity: 0.5 }]}
           >
-            <View
-              style={[styles.shutterInner, { backgroundColor: colors.brass }]}
-            />
+            <View className="bg-brass" style={[styles.shutterInner]} />
           </Pressable>
         </View>
       )}

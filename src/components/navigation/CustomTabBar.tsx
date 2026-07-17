@@ -61,14 +61,12 @@ export function CustomTabBar({ state, navigation }: CustomTabBarProps) {
 
   return (
     <View
+      className="flex-row items-center border-t-hairline"
       style={{
-        flexDirection: "row",
-        alignItems: "center",
         paddingTop: 8,
         paddingBottom: (insets.bottom || 0) + 18,
         backgroundColor: colors.tabBar,
         borderTopWidth: 1,
-        borderTopColor: colors.hairline,
       }}
     >
       {/* Left two tabs: Home, Accounts */}

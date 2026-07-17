@@ -21,10 +21,10 @@ export function FeatureRow({
         <Text className="font-mono text-sm text-brass">{index}</Text>
       </View>
       <View className="flex-1">
-        <Text className="mb-0.5 font-manrope-bold text-sm text-parchment">
+        <Text className="mb-0.5 font-manrope-bold text-sm text-text-primary">
           {title}
         </Text>
-        <Text className="text-[12.5px] leading-[18px] text-parchment-dim">
+        <Text className="text-[12.5px] leading-[18px] text-text-secondary">
           {description}
         </Text>
       </View>
