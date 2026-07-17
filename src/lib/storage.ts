@@ -15,7 +15,7 @@ const KEYS = {
   screenshotsEnabled: "sloth.screenshots_enabled",
 } as const;
 
-export type ThemePreference = "light" | "dark" | "auto";
+export type ThemePreference = "light" | "dark";
 
 export const storage = {
   // ── onboarding ──────────────────────────────────────────────────────────────
@@ -47,11 +47,9 @@ export const storage = {
 
   // ── theme ───────────────────────────────────────────────────────────────────
 
-  /** Defaults to "auto" if no preference has been stored. */
-  async getThemePreference(): Promise<ThemePreference> {
-    const raw = await SecureStore.getItemAsync(KEYS.themePreference);
-    if (raw === "light" || raw === "dark") return raw;
-    return "auto";
+  /** Returns "auto" when no preference has been stored (follow system). */
+  async getThemePreference(): Promise<string> {
+    return (await SecureStore.getItemAsync(KEYS.themePreference)) ?? "light";
   },
   async setThemePreference(value: ThemePreference): Promise<void> {
     await SecureStore.setItemAsync(KEYS.themePreference, value);

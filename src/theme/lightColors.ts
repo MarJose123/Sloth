@@ -23,4 +23,4 @@ export const lightColors = {
   parchment: "#F3EEE1",
   hairline: "rgba(27, 31, 26, 0.09)",
   tabBar: "rgba(235,230,216,0.95)",
-} as const;
+};

@@ -1,6 +1,8 @@
-import { Pressable, View, type PressableProps } from "react-native";
+import { Pressable, View, type PressableProps, useColorScheme } from "react-native";
 import type { SvgProps } from "react-native-svg";
 import { useColors } from "@/theme/ThemeContext";
+import { lightColors } from "@/theme/lightColors";
+import { darkColors } from "@/theme/darkColors";
 
 interface TabBarButtonProps extends PressableProps {
   Icon: React.ComponentType<SvgProps>;
@@ -8,7 +10,7 @@ interface TabBarButtonProps extends PressableProps {
 }
 
 export function TabBarButton({ Icon, isFocused, ...props }: TabBarButtonProps) {
-  const colors = useColors();
+  const colors = useColorScheme() === "light" ? lightColors : darkColors;
   const color = isFocused ? colors.brass : colors.textSecondary;
 
   return (

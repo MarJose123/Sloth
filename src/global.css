@@ -6,57 +6,80 @@
 
 /* ─────────────────────────────────────────────────────────────────
    SLOTH THEME CSS VARIABLES
-   Dark-first default. At runtime, ThemeContext uses a
-   VariableContextProvider to inject the correct --sloth-* values
-   based on the resolved theme (light/dark/auto), which overrides
-   whatever is set here.
+   Light defaults in :root, dark overrides via @media.
+   When the user explicitly selects a theme, useColorScheme() +
+   VariableContextProvider inject the resolved values at runtime
+   (see ThemeContext.tsx), overriding the CSS cascade below.
    ───────────────────────────────────────────────────────────────── */
 
 :root {
-  /* ── Dark mode surfaces ─────────────────────────────────────── */
-  --sloth-surface-bg: #1b1f1a;
-  --sloth-surface-card: #242920;
-  --sloth-surface-elevated: #2e3428;
+  /* ── Light mode surfaces ────────────────────────────────────── */
+  --sloth-surface-bg: #f5f0e4;
+  --sloth-surface-card: #ebe6d8;
+  --sloth-surface-elevated: #e0dbcb;
 
-  /* ── Dark mode text ─────────────────────────────────────────── */
-  --sloth-text-primary: #f3eee1;
-  --sloth-text-secondary: #a79f8c;
+  /* ── Light mode text ────────────────────────────────────────── */
+  --sloth-text-primary: #1b1f1a;
+  --sloth-text-secondary: #6b6352;
 
-  /* ── Brand accents (mode-invariant) ─────────────────────────── */
+  /* ── Brand accents ──────────────────────────────────────────── */
   --sloth-brass: #c87b54;
-  --sloth-brass-soft: #8f5636;
-  --sloth-sage: #7fa06b;
+  --sloth-brass-soft: #a96b42;
+  --sloth-sage: #6b8d58;
   --sloth-rust: #9c4a3d;
 
-  /* ── Category ring extras ───────────────────────────────────── */
+  /* ── Category colors ────────────────────────────────────────── */
   --sloth-dusty-blue: #6e8fb0;
   --sloth-ochre: #c9a227;
 
-  /* ── Static tokens (mode-invariant) ─────────────────────────── */
-  --sloth-ink: #1b1f1a; /* CTA text on brass       */
-  --sloth-parchment: #f3eee1; /* QR / badge backgrounds */
+  /* ── Static tokens ──────────────────────────────────────────── */
+  --sloth-ink: #1b1f1a;
+  --sloth-parchment: #f3eee1;
 
   /* ── Utility tokens ─────────────────────────────────────────── */
-  --sloth-hairline: rgba(243, 238, 225, 0.09);
-  --sloth-tab-bar: rgba(18, 20, 28, 0.95);
+  --sloth-hairline: rgba(27, 31, 26, 0.09);
+  --sloth-tab-bar: rgba(235, 230, 216, 0.95);
 }
 
-/* ── Light mode overrides are now handled at runtime via ThemeContext's VariableContextProvider ──
-   The @media (prefers-color-scheme: light) query has been removed because:
-   1. VariableContextProvider injects theme variables at runtime based on user preference, not device setting
-   2. CSS @media queries check the actual device color scheme, not the app's theme preference
-   3. This caused a conflict where only components using inline styles (TabBar) would update, while
-      components using CSS variables (rest of app) would not respond to theme changes
+/* ── Dark mode overrides ───────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* ── Dark mode surfaces ───────────────────────────────────── */
+    --sloth-surface-bg: #1b1f1a;
+    --sloth-surface-card: #242920;
+    --sloth-surface-elevated: #2e3428;
 
-   Solution: Rely entirely on VariableContextProvider to inject the correct values at runtime.
-   See ThemeContext.tsx paletteToCssVars() for the light mode values being injected. */
+    /* ── Dark mode text ───────────────────────────────────────── */
+    --sloth-text-primary: #f3eee1;
+    --sloth-text-secondary: #a79f8c;
+
+    /* ── Brand accents ────────────────────────────────────────── */
+    --sloth-brass: #c87b54;
+    --sloth-brass-soft: #8f5636;
+    --sloth-sage: #7fa06b;
+    --sloth-rust: #9c4a3d;
+
+    /* ── Category colors ──────────────────────────────────────── */
+    --sloth-dusty-blue: #6e8fb0;
+    --sloth-ochre: #c9a227;
+
+    /* ── Static tokens ────────────────────────────────────────── */
+    --sloth-ink: #1b1f1a;
+    --sloth-parchment: #f3eee1;
+
+    /* ── Utility tokens ───────────────────────────────────────── */
+    --sloth-hairline: rgba(243, 238, 225, 0.09);
+    --sloth-tab-bar: rgba(18, 20, 28, 0.95);
+  }
+}
 
 /* ─────────────────────────────────────────────────────────────────
    SLOTH DESIGN TOKENS (@theme)
-   Semantic utility names that reference the --sloth-* vars above.
-   At runtime ThemeContext's VariableContextProvider overrides the
-   --sloth-* values to match the resolved theme, and all utility
-   classes update automatically via the VariableContext cascade.
+   Semantic utility names reference the --sloth-* CSS variables.
+   When the theme is "auto", @media (prefers-color-scheme) drives
+   which variable set is active. When the user picks light or dark,
+   ThemeContext's VariableContextProvider injects the --color-*
+   values directly, overriding the var() cascade.
    ───────────────────────────────────────────────────────────────── */
 
 @theme {

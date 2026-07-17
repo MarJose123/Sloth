@@ -44,7 +44,9 @@
           }
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-image",
+      "expo-web-browser"
     ],
     "android": {
       "package": "marjose.sloth.app",

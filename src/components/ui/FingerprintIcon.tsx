@@ -1,5 +1,8 @@
 import Svg, { Path, Ellipse, G } from "react-native-svg";
-import { useColors } from "@/theme/ThemeContext";
+import { useColorScheme } from "react-native";
+import { lightColors } from "@/theme/lightColors";
+import { darkColors } from "@/theme/colors";
+
 
 interface FingerprintIconProps {
   size?: number;
@@ -14,7 +17,7 @@ export function FingerprintIcon({
   size = 78,
   color: explicitColor,
 }: FingerprintIconProps) {
-  const colors = useColors();
+  const colors = useColorScheme() === "light" ? lightColors : darkColors;
   const strokeColor = explicitColor ?? colors.brass;
 
   return (

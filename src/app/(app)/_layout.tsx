@@ -2,7 +2,6 @@ import { View } from "react-native";
 import { router, usePathname, Slot } from "expo-router";
 import { AddTabButton } from "@/components/navigation/AddTabButton";
 import { TabBarButton } from "@/components/navigation/TabBarButton";
-import { useColors } from "@/theme/ThemeContext";
 import {
   AccountsIcon,
   HomeIcon,
@@ -12,17 +11,13 @@ import {
 
 export default function AppLayout() {
   const pathname = usePathname();
-  const colors = useColors();
 
   return (
     <View style={{ flex: 1 }} className="bg-surface-bg">
       <Slot />
 
       <View
-        className="absolute bottom-6 left-1/2 -ml-[150px] w-[300px] h-[64px] flex-row items-center border border-hairline rounded-[32px] overflow-visible shadow-2xl px-2"
-        style={{
-          backgroundColor: colors.tabBar,
-        }}
+        className="absolute bg-surface-bg bottom-6 left-1/2 -ml-[150px] w-[300px] h-[64px] flex-row items-center border border-hairline rounded-[32px] overflow-visible shadow-2xl px-2"
       >
         <TabBarButton
           Icon={HomeIcon}

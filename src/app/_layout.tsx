@@ -26,7 +26,7 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <ThemeProvider>
+    <ThemeProvider name="default">
       <View className="flex-1">
         <Stack screenOptions={{ headerShown: false }}>
           {/* ── Core groups ── */}

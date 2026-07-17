@@ -1,6 +1,14 @@
 import type { ReactNode } from "react";
-import { useCallback, useState, useEffect } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { useState, useEffect } from "react";
+import {
+  Alert,
+  Appearance,
+  Pressable,
+  ScrollView,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native";
 import { router } from "expo-router";
 import { storage } from "@/lib/storage";
 import { Toggle } from "@/components/ui/Toggle";
@@ -9,12 +17,15 @@ import * as Application from "expo-application";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import type { LucideIconName } from "@react-native-vector-icons/lucide";
 import { ChevronRightIcon } from "@/components/navigation/icons";
-import { useTheme, useColors } from "@/theme/ThemeContext";
 import type { ThemePreference } from "@/lib/storage";
+import { lightColors } from "@/theme/lightColors";
+import { darkColors } from "@/theme/darkColors";
+import setColorScheme = Appearance.setColorScheme;
+import { getColorScheme } from "react-native/Libraries/Utilities/Appearance";
 
 // ─── local primitives ────────────────────────────────────────────────────────
 
-const THEME_OPTIONS = ["light", "dark", "auto"] as const;
+const THEME_OPTIONS = ["light", "dark"] as const;
 
 function SegmentedThemeControl({
   value,
@@ -55,7 +66,7 @@ function SectionLabel({ label }: { label: string }) {
 }
 
 function Chevron() {
-  const colors = useColors();
+  const colors = useColorScheme() === "light" ? lightColors : darkColors;
   return <ChevronRightIcon size={18} color={colors.textSecondary} />;
 }
 
@@ -74,7 +85,7 @@ function SettingsRow({
   right,
   onPress,
 }: SettingsRowProps) {
-  const colors = useColors();
+  const colors = useColorScheme() === "light" ? lightColors : darkColors;
   const content = (
     <View className="flex-row items-center border-b border-hairline py-[13px]">
       <View className="mr-3 flex-1 flex-row items-center gap-3">
@@ -119,11 +130,6 @@ const APP_VERSION = Application.nativeApplicationVersion ?? "1.0.0";
 const APP_BUILD_NUMBER = Application.nativeBuildVersion ?? "1";
 
 export default function SettingsScreen() {
-  const {
-    preference: theme,
-    setPreference: setTheme,
-    loaded: prefsLoaded,
-  } = useTheme();
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [screenshotsEnabled, setScreenshotsEnabled] = useState(false);
   const [showDonate, setShowDonate] = useState(false);
@@ -156,12 +162,9 @@ export default function SettingsScreen() {
     await storage.setScreenshotsEnabled(value);
   };
 
-  const handleThemeChange = useCallback(
-    async (value: ThemePreference) => {
-      await setTheme(value);
-    },
-    [setTheme],
-  );
+  const handleThemeChange = (colorScheme: ThemePreference) => {
+    setColorScheme(colorScheme);
+  };
 
   // ── navigation / action helpers ──────────────────────────────────────────────
 
@@ -193,12 +196,10 @@ export default function SettingsScreen() {
           title="Theme"
           description="Dark, light, or match device"
           right={
-            prefsLoaded ? (
-              <SegmentedThemeControl
-                value={theme}
-                onChange={handleThemeChange}
-              />
-            ) : undefined
+            <SegmentedThemeControl
+              value={getColorScheme()}
+              onChange={handleThemeChange}
+            />
           }
         />
 
@@ -209,12 +210,10 @@ export default function SettingsScreen() {
           title="Face / Touch ID"
           description="Unlock Sloth with biometrics"
           right={
-            prefsLoaded ? (
-              <Toggle
-                value={biometricEnabled}
-                onValueChange={handleBiometricToggle}
-              />
-            ) : undefined
+            <Toggle
+              value={biometricEnabled}
+              onValueChange={handleBiometricToggle}
+            />
           }
         />
         <SettingsRow
@@ -233,12 +232,10 @@ export default function SettingsScreen() {
               : "Off — screen hidden in app switcher"
           }
           right={
-            prefsLoaded ? (
-              <Toggle
-                value={screenshotsEnabled}
-                onValueChange={handleScreenshotsToggle}
-              />
-            ) : undefined
+            <Toggle
+              value={screenshotsEnabled}
+              onValueChange={handleScreenshotsToggle}
+            />
           }
         />
 

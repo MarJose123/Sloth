@@ -1,20 +1,21 @@
 import { useCallback, useState } from "react";
-import { RefreshControl, ScrollView, Text, View } from "react-native";
+import { RefreshControl, ScrollView, Text, useColorScheme, View } from "react-native";
 import { router } from "expo-router";
 import { useDashboardData } from "@/hooks/useDashboardData";
-import { useColors } from "@/theme/ThemeContext";
 import { AccountSwitcher } from "@/components/dashboard/AccountSwitcher";
 import { CategoryRingCard } from "@/components/dashboard/CategoryRingCard";
 import { TransactionRow } from "@/components/dashboard/TransactionRow";
 import { EmptyAccountsCard } from "@/components/dashboard/EmptyAccountsCard";
 import { formatCurrency, getGreeting } from "@/lib/format";
+import { lightColors } from "@/theme/lightColors";
+import { darkColors } from "@/theme/colors";
 
 export default function DashboardScreen() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
   );
   const { state, refresh } = useDashboardData(selectedAccountId);
-  const colors = useColors();
+  const colors = useColorScheme() === "light" ? lightColors : darkColors;
 
   const onRefresh = useCallback(() => {
     refresh();
@@ -45,7 +46,7 @@ export default function DashboardScreen() {
           />
         }
       >
-        <Text className="mb-0.5 text-[17px] text-text-secondary">
+        <Text className="mb-0.5 text-[17px] tex-text-primary">
           {getGreeting()}
         </Text>
 

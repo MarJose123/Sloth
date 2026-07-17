@@ -10,7 +10,7 @@ import { router } from "expo-router";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { formatCurrency } from "@/lib/format";
-import { useColors } from "@/theme/ThemeContext";
+
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -75,7 +75,6 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
 
 export default function AccountsScreen() {
   const { state, refresh } = useAccountsData();
-  const colors = useColors();
 
   const onRefresh = useCallback(() => {
     refresh();
@@ -101,9 +100,9 @@ export default function AccountsScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
+            className="bg-brass"
             refreshing={isRefreshing}
             onRefresh={onRefresh}
-            tintColor={colors.brass}
           />
         }
       >

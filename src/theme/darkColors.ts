@@ -22,4 +22,4 @@ export const darkColors = {
   parchment: "#F3EEE1",
   hairline: "rgba(243,238,225,0.09)",
   tabBar: "rgba(18,20,28,0.95)",
-} as const;
+};

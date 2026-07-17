@@ -3,17 +3,19 @@ import {
   View,
   type PressableProps,
   type ViewStyle,
-  type StyleProp,
+  type StyleProp, useColorScheme
 } from "react-native";
 import { useColors } from "@/theme/ThemeContext";
 import { PlusIcon } from "@/components/navigation/icons";
+import { lightColors } from "@/theme/lightColors";
+import { darkColors } from "@/theme/darkColors";
 
 /**
  * Tab-bar FAB button. Renders a brass circle with a + icon.
  * Colours react to the active theme via useColors().
  */
 export function AddTabButton(props: PressableProps) {
-  const colors = useColors();
+  const colors = useColorScheme() === "light" ? lightColors : darkColors;
 
   return (
     <View

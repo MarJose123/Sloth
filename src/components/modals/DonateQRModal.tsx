@@ -1,6 +1,6 @@
-import { Modal, Pressable, Text, View } from "react-native";
-import { useColors } from "@/theme/ThemeContext";
+import { Modal, Pressable, Text, useColorScheme, View } from "react-native";
 import { XIcon } from "@/components/navigation/icons";
+import { darkColors, lightColors } from "@/theme/colors";
 
 interface DonateQRModalProps {
   visible: boolean;
@@ -12,14 +12,14 @@ interface DonateQRModalProps {
  * Colours react to the active theme via useColors().
  */
 export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
-  const colors = useColors();
+  const colors = useColorScheme() === "light" ? lightColors : darkColors;
 
   return (
     <Modal
       visible={visible}
       animationType="fade"
       transparent
-      onRequestClose={onClose}
+      onRequestClose={() => onClose}
     >
       <Pressable
         className="flex-1 items-center justify-center px-6"

@@ -1,5 +1,4 @@
-import { View } from "react-native";
-import { useTheme } from "@/theme/ThemeContext";
+import { useColorScheme, View } from "react-native";
 
 interface DialFrameProps {
   size?: number;
@@ -19,8 +18,8 @@ export function DialFrame({
   children,
   variant = "default",
 }: DialFrameProps) {
-  const { resolved } = useTheme();
-  const isLight = resolved === "light";
+
+  const isLight = useColorScheme() === "light";
   const outerStyle =
     variant === "brass"
       ? {

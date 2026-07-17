@@ -1,5 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, Text, Dimensions, Pressable, Alert } from "react-native";
+import {
+  View,
+  Text,
+  Dimensions,
+  Pressable,
+  Alert,
+  useColorScheme,
+} from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -24,8 +31,7 @@ import {
   authenticateWithBiometrics,
 } from "@/lib/biometrics";
 import { storage } from "@/lib/storage";
-import { useColors } from "@/theme/ThemeContext";
-import type { ColorPalette } from "@/theme/colors";
+import { ColorPalette, darkColors, lightColors } from "@/theme/colors";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const TOTAL_SLIDES = 3;
@@ -261,8 +267,11 @@ function StepDots({
   activeIndex: number;
   onDotPress: (i: number) => void;
 }) {
-  const colors = useColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colorScheme = useColorScheme() ?? "light";
+  const styles = useMemo(
+    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
+    [colorScheme],
+  );
 
   return (
     <View style={styles.dotsRow}>
@@ -282,8 +291,11 @@ function StepDots({
 
 // ─── Brass button ─────────────────────────────────────────────────────────────
 function BrassBtn({ label, onPress }: { label: string; onPress: () => void }) {
-  const colors = useColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colorScheme = useColorScheme() ?? "light";
+  const styles = useMemo(
+    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
+    [colorScheme],
+  );
 
   return (
     <Pressable
@@ -310,8 +322,12 @@ function FeatureRow({
   description: string;
   isLast: boolean;
 }) {
-  const colors = useColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colorScheme = useColorScheme() ?? "light";
+  const colors = colorScheme === "light" ? lightColors : darkColors;
+  const styles = useMemo(
+    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
+    [colorScheme],
+  );
 
   return (
     <View
@@ -476,8 +492,11 @@ function AnimatedSlide({
   translateX: SharedValue<number>;
   children: React.ReactNode;
 }) {
-  const colors = useColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colorScheme = useColorScheme() ?? "light";
+  const styles = useMemo(
+    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
+    [colorScheme],
+  );
 
   const animStyle = useAnimatedStyle(() => {
     const offset = -translateX.value;
@@ -518,8 +537,11 @@ function BottomBarCTA({
   onDotPress: (i: number) => void;
   onContinue: () => void;
 }) {
-  const colors = useColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colorScheme = useColorScheme() ?? "light";
+  const styles = useMemo(
+    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
+    [colorScheme],
+  );
 
   const fadeStyle = useAnimatedStyle(() => ({
     opacity: withTiming(visible ? 1 : 0, { duration: 200 }),
@@ -536,8 +558,11 @@ function BottomBarCTA({
 
 // ─── Root: Carousel host ──────────────────────────────────────────────────────
 export default function OnboardingCarousel() {
-  const colors = useColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colorScheme = useColorScheme() ?? "light";
+  const styles = useMemo(
+    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
+    [colorScheme],
+  );
   const translateX = useSharedValue(0);
   const dragX = useSharedValue(0);
   const activeIndexSV = useSharedValue(0);
