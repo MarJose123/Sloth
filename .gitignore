@@ -51,6 +51,6 @@ example
 .ai/cache/*
 .ai/logs/*
 .ai/tmp/*
-.junie/design/*
+.junie
 .reasonix
 
