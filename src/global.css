@@ -41,32 +41,15 @@
   --sloth-tab-bar: rgba(18, 20, 28, 0.95);
 }
 
-/* ── Light mode overrides ───────────────────────────────────────── */
-@media (prefers-color-scheme: light) {
-  :root {
-    --sloth-surface-bg: #f5f0e4;
-    --sloth-surface-card: #ebe6d8;
-    --sloth-surface-elevated: #e0dbcb;
+/* ── Light mode overrides are now handled at runtime via ThemeContext's VariableContextProvider ──
+   The @media (prefers-color-scheme: light) query has been removed because:
+   1. VariableContextProvider injects theme variables at runtime based on user preference, not device setting
+   2. CSS @media queries check the actual device color scheme, not the app's theme preference
+   3. This caused a conflict where only components using inline styles (TabBar) would update, while
+      components using CSS variables (rest of app) would not respond to theme changes
 
-    --sloth-text-primary: #1b1f1a;
-    --sloth-text-secondary: #6b6352;
-
-    --sloth-brass: #c87b54;
-    --sloth-brass-soft: #a96b42;
-    --sloth-sage: #6b8d58;
-    --sloth-rust: #9c4a3d;
-
-    --sloth-dusty-blue: #6e8fb0;
-    --sloth-ochre: #c9a227;
-
-    /* ── Static tokens (mode-invariant) ─────────────────────────── */
-    --sloth-ink: #1b1f1a; /* CTA text on brass       */
-    --sloth-parchment: #f3eee1; /* QR / badge backgrounds */
-
-    --sloth-hairline: rgba(27, 31, 26, 0.09);
-    --sloth-tab-bar: rgba(235, 230, 216, 0.95);
-  }
-}
+   Solution: Rely entirely on VariableContextProvider to inject the correct values at runtime.
+   See ThemeContext.tsx paletteToCssVars() for the light mode values being injected. */
 
 /* ─────────────────────────────────────────────────────────────────
    SLOTH DESIGN TOKENS (@theme)
