@@ -51,6 +51,8 @@ interface AccountChipProps {
 }
 
 function AccountChip({ label, dotColor, active, onPress }: AccountChipProps) {
+  const colors = useColors();
+
   return (
     <Pressable
       onPress={onPress}

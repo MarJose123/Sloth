@@ -18,6 +18,7 @@ import { Lucide } from "@react-native-vector-icons/lucide";
 import type { LucideIconName } from "@react-native-vector-icons/lucide";
 import { useColors } from "@/theme/ThemeContext";
 import { colors } from "@/theme/colors";
+import Color from "color";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -132,7 +133,12 @@ export default function AddAccountScreen() {
   }, [name, selectedType, selectedColor, balanceText]);
 
   return (
-    <View className="flex-1 pt-safe bg-surface-bg">
+    <View
+      className="flex-1 pt-safe "
+      style={{
+        backgroundColor: colors.surfaceBg,
+      }}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -149,9 +155,21 @@ export default function AddAccountScreen() {
               onPress={() => router.back()}
               className="active:opacity-60"
             >
-              <Text className="text-[14.5px] text-text-secondary">Cancel</Text>
+              <Text
+                className="text-[14.5px] "
+                style={{
+                  color: colors.textSecondary,
+                }}
+              >
+                Cancel
+              </Text>
             </Pressable>
-            <Text className="font-fraunces-medium text-[20px] text-text-primary">
+            <Text
+              className="font-fraunces-medium text-[20px] "
+              style={{
+                color: colors.textPrimary,
+              }}
+            >
               New account
             </Text>
             <Pressable
@@ -160,8 +178,8 @@ export default function AddAccountScreen() {
               className="active:opacity-60"
             >
               <Text
-                className="font-manrope-bold text-[13px] text-brass"
-                style={{ opacity: isSaving ? 0.4 : 1 }}
+                className="font-manrope-bold text-[13px] "
+                style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
               >
                 Save
               </Text>
@@ -169,23 +187,42 @@ export default function AddAccountScreen() {
           </View>
 
           {/* ── Account name ── */}
-          <View className="mb-5 rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
-            <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
+          <View
+            className="mb-5 rounded-2xl border  px-4 py-3.5"
+            style={{
+              backgroundColor: colors.surfaceCard,
+              borderColor: colors.hairline,
+            }}
+          >
+            <Text
+              className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] "
+              style={{
+                color: colors.textSecondary,
+              }}
+            >
               Account name
             </Text>
             <TextInput
               value={name}
               onChangeText={setName}
-              placeholder="e.g. Chase Checking"
+              placeholder="e.g. BPI Savings"
               placeholderTextColor={colors.textSecondary}
-              className="text-sm text-text-primary"
+              className="text-sm "
               autoCapitalize="words"
               returnKeyType="next"
+              style={{
+                color: colors.textPrimary,
+              }}
             />
           </View>
 
           {/* ── Type selector ── */}
-          <Text className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em] text-brass">
+          <Text
+            className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em] "
+            style={{
+              color: colors.brass,
+            }}
+          >
             Type
           </Text>
           <View className="mb-5 flex-row flex-wrap gap-2">
@@ -195,11 +232,15 @@ export default function AddAccountScreen() {
                 <Pressable
                   key={type}
                   onPress={() => setSelectedType(type)}
-                  className={`flex-1 basis-[45%] flex-col gap-2 rounded-[13px] border p-3.5 active:opacity-80 ${
-                    active
-                      ? "border-brass/50 bg-brass/10"
-                      : "border-hairline bg-surface-card"
-                  }`}
+                  className="flex-1 basis-[45%] flex-col gap-2 rounded-[13px] border p-3.5 active:opacity-80"
+                  style={{
+                    borderColor: active
+                      ? Color(colors.brass).alpha(0.5).toString()
+                      : colors.hairline,
+                    backgroundColor: active
+                      ? Color(colors.brass).alpha(0.1).toString()
+                      : colors.surfaceCard,
+                  }}
                 >
                   <Lucide
                     name={icon}
@@ -207,9 +248,10 @@ export default function AddAccountScreen() {
                     color={active ? colors.brass : colors.textSecondary}
                   />
                   <Text
-                    className={`text-[12.5px] font-manrope-semibold ${
-                      active ? "text-text-primary" : "text-text-secondary"
-                    }`}
+                    className="text-[12.5px] font-manrope-semibold"
+                    style={{
+                      color: active ? colors.textPrimary : colors.textSecondary,
+                    }}
                   >
                     {label}
                   </Text>
@@ -219,7 +261,10 @@ export default function AddAccountScreen() {
           </View>
 
           {/* ── Badge preview + color picker ── */}
-          <Text className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em] text-brass">
+          <Text
+            className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em] "
+            style={{ color: colors.brass }}
+          >
             Badge color
           </Text>
 
@@ -229,7 +274,12 @@ export default function AddAccountScreen() {
               className="h-16 w-16 items-center justify-center rounded-2xl"
               style={{ backgroundColor: selectedColor }}
             >
-              <Text className="font-mono-medium text-base text-ink">
+              <Text
+                className="font-mono-medium text-base "
+                style={{
+                  color: colors.ink,
+                }}
+              >
                 {initials}
               </Text>
             </View>
@@ -249,7 +299,10 @@ export default function AddAccountScreen() {
 
           {/* ── Starting balance ── */}
           <View className="mb-8 rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
-            <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
+            <Text
+              className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] "
+              style={{ color: colors.textSecondary }}
+            >
               Starting balance
             </Text>
             <TextInput
@@ -258,8 +311,11 @@ export default function AddAccountScreen() {
               placeholder="0.00"
               placeholderTextColor={colors.textSecondary}
               keyboardType="decimal-pad"
-              className="font-fraunces-medium text-[20px] text-text-primary"
+              className="font-fraunces-medium text-[20px] "
               returnKeyType="done"
+              style={{
+                color: colors.textPrimary,
+              }}
             />
           </View>
 
@@ -267,10 +323,16 @@ export default function AddAccountScreen() {
           <Pressable
             onPress={handleSave}
             disabled={isSaving}
-            className="rounded-2xl bg-brass py-4 active:opacity-80"
-            style={{ opacity: isSaving ? 0.6 : 1 }}
+            className="rounded-2xl  py-4 active:opacity-80"
+            style={{
+              opacity: isSaving ? 0.6 : 1,
+              backgroundColor: colors.brass,
+            }}
           >
-            <Text className="text-center font-manrope-bold text-sm text-ink">
+            <Text
+              className="text-center font-manrope-bold text-sm "
+              style={{ color: colors.ink }}
+            >
               {isSaving ? "Adding…" : "Add account"}
             </Text>
           </Pressable>

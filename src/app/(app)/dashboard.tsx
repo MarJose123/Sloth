@@ -19,7 +19,7 @@ export default function DashboardScreen() {
   const { state, refresh } = useDashboardData(selectedAccountId);
 
   const onRefresh = useCallback(() => {
-    refresh();
+    void refresh();
   }, [refresh]);
 
   if (state.status !== "ready") return null;

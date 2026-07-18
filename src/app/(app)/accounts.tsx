@@ -37,13 +37,6 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
   const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
   const colors = useColors();
 
-  const balanceClassName =
-    account.type === "credit"
-      ? account.balanceCents < 0
-        ? "text-rust"
-        : "text-sage"
-      : "text-text-primary";
-
   return (
     <Pressable
       className="mb-3 flex-row items-center gap-3 rounded-2xl border p-4 active:opacity-80"
@@ -56,22 +49,43 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
         className="h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-[11px]"
         style={{ backgroundColor: account.colorHex }}
       >
-        <Text className="font-mono-medium text-xs text-ink">{initials}</Text>
+        <Text
+          className="font-mono-medium text-xs "
+          style={{
+            color: colors.ink,
+          }}
+        >
+          {initials}
+        </Text>
       </View>
 
       <View className="flex-1">
         <Text
-          className="text-[15.5px] font-manrope-semibold text-text-primary"
+          className="text-[15.5px] font-manrope-semibold "
           numberOfLines={1}
+          style={{ color: colors.textPrimary }}
         >
           {account.name}
         </Text>
-        <Text className="mt-0.5 font-mono text-[12.5px] text-text-secondary">
+        <Text
+          className="mt-0.5 font-mono text-[12.5px] "
+          style={{ color: colors.textSecondary }}
+        >
           {typeLabel}
         </Text>
       </View>
 
-      <Text className={`font-mono text-[15.5px] ${balanceClassName}`}>
+      <Text
+        className="font-mono text-[15.5px]"
+        style={{
+          color:
+            account.type === "credit"
+              ? account.balanceCents < 0
+                ? colors.rust
+                : colors.sage
+              : colors.textPrimary,
+        }}
+      >
         {formatCurrency(account.balanceCents)}
       </Text>
     </Pressable>
@@ -90,8 +104,10 @@ export default function AccountsScreen() {
 
   if (state.status === "error") {
     return (
-      <View className="flex-1 items-center justify-center px-8 pt-safe bg-surface-bg">
-        <Text className="text-center text-sm text-rust">{state.message}</Text>
+      <View className="flex-1 items-center justify-center px-8 pt-safe " style={{ backgroundColor: colors.surfaceBg }}>
+        <Text className="text-center text-sm " style={{
+          color: colors.rust,
+        }}>{state.message}</Text>
       </View>
     );
   }
