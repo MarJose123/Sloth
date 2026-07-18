@@ -88,9 +88,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   //  - The CSS @media (prefers-color-scheme) query in global.css uses the
   //    resolved theme, updating all Tailwind utility classes automatically.
   //  - System chrome (status bar, etc.) follows the app theme.
+  //  - Only runs after the stored preference is loaded to avoid a flash.
   useEffect(() => {
+    if (!loaded) return;
     Appearance.setColorScheme(resolved);
-  }, [resolved]);
+  }, [resolved, loaded]);
 
   // ── render ──────────────────────────────────────────────────────────────────
 
