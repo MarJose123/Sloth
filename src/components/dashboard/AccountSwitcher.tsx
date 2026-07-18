@@ -1,6 +1,8 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { useColors } from "@/theme/ThemeContext";
+import { colors } from "@/theme/colors";
+import Color from "color";
 
 interface AccountSwitcherProps {
   accounts: AccountWithBalance[];
@@ -52,16 +54,25 @@ function AccountChip({ label, dotColor, active, onPress }: AccountChipProps) {
   return (
     <Pressable
       onPress={onPress}
-      className={`flex-row items-center gap-1.5 rounded-full border px-3.5 py-2 ${
-        active ? "border-brass/50 bg-brass/10" : "border-hairline"
-      }`}
+      className="flex-row items-center gap-1.5 rounded-full border px-3.5 py-2"
+      style={{
+        borderColor: active
+          ? Color(colors.brass).alpha(0.5).toString()
+          : colors.hairline,
+        backgroundColor: active
+          ? Color(colors.brass).alpha(0.1).toString()
+          : undefined,
+      }}
     >
       <View
         className="h-[7px] w-[7px] rounded-full"
         style={{ backgroundColor: dotColor }}
       />
       <Text
-        className={`text-[12.5px] font-manrope-semibold ${active ? "text-text-primary" : "text-text-secondary"}`}
+        className="text-[12.5px] font-manrope-semibold"
+        style={{
+          color: active ? colors.textPrimary : colors.textSecondary,
+        }}
       >
         {label}
       </Text>

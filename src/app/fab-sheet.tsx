@@ -5,6 +5,7 @@ import { Lucide } from "@react-native-vector-icons/lucide";
 import type { LucideIconName } from "@react-native-vector-icons/lucide";
 import { ChevronRightIcon } from "@/components/navigation/icons";
 import { useColors } from "@/theme/ThemeContext";
+import Color from "color";
 
 // ─── action definition ────────────────────────────────────────────────────────
 
@@ -68,14 +69,30 @@ export default function FabSheetScreen() {
       />
 
       {/* Bottom sheet */}
-      <View className="rounded-t-[22px] border-t border-t-hairline bg-surface-card px-5 pb-8 pt-2">
+      <View
+        className="rounded-t-[22px] border-t px-5 pb-8 pt-2"
+        style={{
+          backgroundColor: colors.surfaceCard,
+          borderTopColor: colors.hairline,
+        }}
+      >
         {/* Drag handle */}
         <View className="mb-5 items-center">
-          <View className="h-1 w-9 rounded-full bg-hairline" />
+          <View
+            className="h-1 w-9 rounded-full "
+            style={{
+              backgroundColor: colors.hairline,
+            }}
+          />
         </View>
 
         {/* Title */}
-        <Text className="mb-6 text-center font-fraunces-medium text-lg text-text-primary">
+        <Text
+          className="mb-6 text-center font-fraunces-medium text-lg "
+          style={{
+            color: colors.textPrimary,
+          }}
+        >
           Add to Sloth
         </Text>
 
@@ -84,21 +101,39 @@ export default function FabSheetScreen() {
           <Pressable
             key={action.label}
             onPress={() => handleAction(action.route)}
-            className="mb-2.5 flex-row items-center gap-4 rounded-2xl border border-hairline bg-surface-elevated px-4 py-3.5 active:opacity-70"
+            className="mb-2.5 flex-row items-center gap-4 rounded-2xl border   px-4 py-3.5 active:opacity-70"
             accessibilityRole="button"
             accessibilityLabel={action.label}
+            style={{
+              borderColor: colors.hairline,
+              backgroundColor: colors.surfaceElevated,
+            }}
           >
             {/* Icon tile */}
-            <View className="h-11 w-11 items-center justify-center rounded-xl border border-brass/30 bg-surface-elevated">
+            <View
+              className="h-11 w-11 items-center justify-center rounded-xl border"
+              style={{
+                borderColor: Color(colors.brass).alpha(0.3).toString(),
+                backgroundColor: colors.surfaceElevated,
+              }}
+            >
               <Lucide name={action.icon} size={20} color={colors.brass} />
             </View>
 
             {/* Label + description */}
             <View className="flex-1">
-              <Text className="font-manrope-bold text-[13px] text-text-primary">
+              <Text
+                className="font-manrope-bold text-[13px] "
+                style={{
+                  color: colors.textPrimary,
+                }}
+              >
                 {action.label}
               </Text>
-              <Text className="text-[11.5px] leading-4 text-text-secondary">
+              <Text
+                className="text-[11.5px] leading-4"
+                style={{ color: colors.textSecondary }}
+              >
                 {action.description}
               </Text>
             </View>

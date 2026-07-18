@@ -37,7 +37,13 @@ export function CategoryRingCard({
   const strokeDashoffset = CIRCUMFERENCE * (1 - percent / 100);
 
   return (
-    <View className="flex-1 items-center rounded-2xl border border-hairline bg-surface-card p-3.5">
+    <View
+      className="flex-1 items-center rounded-2xl border p-3.5"
+      style={{
+        borderColor: colors.hairline,
+        backgroundColor: colors.surfaceCard,
+      }}
+    >
       {/* ── Progress ring ────────────────────────────────────────────── */}
       <View style={styles.ringContainer}>
         {/* SVG layer: background track + progress arc */}
@@ -91,8 +97,9 @@ export function CategoryRingCard({
 
       {/* ── Category label ───────────────────────────────────────────── */}
       <Text
-        className="mt-2 font-mono text-[12px] uppercase text-text-secondary"
+        className="mt-2 font-mono text-[12px] uppercase "
         numberOfLines={1}
+        style={{ color: colors.textSecondary }}
       >
         {category.name}
       </Text>

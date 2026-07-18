@@ -32,7 +32,8 @@ export function EmptyAccountsCard({
       </Text>
       <Pressable
         onPress={onAddAccount}
-        className="rounded-2xl bg-brass px-5 py-3.5 active:opacity-80"
+        className="rounded-2xl px-5 py-3.5 active:opacity-80"
+        style={{ backgroundColor: colors.brass }}
       >
         <Text
           className="font-manrope-bold text-[15px]"
