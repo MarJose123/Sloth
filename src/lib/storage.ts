@@ -44,6 +44,9 @@ export const storage = {
   async getPinHash(): Promise<string | null> {
     return SecureStore.getItemAsync(KEYS.pinHash);
   },
+  async removePinHash(): Promise<void> {
+    await SecureStore.deleteItemAsync(KEYS.pinHash);
+  },
 
   // ── theme ───────────────────────────────────────────────────────────────────
 

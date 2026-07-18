@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useState, useEffect } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
+import { usePreventScreenCapture } from "expo-screen-capture";
 import { storage } from "@/lib/storage";
 import { Toggle } from "@/components/ui/Toggle";
 import { DonateQRModal } from "@/components/modals/DonateQRModal";
@@ -151,6 +152,7 @@ const APP_BUILD_NUMBER = Application.nativeBuildVersion ?? "1";
 export default function SettingsScreen() {
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [screenshotsEnabled, setScreenshotsEnabled] = useState(false);
+  const [pinHash, setPinHash] = useState<string | null>(null);
   const [showDonate, setShowDonate] = useState(false);
   const colors = useColors();
 
@@ -159,13 +161,15 @@ export default function SettingsScreen() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [bio, screenshots] = await Promise.all([
+      const [bio, screenshots, storedPin] = await Promise.all([
         storage.getBiometricEnabled(),
         storage.getScreenshotsEnabled(),
+        storage.getPinHash(),
       ]);
       if (cancelled) return;
       setBiometricEnabled(bio);
       setScreenshotsEnabled(screenshots);
+      setPinHash(storedPin);
     })();
     return () => {
       cancelled = true;
@@ -175,6 +179,24 @@ export default function SettingsScreen() {
   // ── preference handlers ──────────────────────────────────────────────────────
 
   const handleBiometricToggle = async (value: boolean) => {
+    // Disabling biometrics requires a backup PIN to avoid lockout
+    if (!value) {
+      const hash = await storage.getPinHash();
+      if (!hash) {
+        Alert.alert(
+          "Backup PIN required",
+          "Set a 6-digit backup PIN first so you can still access Sloth if biometrics fail.",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Set up PIN",
+              onPress: () => router.push("/pin-setup"),
+            },
+          ],
+        );
+        return; // keep toggle on
+      }
+    }
     setBiometricEnabled(value);
     await storage.setBiometricEnabled(value);
   };
@@ -183,6 +205,9 @@ export default function SettingsScreen() {
     setScreenshotsEnabled(value);
     await storage.setScreenshotsEnabled(value);
   };
+
+  // Prevent/allow screenshots based on toggle state
+  usePreventScreenCapture(!screenshotsEnabled);
 
   const handleThemeChange = (newPreference: ThemePreference) => {
     setPreference(newPreference);
@@ -266,8 +291,46 @@ export default function SettingsScreen() {
         <SettingsRow
           icon="key-round"
           title="Backup PIN"
-          description="Fallback when biometrics fail"
-          onPress={() => comingSoon("PIN management")}
+          description={
+            pinHash
+              ? "Change or remove your backup PIN"
+              : "Not set — add a backup PIN"
+          }
+          onPress={async () => {
+            const hash = await storage.getPinHash();
+            if (!hash) {
+              router.push("/pin-setup");
+            } else {
+              Alert.alert("Backup PIN", "What would you like to do?", [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Change PIN",
+                  onPress: () => router.push("/pin-setup"),
+                },
+                {
+                  text: "Remove PIN",
+                  style: "destructive",
+                  onPress: () => {
+                    Alert.alert(
+                      "Remove backup PIN?",
+                      "You won't be able to disable biometrics without a backup PIN.",
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        {
+                          text: "Remove",
+                          style: "destructive",
+                          onPress: async () => {
+                            await storage.removePinHash();
+                            setPinHash(null);
+                          },
+                        },
+                      ],
+                    );
+                  },
+                },
+              ]);
+            }
+          }}
           right={<Chevron />}
         />
         <SettingsRow

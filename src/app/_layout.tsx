@@ -101,6 +101,13 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
+              name="pin-setup"
+              options={{
+                animation: "slide_from_right",
+                animationDuration: 300,
+              }}
+            />
+            <Stack.Screen
               name="fab-sheet"
               options={{ presentation: "transparentModal", animation: "fade" }}
             />

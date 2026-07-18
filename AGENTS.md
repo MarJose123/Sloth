@@ -35,6 +35,7 @@ SQLCipher. There is no cloud sync, no analytics endpoint, no third-party login.
 | Animation | `react-native-reanimated` v4.5.0, `react-native-gesture-handler` ~2.32.0, `lottie-react-native` ~7.3.8 | |
 | Graphics | `react-native-svg` 15.15.4 | |
 | Auth | `expo-local-authentication` ~57.0.0, `expo-secure-store` ~57.0.0 | |
+| Screen capture | `expo-screen-capture` ~57.0.0 | `usePreventScreenCapture` hook in settings |
 | Camera / OCR | `expo-camera@~57.0.1` | **Not** `expo-vision-camera` (does not exist) |
 | Package manager | Bun 1.3.14 (pinned in `eas.json`) | Use `bun install`, `bun add`, `bun remove` — **never `npm install`**. Lock file: `bun.lock`. `bun lint` runs `prettier --write . && expo lint` |
 | Build | EAS CLI ≥ 20.5.1, `eas build --local` | GH Actions ubuntu-latest |
@@ -94,7 +95,7 @@ The theme uses a two-layer system: `--sloth-*` CSS variables defined in `:root` 
 
 **Light mode defaults:** surfaceBg=#F5F0E4, surfaceCard=#EBE6D8, surfaceElevated=#E0DBCB, textPrimary=#1B1F1A, textSecondary=#6B6352, hairline=rgba(27,31,26,0.09), tabBar=rgba(235,230,216,0.95), sage=#6B8D58, brassSoft=#A96B42.
 
-JS counterpart: `src/theme/colors.ts` exports the same values as typed `ColorPalette` for inline `style={}` use. The `useColors()` hook (imported from `ThemeContext`) returns the active palette at runtime — but note this hook is currently **imported but not yet implemented**; see §8.
+JS counterpart: `src/theme/colors.ts` exports the same values as typed `ColorPalette` for inline `style={}` use. The `useColors()` hook (imported from `ThemeContext`) returns the active palette at runtime.
 
 ### 2.2 Typography
 
@@ -125,7 +126,9 @@ JS counterpart: `src/theme/colors.ts` exports the same values as typed `ColorPal
 - **Sloth icon:** moss-green rounded-rect bg (`#7FA06B`, rx=220/1024), caramel fur, cream
   face patch, dark eye patches. Defined as `SlothAppIcon.tsx` — a **single shared SVG
   component** reused across Splash (00), Onboarding Welcome (01), About (18). Must not
-  drift between screens. Secondary `SlothMark.tsx` exists for simplified inline use.
+  drift between screens.
+- **Fingerprint icon:** Uses Lucide `fingerprint` glyph via `@react-native-vector-icons/lucide`.
+  Coloured with `colors.brass` by default, theme-aware. Component: `FingerprintIcon.tsx`.
 
 ---
 
@@ -143,6 +146,7 @@ Root Layout (src/app/_layout.tsx):
     ├── receipt-scan    → Screen 13
     ├── import          → Screen 14
     ├── lock            → Screens 11 + 15
+    ├── pin-setup       → Screen 19 (backup PIN, theme-aware)
     ├── donate          → Screen 16
     └── fab-sheet       → Screen 12 (modal)
 
@@ -167,6 +171,7 @@ Tab Group (src/app/(app)/_layout.tsx):
 Root-level push screens (no tab bar):
   Splash               → src/app/index.tsx         (Screen 00)
   Lock / PIN           → src/app/lock.tsx          (Screens 11, 15)
+  Backup PIN Setup     → src/app/pin-setup.tsx     (Screen 19, theme-aware)
   Add Account          → src/app/add-account.tsx   (Screen 09)
   Category Editor      → src/app/category-editor.tsx (Screen 10)
   Add Transaction      → src/app/transaction/new.tsx (Screen 05)
@@ -223,12 +228,8 @@ existing `SafeAreaProvider`.
 
 ### Screen 03 — Biometric Setup
 - **File:** `src/app/onboarding/welcome.tsx` (carousel slide 2)
-- **Elements:** Lottie badge, "Step 3 of 3" eyebrow, H2 "Lock Sloth to your face or
-  fingerprint.", sub paragraph (13.5px `--text-secondary`), biometric ring (150px plain
-  soft ring `border:1px solid rgba(200,123,84,0.55)`), fingerprint SVG inner circle
-  78×78 (component: `FingerprintIcon.tsx`), caption "Touch the sensor to continue" (brass
-  mono 12px 0.06em), "Enable Face / Touch ID" brass button, "Use a 6-digit PIN instead"
-  underlined dim fallback → navigates to `/onboarding/pin-setup`
+- **Elements:** Lottie badge, "Step 3 of 3" eyebrow, H2 "Lock Sloth to your\nface or fingerprint." (Fraunces 450 31px lh:37), body text (Manrope 16.5px `--text-secondary` lh:25), biometric ring (150px plain soft ring with `DialFrame`), Lucide `fingerprint` icon 120px (FingerprintIcon.tsx, theme brass color), caption "Touch the sensor to continue" (brass mono 15px 0.06em), "Enable Face / Touch ID" brass button, "Use a 6-digit PIN instead" underlined dim fallback → navigates to `/onboarding/pin-setup`
+- **Layout:** Top text group → flex spacer → centered DialFrame + caption → flex spacer → bottom buttons (biometricStack)`
 
 ### Screen 04 — Dashboard
 - **File:** `src/app/(app)/dashboard.tsx`
@@ -344,6 +345,14 @@ existing `SafeAreaProvider`.
   (12.5px dim centered lh:1.6), about rows (label + value or chevron), footer "Made
   slowly, on purpose." (11px dim centered)
 - **Rows:** Check for updates / License (GPLv3) / Source code / Acknowledgments
+
+### Screen 19 — Backup PIN Setup
+- **File:** `src/app/pin-setup.tsx` (flat route, root-level push)
+- **Theme:** Follows user theme (light/dark/auto) via `useColors()` — unlike onboarding PIN which is light-only
+- **Access:** Settings → Security → Backup PIN (and biometric toggle guard when no PIN set)
+- **Elements:** ← back arrow + "Set backup PIN" header (Fraunces 450 22px), "Create a 6-digit backup PIN" subtitle (Fraunces 450 24px centered), PinDots (6 dots), Keypad (3×4 circle keypad)
+- **Flow:** Enter PIN → Confirm PIN → `storage.setPinHash()` → `router.back()` to settings
+- **Does NOT** call `storage.setOnboardingComplete()` — that's onboarding-only
 
 ---
 
@@ -471,10 +480,18 @@ Layer 2: App Lock (expo-local-authentication)
   6-digit PIN fallback — hashed and stored in SecureStore
   Implementation: src/lib/biometrics.ts, src/lib/pin.ts
   Lock state managed in app root; Lock screen at /lock
+  Settings guards: biometrics cannot be disabled without a backup PIN set
 
 Layer 3: Screenshot Prevention
-  Settings toggle → FLAG_SECURE (Android) via Expo config plugin
+  Implemented via expo-screen-capture's `usePreventScreenCapture()`
+  Settings toggle → `usePreventScreenCapture(!screenshotsEnabled)`
   Default: ON (screenshots blocked by default)
+
+Layer 4: PIN Management (Settings)
+  Backup PIN setup at /pin-setup (theme-aware, separate from onboarding)
+  Change PIN: re-runs the setup flow, overwrites hash
+  Remove PIN: confirmation dialog → SecureStore.deleteItemAsync
+  Removing PIN prevents disabling biometrics (lockout guard)
 ```
 
 ---
@@ -536,14 +553,9 @@ The theme switching uses a CSS-variable-override approach via React context:
 
 3. **`@theme` aliases** — The `@theme` block in `global.css` maps `--sloth-*` variables to `--color-*` Tailwind utility names (e.g., `--color-surface-bg: var(--sloth-surface-bg)`). Components use semantic Tailwind classes like `bg-surface-bg`, `text-text-primary`, `text-brass`.
 
-### 8.5 Known Gap: `useColors()` hook
+### 8.5 StatusBar Syncing
 
-`useColors()` is **imported from `@/theme/ThemeContext` by ~20 components** but is **not currently exported or defined** there. ThemeContext.tsx only exports `ThemeProvider`. The hook needs to be implemented (likely a React context consumer returning the active `ColorPalette`). Until then, components that import it will **fail at runtime** if the import is not tree-shaken.
-
-The intended interface (per imports already in code) is:
-```ts
-const colors = useColors(); // → ColorPalette (darkColors or lightColors)
-```
+A `ThemedStatusBar` component is rendered in the root layout (`src/app/_layout.tsx`) that reads `resolved` from `useTheme()` and renders `<StatusBar style={resolved === "dark" ? "light" : "dark"} animated />`. This ensures status bar icons are always visible regardless of the active theme. The onboarding layout no longer has its own hardcoded StatusBar — it relies on the global one.
 
 ### 8.6 Styling Components — Prefer Tailwind Classes
 
@@ -793,6 +805,7 @@ Each phase requires explicit approval before implementation begins.
 - [x] Screen 16: Donate QR Modal (`donate.tsx`, `src/lib/export.ts`)
 - [x] Screen 18: About (`about.tsx`)
 - [x] Screen 00 Splash component: `SplashScreen.tsx`
+- [x] Screen 19: Backup PIN Setup (`pin-setup.tsx`, theme-aware)
 
 ### Phase 5 — OCR & Import Logic 🔲 Next
 - [ ] Screen 13: expo-camera capture → on-device OCR (`src/lib/ocr.ts`) → pre-fill Add Transaction form
@@ -804,15 +817,22 @@ Each phase requires explicit approval before implementation begins.
 - [ ] Encrypted backup (SQLCipher DB copy → share sheet) — `src/lib/backup.ts` scaffold exists
 - [ ] Restore from backup
 
-### Phase 7 — Polish & Hardening 🔲 Pending
+### Phase 7 — Polish & Hardening ✅ Complete
+- [x] ErrorBoundary (global React error boundary with Sloth-themed fallback UI)
+- [x] Screenshot prevention toggle (`expo-screen-capture` `usePreventScreenCapture` hook)
+- [x] PIN management in Settings (setup / change / remove with lockout guard)
+- [x] Unused components deleted (FeatureRow, SlothMark, StepDots, ErrorBoundary, CustomTabBar)
+- [x] Onboarding text sizes bumped for readability
+- [x] Screen transitions (`slide_from_right` on push screens, instant tab switches)
+
+### Phase 8 — Polish & Hardening (continued) 🔲 Next
 - [ ] Lottie animations (screens 01, 02, 03, 13)
-- [ ] Screenshot prevention toggle (FLAG_SECURE config plugin)
 - [ ] App foreground/background lock resume
-- [ ] PIN change flow
+- [ ] PIN change flow from lock screen
 - [ ] Accessibility (a11y labels, 44px min touch targets)
 - [ ] FlashList virtualisation for transaction lists
 
-### Phase 8 — CI & Distribution 🔲 Pending
+### Phase 9 — CI & Distribution 🔲 Pending
 - [ ] ccache for CMake/SQLCipher (withAppBuildGradle config plugin)
 - [ ] GH Actions timeout tuning post-ccache
 - [ ] GitHub Release APK upload action
@@ -877,6 +897,7 @@ sloth/
     │   │   └── biometric.tsx       ← Legacy redirect compat
     │   │
     │   ├── lock.tsx                ← Screens 11 + 15: PIN entry / biometric unlock
+    │   ├── pin-setup.tsx           ← Screen 19: backup PIN setup (theme-aware)
     │   ├── add-account.tsx         ← Screen 09 (flat route)
     │   ├── category-editor.tsx     ← Screen 10 (flat route)
     │   ├── transaction/
@@ -889,11 +910,8 @@ sloth/
     │
     ├── components/
     │   ├── SlothAppIcon.tsx        ← Shared SVG (Splash, Onboarding, About)
-    │   ├── SlothMark.tsx           ← Simplified inline sloth mark
     │   ├── DialFrame.tsx           ← Keypad dial circle wrapper
     │   ├── Keypad.tsx              ← PIN keypad (3×4 circle keypad)
-    │   ├── FeatureRow.tsx          ← Onboarding feature row
-    │   ├── StepDots.tsx            ← Onboarding pagination dots
     │   ├── dashboard/
     │   │   ├── AccountSwitcher.tsx
     │   │   ├── CategoryRingCard.tsx
@@ -903,13 +921,12 @@ sloth/
     │   │   └── DonateQRModal.tsx
     │   ├── navigation/
     │   │   ├── AddTabButton.tsx     ← FAB tab button (+ icon)
-    │   │   ├── CustomTabBar.tsx     ← Legacy tab bar (may be unused)
     │   │   ├── TabBarButton.tsx    ← Headless tab trigger button
     │   │   └── icons.tsx           ← SVG tab icons (Home, Accounts, Transactions, Settings)
     │   └── ui/
     │       ├── BrassButton.tsx     ← Brass CTA button
     │       ├── ErrorBoundary.tsx   ← React error boundary
-    │       ├── FingerprintIcon.tsx ← Fingerprint SVG
+    │       ├── FingerprintIcon.tsx ← Lucide fingerprint icon (theme brass)
     │       ├── PinDots.tsx         ← 6-dot PIN display
     │       ├── TextLink.tsx        ← Styled link text
     │       └── Toggle.tsx          ← Settings toggle switch

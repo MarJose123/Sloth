@@ -15,7 +15,7 @@ export function PinDots({ length, filledCount }: PinDotsProps) {
           key={i}
           className="h-3.5 w-3.5 rounded-full border-[1.5px]"
           style={{
-            borderColor: i < filledCount ? undefined : colors.brass + "80", // brass/50 — alpha variant, no Tailwind equivalent
+            borderColor: colors.brass,
             backgroundColor: i < filledCount ? colors.brass : undefined,
           }}
         />
