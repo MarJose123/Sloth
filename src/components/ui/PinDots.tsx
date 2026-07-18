@@ -13,9 +13,10 @@ export function PinDots({ length, filledCount }: PinDotsProps) {
       {Array.from({ length }).map((_, i) => (
         <View
           key={i}
-          className={`h-3.5 w-3.5 rounded-full border-[1.5px] ${i < filledCount ? "border-brass bg-brass" : "bg-transparent"}`}
+          className="h-3.5 w-3.5 rounded-full border-[1.5px]"
           style={{
             borderColor: i < filledCount ? undefined : colors.brass + "80", // brass/50 — alpha variant, no Tailwind equivalent
+            backgroundColor: i < filledCount ? colors.brass : undefined,
           }}
         />
       ))}

@@ -32,6 +32,7 @@ import {
 } from "@/lib/biometrics";
 import { storage } from "@/lib/storage";
 import { ColorPalette, darkColors, lightColors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const TOTAL_SLIDES = 3;
@@ -492,11 +493,8 @@ function AnimatedSlide({
   translateX: SharedValue<number>;
   children: React.ReactNode;
 }) {
-  const colorScheme = useColorScheme() ?? "light";
-  const styles = useMemo(
-    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
-    [colorScheme],
-  );
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const animStyle = useAnimatedStyle(() => {
     const offset = -translateX.value;
@@ -537,11 +535,8 @@ function BottomBarCTA({
   onDotPress: (i: number) => void;
   onContinue: () => void;
 }) {
-  const colorScheme = useColorScheme() ?? "light";
-  const styles = useMemo(
-    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
-    [colorScheme],
-  );
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const fadeStyle = useAnimatedStyle(() => ({
     opacity: withTiming(visible ? 1 : 0, { duration: 200 }),
@@ -558,11 +553,8 @@ function BottomBarCTA({
 
 // ─── Root: Carousel host ──────────────────────────────────────────────────────
 export default function OnboardingCarousel() {
-  const colorScheme = useColorScheme() ?? "light";
-  const styles = useMemo(
-    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
-    [colorScheme],
-  );
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const translateX = useSharedValue(0);
   const dragX = useSharedValue(0);
   const activeIndexSV = useSharedValue(0);

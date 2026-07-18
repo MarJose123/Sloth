@@ -5,6 +5,7 @@ import { PinDots } from "@/components/ui/PinDots";
 import { Keypad } from "@/components/Keypad";
 import { hashPin, isValidPinFormat } from "@/lib/pin";
 import { storage } from "@/lib/storage";
+import { lightColors } from "@/theme/lightColors";
 
 const PIN_LENGTH = 6;
 
@@ -57,11 +58,24 @@ export default function PinSetupScreen() {
   }, []);
 
   return (
-    <View className="flex-1 px-5 pb-5 pt-safe bg-surface-bg">
-      <Text className="mt-15 text-center font-mono text-[12.5px] uppercase tracking-[2px] text-text-secondary">
+    <View
+      className="flex-1 px-5 pb-5 pt-safe "
+      style={{
+        backgroundColor: lightColors.surfaceBg,
+      }}
+    >
+      <Text
+        className="mt-15 text-center font-mono text-[12.5px] uppercase tracking-[2px] "
+        style={{
+          color: lightColors.textSecondary,
+        }}
+      >
         Sloth setup
       </Text>
-      <Text className="mb-7 mt-2.5 text-center font-fraunces-medium text-[22px] text-text-primary">
+      <Text
+        className="mb-7 mt-2.5 text-center font-fraunces-medium text-[22px]"
+        style={{ color: lightColors.textPrimary }}
+      >
         {stage === "enter" ? "Create a 6-digit PIN" : "Confirm your PIN"}
       </Text>
 

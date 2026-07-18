@@ -1,14 +1,16 @@
 import { Lucide } from "@react-native-vector-icons/lucide";
 import type { LucideIconName } from "@react-native-vector-icons/lucide";
+import { StyleSheet } from "react-native";
 
 export interface TabIconProps {
   size?: number;
   color: string;
+  style?: StyleSheet.NamedStyles<any>;
 }
 
 function makeIcon(name: LucideIconName) {
-  const Icon = ({ size = 24, color }: TabIconProps) => (
-    <Lucide name={name} size={size} color={color} />
+  const Icon = ({ size = 24, color, style }: TabIconProps) => (
+    <Lucide name={name} size={size} color={color} style={style} />
   );
   Icon.displayName = `Icon(${name})`;
   return Icon;

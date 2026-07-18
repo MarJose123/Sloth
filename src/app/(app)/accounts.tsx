@@ -10,6 +10,7 @@ import { router } from "expo-router";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { formatCurrency } from "@/lib/format";
+import { useColors } from "@/theme/ThemeContext";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,7 @@ const TYPE_LABELS: Record<string, string> = {
 function AccountCard({ account }: { account: AccountWithBalance }) {
   const initials = getInitials(account.name);
   const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
+  const colors = useColors();
 
   const balanceClassName =
     account.type === "credit"
@@ -43,7 +45,13 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
       : "text-text-primary";
 
   return (
-    <Pressable className="mb-3 flex-row items-center gap-3 rounded-2xl border border-hairline bg-surface-card p-4 active:opacity-80">
+    <Pressable
+      className="mb-3 flex-row items-center gap-3 rounded-2xl border p-4 active:opacity-80"
+      style={{
+        backgroundColor: colors.surfaceCard,
+        borderColor: colors.hairline,
+      }}
+    >
       <View
         className="h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-[11px]"
         style={{ backgroundColor: account.colorHex }}
@@ -74,6 +82,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
 
 export default function AccountsScreen() {
   const { state, refresh } = useAccountsData();
+  const colors = useColors();
 
   const onRefresh = useCallback(() => {
     refresh();
@@ -92,14 +101,17 @@ export default function AccountsScreen() {
   const isLoading = state.status === "loading";
 
   return (
-    <View className="flex-1 pt-safe bg-surface-bg">
+    <View
+      className="flex-1 pt-safe "
+      style={{ backgroundColor: colors.surfaceBg }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            className="bg-brass"
+            style={{ backgroundColor: colors.brass }}
             refreshing={isRefreshing}
             onRefresh={onRefresh}
           />
@@ -107,14 +119,20 @@ export default function AccountsScreen() {
       >
         {/* ── Header ── */}
         <View className="mb-5 flex-row items-center justify-between">
-          <Text className="font-fraunces-medium text-[22px] text-text-primary">
+          <Text
+            className="font-fraunces-medium text-[22px] "
+            style={{ color: colors.textPrimary }}
+          >
             Accounts
           </Text>
           <Pressable
             onPress={() => router.push("/add-account")}
             className="active:opacity-60"
           >
-            <Text className="font-manrope-bold text-[14.5px] text-brass">
+            <Text
+              className="font-manrope-bold text-[14.5px]"
+              style={{ color: colors.brass }}
+            >
               + Add
             </Text>
           </Pressable>
@@ -123,7 +141,12 @@ export default function AccountsScreen() {
         {/* ── Loading skeleton ── */}
         {isLoading && (
           <View className="items-center py-14">
-            <Text className="text-sm text-text-secondary">
+            <Text
+              className="text-sm "
+              style={{
+                color: colors.textSecondary,
+              }}
+            >
               Loading your accounts…
             </Text>
           </View>
@@ -131,11 +154,27 @@ export default function AccountsScreen() {
 
         {/* ── Empty state ── */}
         {!isLoading && accounts.length === 0 && (
-          <View className="items-center rounded-2xl border border-hairline bg-surface-card px-6 py-10">
-            <Text className="mb-2 font-fraunces-medium text-xl text-text-primary">
+          <View
+            className="items-center rounded-2xl border px-6 py-10"
+            style={{
+              backgroundColor: colors.surfaceCard,
+              borderColor: colors.hairline,
+            }}
+          >
+            <Text
+              className="mb-2 font-fraunces-medium text-xl"
+              style={{
+                color: colors.textPrimary,
+              }}
+            >
               No accounts yet
             </Text>
-            <Text className="mb-6 text-center text-sm leading-[1.55] text-text-secondary">
+            <Text
+              className="mb-6 text-center text-sm leading-[1.55] "
+              style={{
+                color: colors.textSecondary,
+              }}
+            >
               Add your first account — checking, savings, credit, or cash — to
               start tracking your money.
             </Text>
@@ -143,7 +182,10 @@ export default function AccountsScreen() {
               onPress={() => router.push("/add-account")}
               className="rounded-2xl bg-brass px-6 py-3.5 active:opacity-80"
             >
-              <Text className="font-manrope-bold text-sm text-ink">
+              <Text
+                className="font-manrope-bold text-sm "
+                style={{ color: colors.ink }}
+              >
                 Add account
               </Text>
             </Pressable>
@@ -159,15 +201,26 @@ export default function AccountsScreen() {
 
             <Pressable
               onPress={() => router.push("/add-account")}
-              className="mt-1 items-center rounded-2xl border border-dashed border-text-secondary py-4 active:opacity-60"
-              style={{ opacity: 0.5 }}
+              className="mt-1 items-center rounded-2xl border border-dashed py-4 active:opacity-60"
+              style={{
+                opacity: 0.5,
+                borderColor: colors.textSecondary,
+              }}
             >
-              <Text className="text-[14.5px] text-text-secondary">
+              <Text
+                className="text-[14.5px]"
+                style={{ color: colors.textSecondary }}
+              >
                 + Add another account
               </Text>
             </Pressable>
 
-            <Text className="mt-5 text-center text-[12px] leading-[1.5] text-text-secondary">
+            <Text
+              className="mt-5 text-center text-[12px] leading-[1.5]"
+              style={{
+                color: colors.textSecondary,
+              }}
+            >
               {"Every account's balance and history is stored only on this"}
               {"device — nothing is uploaded, ever."}
             </Text>

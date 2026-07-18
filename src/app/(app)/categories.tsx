@@ -93,10 +93,15 @@ function CategoryRow({
   totalExpenseCents: number;
   onPress: () => void;
 }) {
+  const colors = useColors();
+
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center gap-3 border-b border-hairline py-[13px] active:opacity-70"
+      className="flex-row items-center gap-3 border-b py-[13px] active:opacity-70"
+      style={{
+        borderBottomColor: colors.hairline,
+      }}
     >
       <CategoryListRing
         category={category}
@@ -104,19 +109,31 @@ function CategoryRow({
       />
 
       <View className="flex-1">
-        <Text className="text-[14.5px] font-manrope-semibold text-text-primary">
+        <Text
+          className="text-[14.5px] font-manrope-semibold "
+          style={{ color: colors.textPrimary }}
+        >
           {category.name}
         </Text>
-        <Text className="mt-0.5 font-mono text-[12px] uppercase text-text-secondary">
+        <Text
+          className="mt-0.5 font-mono text-[12px] uppercase "
+          style={{ color: colors.textSecondary }}
+        >
           {category.kind}
         </Text>
       </View>
 
       <View className="items-end">
-        <Text className="font-mono text-[13.5px] text-text-primary">
+        <Text
+          className="font-mono text-[13.5px] "
+          style={{ color: colors.textPrimary }}
+        >
           {formatCurrency(category.spendCents)}
         </Text>
-        <Text className="mt-0.5 font-mono text-[11px] text-text-secondary">
+        <Text
+          className="mt-0.5 font-mono text-[11px] "
+          style={{ color: colors.textSecondary }}
+        >
           {category.transactionCount}{" "}
           {category.transactionCount === 1 ? "transaction" : "transactions"}
         </Text>
@@ -142,7 +159,10 @@ export default function CategoriesScreen() {
     state.status === "ready" ? state.data.totalExpenseCents : 0;
 
   return (
-    <View className="flex-1 pt-safe bg-surface-bg">
+    <View
+      className="flex-1 pt-safe "
+      style={{ backgroundColor: colors.surfaceBg }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
@@ -157,27 +177,36 @@ export default function CategoriesScreen() {
       >
         {/* ── Header ── */}
         <View className="mb-1 flex-row items-center justify-between">
-          <Text className="font-fraunces-medium text-[22px] text-text-primary">
+          <Text
+            className="font-fraunces-medium text-[22px] "
+            style={{ color: colors.textPrimary }}
+          >
             Categories
           </Text>
           <Pressable
             onPress={() => router.push("/category-editor")}
             className="active:opacity-60"
           >
-            <Text className="font-manrope-bold text-[14.5px] text-brass">
+            <Text
+              className="font-manrope-bold text-[14.5px] "
+              style={{ color: colors.brass }}
+            >
               + Add
             </Text>
           </Pressable>
         </View>
 
-        <Text className="mb-5 text-[12px] text-text-secondary">
+        <Text
+          className="mb-5 text-[12px] "
+          style={{ color: colors.textSecondary }}
+        >
           This month · ring shows share of total spend
         </Text>
 
         {/* ── Loading ── */}
         {isLoading && (
           <View className="items-center py-14">
-            <Text className="text-sm text-text-secondary">
+            <Text className="text-sm " style={{ color: colors.textSecondary }}>
               Loading categories…
             </Text>
           </View>
@@ -186,7 +215,10 @@ export default function CategoriesScreen() {
         {/* ── Error ── */}
         {state.status === "error" && (
           <View className="items-center py-14">
-            <Text className="text-center text-sm text-rust">
+            <Text
+              className="text-center text-sm "
+              style={{ color: colors.rust }}
+            >
               {state.message}
             </Text>
           </View>
@@ -194,18 +226,38 @@ export default function CategoriesScreen() {
 
         {/* ── Empty state ── */}
         {!isLoading && state.status !== "error" && categories.length === 0 && (
-          <View className="items-center rounded-2xl border border-hairline bg-surface-card px-6 py-10">
-            <Text className="mb-2 font-fraunces-medium text-xl text-text-primary">
+          <View
+            className="items-center rounded-2xl border px-6 py-10"
+            style={{
+              borderColor: colors.hairline,
+              backgroundColor: colors.surfaceCard,
+            }}
+          >
+            <Text
+              className="mb-2 font-fraunces-medium text-xl "
+              style={{ color: colors.textPrimary }}
+            >
               No categories yet
             </Text>
-            <Text className="mb-6 text-center text-sm leading-[1.55] text-text-secondary">
+            <Text
+              className="mb-6 text-center text-sm leading-[1.55] "
+              style={{ color: colors.textSecondary }}
+            >
               Create expense and income types to organize your transactions.
             </Text>
             <Pressable
               onPress={() => router.push("/category-editor")}
-              className="rounded-2xl bg-brass px-6 py-3.5 active:opacity-80"
+              className="rounded-2xl  px-6 py-3.5 active:opacity-80"
+              style={{
+                backgroundColor: colors.brass,
+              }}
             >
-              <Text className="font-manrope-bold text-sm text-ink">
+              <Text
+                className="font-manrope-bold text-sm "
+                style={{
+                  color: colors.ink,
+                }}
+              >
                 Create category
               </Text>
             </Pressable>
@@ -232,10 +284,18 @@ export default function CategoriesScreen() {
         {!isLoading && categories.length > 0 && (
           <Pressable
             onPress={() => router.push("/category-editor")}
-            className="mt-3.5 items-center rounded-2xl border border-dashed border-text-secondary py-4 active:opacity-60"
-            style={{ opacity: 0.5 }}
+            className="mt-3.5 items-center rounded-2xl border border-dashed py-4 active:opacity-60"
+            style={{
+              opacity: 0.5,
+              borderColor: colors.textSecondary,
+            }}
           >
-            <Text className="text-[14.5px] text-text-secondary">
+            <Text
+              className="text-[14.5px] text-text-secondary"
+              style={{
+                color: colors.textSecondary,
+              }}
+            >
               + Create a new expense type
             </Text>
           </Pressable>

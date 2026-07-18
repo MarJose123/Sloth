@@ -1,13 +1,6 @@
 import type { ReactNode } from "react";
 import { useState, useEffect } from "react";
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  Text,
-  useColorScheme,
-  View,
-} from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import { storage } from "@/lib/storage";
 import { Toggle } from "@/components/ui/Toggle";
@@ -17,9 +10,8 @@ import { Lucide } from "@react-native-vector-icons/lucide";
 import type { LucideIconName } from "@react-native-vector-icons/lucide";
 import { ChevronRightIcon } from "@/components/navigation/icons";
 import type { ThemePreference } from "@/lib/storage";
-import { lightColors } from "@/theme/lightColors";
-import { darkColors } from "@/theme/darkColors";
-import { useTheme } from "@/theme/ThemeContext";
+import { useTheme, useColors } from "@/theme/ThemeContext";
+import { colors } from "@/theme/colors";
 
 // ─── local primitives ────────────────────────────────────────────────────────
 
@@ -32,20 +24,28 @@ function SegmentedThemeControl({
   value: ThemePreference;
   onChange: (v: ThemePreference) => void;
 }) {
+  const colors = useColors();
   return (
-    <View className="flex-row rounded-[10px] bg-surface-elevated p-0.5">
+    <View
+      className="flex-row rounded-[10px]  p-0.5"
+      style={{
+        backgroundColor: colors.surfaceElevated,
+      }}
+    >
       {THEME_OPTIONS.map((option) => (
         <Pressable
           key={option}
           onPress={() => onChange(option)}
-          className={`rounded-lg px-[10px] py-[5px] active:opacity-80 ${
-            option === value ? "bg-brass" : ""
-          }`}
+          className="rounded-lg px-[10px] py-[5px] active:opacity-80"
+          style={{
+            backgroundColor: option === value ? colors.brass : undefined,
+          }}
         >
           <Text
-            className={`text-[11.5px] font-manrope-bold capitalize ${
-              option === value ? "text-ink" : "text-text-secondary"
-            }`}
+            className="text-[11.5px] font-manrope-bold capitalize"
+            style={{
+              color: option === value ? colors.ink : colors.textSecondary,
+            }}
           >
             {option}
           </Text>
@@ -57,14 +57,19 @@ function SegmentedThemeControl({
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <Text className="mb-2 mt-[18px] font-mono text-[11.5px] uppercase tracking-[0.08em] text-brass">
+    <Text
+      className="mb-2 mt-[18px] font-mono text-[11.5px] uppercase tracking-[0.08em] "
+      style={{
+        color: colors.brass,
+      }}
+    >
       {label}
     </Text>
   );
 }
 
 function Chevron() {
-  const colors = useColorScheme() === "light" ? lightColors : darkColors;
+  const colors = useColors();
   return <ChevronRightIcon size={18} color={colors.textSecondary} />;
 }
 
@@ -83,24 +88,40 @@ function SettingsRow({
   right,
   onPress,
 }: SettingsRowProps) {
-  const colors = useColorScheme() === "light" ? lightColors : darkColors;
+  const colors = useColors();
   const content = (
-    <View className="flex-row items-center border-b border-hairline py-[13px]">
+    <View
+      className="flex-row items-center border-b py-[13px]"
+      style={{
+        borderColor: colors.hairline,
+      }}
+    >
       <View className="mr-3 flex-1 flex-row items-center gap-3">
-        <View className="h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[9px] bg-surface-elevated">
+        <View
+          className="h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[9px] "
+          style={{
+            backgroundColor: colors.surfaceElevated,
+          }}
+        >
           <Lucide name={icon} size={14} color={colors.brass} />
         </View>
         <View className="flex-1">
           <Text
-            className="text-[14.5px] font-manrope-semibold text-text-primary"
+            className="text-[14.5px] font-manrope-semibold "
             numberOfLines={1}
+            style={{
+              color: colors.textPrimary,
+            }}
           >
             {title}
           </Text>
           {description !== undefined && (
             <Text
-              className="mt-[1px] text-[12px] text-text-secondary"
+              className="mt-[1px] text-[12px]"
               numberOfLines={2}
+              style={{
+                color: colors.textSecondary,
+              }}
             >
               {description}
             </Text>
@@ -131,6 +152,7 @@ export default function SettingsScreen() {
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [screenshotsEnabled, setScreenshotsEnabled] = useState(false);
   const [showDonate, setShowDonate] = useState(false);
+  const colors = useColors();
 
   const { preference, loaded, setPreference } = useTheme();
 
@@ -179,13 +201,21 @@ export default function SettingsScreen() {
   // ── render ───────────────────────────────────────────────────────────────────
 
   return (
-    <View className="flex-1 pt-safe bg-surface-bg">
+    <View
+      className="flex-1 pt-safe"
+      style={{
+        backgroundColor: colors.surfaceBg,
+      }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="mb-[22px] font-fraunces-medium text-[22px] text-text-primary">
+        <Text
+          className="mb-[22px] font-fraunces-medium text-[22px] "
+          style={{ color: colors.textPrimary }}
+        >
           Settings
         </Text>
 

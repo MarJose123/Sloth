@@ -8,15 +8,23 @@ import {
   SettingsIcon,
   TransactionsIcon,
 } from "@/components/navigation/icons";
+import { useColors } from "@/theme/ThemeContext";
 
 export default function AppLayout() {
   const pathname = usePathname();
+  const colors = useColors();
 
   return (
-    <View style={{ flex: 1 }} className="bg-surface-bg">
+    <View style={{ flex: 1 }}>
       <Slot />
 
-      <View className="absolute bg-surface-bg bottom-6 left-1/2 -ml-[150px] w-[300px] h-[64px] flex-row items-center border border-hairline rounded-[32px] overflow-visible shadow-2xl px-2">
+      <View
+        className="absolute  bottom-6 left-1/2 -ml-42 w-85 h-18 flex-row items-center border rounded-4xl overflow-visible shadow-2xl px-2"
+        style={{
+          backgroundColor: colors.tabBar,
+          borderColor: colors.hairline,
+        }}
+      >
         <TabBarButton
           Icon={HomeIcon}
           isFocused={

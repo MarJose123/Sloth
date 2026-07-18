@@ -1,128 +1,96 @@
-import { Modal, Pressable, Text, useColorScheme, View } from "react-native";
-import { XIcon } from "@/components/navigation/icons";
-import { darkColors, lightColors } from "@/theme/colors";
+import { Modal, Pressable, Text, View } from "react-native";
+import { useColors } from "@/theme/ThemeContext";
+import Color from "color";
 
 interface DonateQRModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
-/**
- * Donate modal that displays a QR code and BTC/ETH addresses.
- * Colours react to the active theme via useColors().
- */
 export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
-  const colors = useColorScheme() === "light" ? lightColors : darkColors;
+  const colors = useColors();
 
   return (
-    <Modal
-      visible={visible}
-      animationType="fade"
-      transparent
-      onRequestClose={() => onClose}
-    >
-      <Pressable
-        className="flex-1 items-center justify-center px-6"
-        style={{ backgroundColor: "rgba(8,9,13,0.6)" }}
-        onPress={onClose}
+    <Modal visible={visible} transparent animationType="fade">
+      <View
+        className="flex-1 items-center justify-center"
+        style={{
+          backgroundColor: Color(colors.surfaceBg).alpha(0.6).string(),
+        }}
       >
-        <Pressable
-          onPress={() => {
-            /* prevent dismiss when interacting with the card */
+        <View
+          className="w-[82%] rounded-[22px] border  p-[26px]"
+          style={{
+            borderColor: colors.hairline,
+            backgroundColor: colors.surfaceCard,
           }}
-          className="w-full items-center rounded-[22px] bg-surface-card px-[22px] pb-[22px] pt-5"
         >
-          {/* ── close button ── */}
           <Pressable
             onPress={onClose}
-            className="self-end active:opacity-60"
-            accessibilityLabel="Close"
+            className="absolute right-4 top-3.5 z-10"
           >
-            <XIcon size={24} color={colors.textSecondary} />
+            <Text
+              className="text-[16px]"
+              style={{ color: colors.textSecondary }}
+            >
+              ✕
+            </Text>
           </Pressable>
 
-          {/* ── title ── */}
-          <Text className="mb-2 mt-1 text-center font-fraunces-medium text-xl text-text-primary">
+          <Text
+            className="mt-1 text-center font-fraunces-medium text-[19px] "
+            style={{ color: colors.textPrimary }}
+          >
             Support Sloth
           </Text>
           <Text
-            className="mb-5 text-center leading-relaxed text-text-secondary"
-            style={{
-              fontSize: 12,
-              lineHeight: 18,
-            }}
+            className="mt-1.5 text-center text-[12px] leading-relaxed "
+            style={{ color: colors.textSecondary }}
           >
-            Sloth is free and always will be.{"\n"}
-            If you find it useful, consider donating
-            {"\n"}
-            to support its development.
+            {
+              " Scan to send a one-time donation. Sloth has no ads, no subscriptions, and no tracking — this is the only way it's funded."
+            }
           </Text>
 
-          {/* ── QR placeholder card ── */}
           <View
-            className="mb-4 items-center bg-parchment"
+            className="mx-auto mt-5 h-[168px] w-[168px] items-center justify-center rounded-[14px] p-3"
             style={{
-              borderRadius: 14,
-              padding: 12,
-              width: 168,
-              height: 168,
+              backgroundColor: colors.parchment,
             }}
           >
             <View
-              className="bg-surface-elevated"
-              style={{
-                width: 144,
-                height: 144,
-                borderRadius: 8,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className="flex-1 w-full items-center justify-center rounded-[8px] border-2 border-dashed"
+              style={{ borderColor: `${colors.ink}4d` }}
             >
               <Text
-                className="text-text-secondary"
-                style={{
-                  fontSize: 11,
-                  fontFamily: "IBMPlexMono_400",
-                }}
+                className="font-mono text-[12px] tracking-widest"
+                style={{ color: colors.ink }}
               >
-                QR placeholder
+                QRCODEPH
               </Text>
             </View>
           </View>
 
-          {/* ── address display ── */}
-          <View className="mb-5 w-full rounded-lg bg-surface-elevated px-3 py-2.5">
-            <Text
-              className="text-center text-text-secondary"
-              style={{
-                fontFamily: "IBMPlexMono_400",
-                fontSize: 10.5,
-              }}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-            >
-              bc1q…sloth
-            </Text>
-          </View>
-
-          {/* ── save button ── */}
           <Pressable
-            onPress={() => {
-              /* TODO: save QR to gallery */
-            }}
-            className="w-full items-center rounded-xl bg-brass py-3 active:opacity-70"
+            className="mt-4 items-center justify-center rounded-[12px]  py-[13px] active:opacity-80"
+            style={{ backgroundColor: colors.brass }}
           >
-            <Text className="font-manrope-bold text-sm text-text-primary">
+            <Text
+              className="font-manrope-bold text-[13.5px] "
+              style={{ color: colors.ink }}
+            >
               ⬇ Save to Photos
             </Text>
           </Pressable>
 
-          {/* ── toast placeholder ── */}
-          <Text className="mt-3 font-mono text-sage" style={{ fontSize: 11 }}>
+          <Text
+            className="mt-2.5 text-center font-mono text-[11px] "
+            style={{ color: colors.sage }}
+          >
             ✓ Saved to gallery
           </Text>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }

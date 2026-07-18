@@ -1,11 +1,5 @@
 import { useCallback, useState } from "react";
-import {
-  RefreshControl,
-  ScrollView,
-  Text,
-  useColorScheme,
-  View,
-} from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { AccountSwitcher } from "@/components/dashboard/AccountSwitcher";
@@ -13,15 +7,14 @@ import { CategoryRingCard } from "@/components/dashboard/CategoryRingCard";
 import { TransactionRow } from "@/components/dashboard/TransactionRow";
 import { EmptyAccountsCard } from "@/components/dashboard/EmptyAccountsCard";
 import { formatCurrency, getGreeting } from "@/lib/format";
-import { lightColors } from "@/theme/lightColors";
-import { darkColors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 export default function DashboardScreen() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
   );
   const { state, refresh } = useDashboardData(selectedAccountId);
-  const colors = useColorScheme() === "light" ? lightColors : darkColors;
+  const colors = useColors();
 
   const onRefresh = useCallback(() => {
     refresh();
@@ -40,7 +33,12 @@ export default function DashboardScreen() {
     : accounts.reduce((sum, a) => sum + a.balanceCents, 0);
 
   return (
-    <View className="flex-1 pt-safe bg-surface-bg">
+    <View
+      className="flex-1 pt-safe"
+      style={{
+        backgroundColor: colors.surfaceBg,
+      }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 110 }}
@@ -52,13 +50,22 @@ export default function DashboardScreen() {
           />
         }
       >
-        <Text className="mb-0.5 text-[17px] tex-text-primary">
+        <Text
+          className="mb-0.5 text-[17px]"
+          style={{ color: colors.textPrimary }}
+        >
           {getGreeting()}
         </Text>
 
         <View className="mb-[22px] flex-row items-center gap-1.5 self-start rounded-full border border-sage/35 px-2.5 py-1">
-          <View className="h-1.5 w-1.5 rounded-full bg-sage" />
-          <Text className="font-mono text-[11px] tracking-[0.6px] text-sage uppercase">
+          <View
+            className="h-1.5 w-1.5 rounded-full "
+            style={{ backgroundColor: colors.sage }}
+          />
+          <Text
+            className="font-mono text-[11px] tracking-[0.6px] uppercase"
+            style={{ color: colors.sage }}
+          >
             Local Processing
           </Text>
         </View>

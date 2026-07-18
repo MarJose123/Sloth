@@ -4,15 +4,13 @@ import {
   RefreshControl,
   ScrollView,
   Text,
-  useColorScheme,
   View,
 } from "react-native";
 import { router } from "expo-router";
 import { useTransactionsData } from "@/hooks/useTransactionsData";
 import type { TransactionLedgerItem } from "@/lib/db/repositories/transactions";
 import { formatRelativeDate, formatSignedCurrency } from "@/lib/format";
-import { lightColors } from "@/theme/lightColors";
-import { darkColors } from "@/theme/darkColors";
+import { useColors } from "@/theme/ThemeContext";
 
 // ─── transaction row ──────────────────────────────────────────────────────────
 
@@ -21,19 +19,25 @@ function TransactionLedgerRow({
 }: {
   transaction: TransactionLedgerItem;
 }) {
+  const colors = useColors();
   const isIncome =
     transaction.categoryKind === "income" || transaction.amountCents > 0;
 
-  const amountClassName = isIncome ? "text-sage" : "text-text-primary";
-  const badgeClassName = transaction.categoryIcon
-    ? "bg-surface-elevated"
-    : "bg-surface-card";
-
   return (
-    <View className="flex-row items-center gap-3 border-b border-hairline py-[11px]">
+    <View
+      className="flex-row items-center gap-3 border-b  py-[11px]"
+      style={{
+        borderColor: colors.hairline,
+      }}
+    >
       {/* ── Category icon badge ── */}
       <View
-        className={`h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${badgeClassName}`}
+        className="h-9 w-9 flex-shrink-0 items-center justify-center rounded-full "
+        style={{
+          backgroundColor: transaction.categoryIcon
+            ? colors.surfaceElevated
+            : colors.surfaceCard,
+        }}
       >
         <Text style={{ fontSize: 18 }}>{transaction.categoryIcon ?? "·"}</Text>
       </View>
@@ -41,25 +45,35 @@ function TransactionLedgerRow({
       {/* ── Details ── */}
       <View className="flex-1 pr-2">
         <Text
-          className="text-[14.5px] font-manrope-semibold text-text-primary"
+          className="text-[14.5px] font-manrope-semibold "
           numberOfLines={1}
+          style={{ color: colors.textPrimary }}
         >
           {transaction.merchant}
         </Text>
         <Text
-          className="mt-0.5 text-[12px] text-text-secondary"
+          className="mt-0.5 text-[12px] "
           numberOfLines={1}
+          style={{ color: colors.textSecondary }}
         >
           {transaction.categoryName ?? "Uncategorized"} ·{" "}
           {formatRelativeDate(transaction.occurredAt)}
           {transaction.source !== "manual" && (
-            <Text className="text-text-secondary"> · {transaction.source}</Text>
+            <Text style={{ color: colors.textSecondary }}>
+              {" "}
+              · {transaction.source}
+            </Text>
           )}
         </Text>
       </View>
 
       {/* ── Amount ── */}
-      <Text className={`font-mono text-[14.5px] ${amountClassName}`}>
+      <Text
+        className="font-mono text-[14.5px]"
+        style={{
+          color: isIncome ? colors.sage : colors.textPrimary,
+        }}
+      >
         {formatSignedCurrency(transaction.amountCents)}
       </Text>
     </View>
@@ -70,7 +84,7 @@ function TransactionLedgerRow({
 
 export default function TransactionsScreen() {
   const { state, refresh } = useTransactionsData();
-  const colors = useColorScheme() === "light" ? lightColors : darkColors;
+  const colors = useColors();
 
   const onRefresh = useCallback(() => {
     refresh();
@@ -78,8 +92,13 @@ export default function TransactionsScreen() {
 
   if (state.status === "error") {
     return (
-      <View className="flex-1 items-center justify-center px-8 pt-safe bg-surface-bg">
-        <Text className="text-center text-sm text-rust">{state.message}</Text>
+      <View
+        className="flex-1 items-center justify-center px-8 pt-safe"
+        style={{ backgroundColor: colors.surfaceBg }}
+      >
+        <Text className="text-center text-sm" style={{ color: colors.rust }}>
+          {state.message}
+        </Text>
       </View>
     );
   }
@@ -89,7 +108,10 @@ export default function TransactionsScreen() {
   const isLoading = state.status === "loading";
 
   return (
-    <View className="flex-1 pt-safe bg-surface-bg">
+    <View
+      className="flex-1 pt-safe "
+      style={{ backgroundColor: colors.surfaceBg }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
@@ -104,14 +126,20 @@ export default function TransactionsScreen() {
       >
         {/* ── Header ── */}
         <View className="mb-5 flex-row items-center justify-between">
-          <Text className="font-fraunces-medium text-[22px] text-text-primary">
+          <Text
+            className="font-fraunces-medium text-[22px] "
+            style={{ color: colors.textPrimary }}
+          >
             Transactions
           </Text>
           <Pressable
             onPress={() => router.push("/transaction/new")}
-            className="rounded-full bg-brass px-3 py-1.5 active:opacity-80"
+            className="active:opacity-60"
           >
-            <Text className="font-manrope-bold text-[12px] text-ink">
+            <Text
+              className="font-manrope-bold text-[14.5px] "
+              style={{ color: colors.brass }}
+            >
               + Add
             </Text>
           </Pressable>
@@ -120,7 +148,12 @@ export default function TransactionsScreen() {
         {/* ── Loading ── */}
         {isLoading && (
           <View className="items-center py-14">
-            <Text className="text-sm text-text-secondary">
+            <Text
+              className="text-sm "
+              style={{
+                color: colors.textSecondary,
+              }}
+            >
               Loading transactions…
             </Text>
           </View>
@@ -128,19 +161,41 @@ export default function TransactionsScreen() {
 
         {/* ── Empty state ── */}
         {!isLoading && transactions.length === 0 && (
-          <View className="items-center rounded-2xl border border-hairline bg-surface-card px-6 py-10">
-            <Text className="mb-2 font-fraunces-medium text-xl text-text-primary">
+          <View
+            className="items-center rounded-2xl border px-6 py-10"
+            style={{
+              backgroundColor: colors.surfaceCard,
+              borderColor: colors.hairline,
+            }}
+          >
+            <Text
+              className="mb-2 font-fraunces-medium text-xl"
+              style={{
+                color: colors.textPrimary,
+              }}
+            >
               No transactions yet
             </Text>
-            <Text className="mb-6 text-center text-sm leading-[1.55] text-text-secondary">
+            <Text
+              className="mb-6 text-center text-sm leading-[1.55]"
+              style={{
+                color: colors.textSecondary,
+              }}
+            >
               Tap Add to record your first transaction, scan a receipt, or
               import from a CSV file.
             </Text>
             <Pressable
               onPress={() => router.push("/transaction/new")}
-              className="rounded-2xl bg-brass px-6 py-3.5 active:opacity-80"
+              className="rounded-2xl  px-6 py-3.5 active:opacity-80"
+              style={{
+                backgroundColor: colors.brass,
+              }}
             >
-              <Text className="font-manrope-bold text-sm text-ink">
+              <Text
+                className="font-manrope-bold text-sm"
+                style={{ color: colors.ink }}
+              >
                 Add transaction
               </Text>
             </Pressable>
@@ -155,7 +210,12 @@ export default function TransactionsScreen() {
 
         {/* ── End of list note ── */}
         {!isLoading && transactions.length > 0 && (
-          <Text className="mt-5 text-center font-mono text-[11px] text-text-secondary">
+          <Text
+            className="mt-5 text-center font-mono text-[11px] "
+            style={{
+              color: colors.textSecondary,
+            }}
+          >
             {transactions.length} transaction
             {transactions.length !== 1 ? "s" : ""} · all stored on this device
           </Text>

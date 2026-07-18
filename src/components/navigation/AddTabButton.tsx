@@ -4,18 +4,16 @@ import {
   type PressableProps,
   type ViewStyle,
   type StyleProp,
-  useColorScheme,
 } from "react-native";
 import { PlusIcon } from "@/components/navigation/icons";
-import { lightColors } from "@/theme/lightColors";
-import { darkColors } from "@/theme/darkColors";
+import { useColors } from "@/theme/ThemeContext";
 
 /**
  * Tab-bar FAB button. Renders a brass circle with a + icon.
  * Colours react to the active theme via useColors().
  */
 export function AddTabButton(props: PressableProps) {
-  const colors = useColorScheme() === "light" ? lightColors : darkColors;
+  const colors = useColors();
 
   return (
     <View
@@ -27,7 +25,7 @@ export function AddTabButton(props: PressableProps) {
     >
       <Pressable
         {...props}
-        className="active:opacity-80 bg-brass"
+        className="active:opacity-80"
         style={[
           {
             width: 48,
@@ -37,6 +35,7 @@ export function AddTabButton(props: PressableProps) {
             alignItems: "center",
             justifyContent: "center",
             overflow: "hidden",
+            backgroundColor: colors.brass,
             shadowColor: colors.brass,
             shadowOffset: { width: 0, height: 10 },
             shadowOpacity: 0.5,
@@ -46,7 +45,7 @@ export function AddTabButton(props: PressableProps) {
           props.style as StyleProp<ViewStyle>,
         ]}
       >
-        <PlusIcon size={26} color={colors.parchment} />
+        <PlusIcon size={26} color={colors.textPrimary} />
       </Pressable>
     </View>
   );
