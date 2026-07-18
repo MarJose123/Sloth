@@ -13,7 +13,7 @@ import {
 import { router } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
-import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
+import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import {
   insertAccount,
   type AccountType,
@@ -220,11 +220,13 @@ export default function AddAccountScreen() {
       setIsProcessing(true);
 
       // Resize to a max dimension suitable for badge display
-      const manipResult = await manipulateAsync(
-        asset.uri,
-        [{ resize: { width: 400 } }],
-        { format: SaveFormat.PNG, compress: 0.9 },
-      );
+      const context = ImageManipulator.manipulate(asset.uri);
+      context.resize({ width: 400 });
+      const imageRef = await context.renderAsync();
+      const manipResult = await imageRef.saveAsync({
+        format: SaveFormat.PNG,
+        compress: 0.9,
+      });
 
       // Copy the processed image to persistent storage
       const destDir = `${FileSystem.documentDirectory}account-logos/`;
@@ -247,11 +249,13 @@ export default function AddAccountScreen() {
     if (!customLogoUri) return;
     setIsProcessing(true);
     try {
-      const manipResult = await manipulateAsync(
-        customLogoUri,
-        [{ resize: { width: 400, height: 400 } }],
-        { format: SaveFormat.PNG, compress: 0.9 },
-      );
+      const context = ImageManipulator.manipulate(customLogoUri);
+      context.resize({ width: 400, height: 400 });
+      const imageRef = await context.renderAsync();
+      const manipResult = await imageRef.saveAsync({
+        format: SaveFormat.PNG,
+        compress: 0.9,
+      });
 
       // Overwrite the stored copy with the cropped version
       const destDir = `${FileSystem.documentDirectory}account-logos/`;
