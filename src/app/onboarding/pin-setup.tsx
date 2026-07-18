@@ -65,7 +65,7 @@ export default function PinSetupScreen() {
       }}
     >
       <Text
-        className="mt-15 text-center font-mono text-[12.5px] uppercase tracking-[2px] "
+        className="mt-15 text-center font-mono text-[14px] uppercase tracking-[2px] "
         style={{
           color: lightColors.textSecondary,
         }}
@@ -73,7 +73,7 @@ export default function PinSetupScreen() {
         Sloth setup
       </Text>
       <Text
-        className="mb-7 mt-2.5 text-center font-fraunces-medium text-[22px]"
+        className="mb-7 mt-2.5 text-center font-fraunces-medium text-[24px]"
         style={{ color: lightColors.textPrimary }}
       >
         {stage === "enter" ? "Create a 6-digit PIN" : "Confirm your PIN"}

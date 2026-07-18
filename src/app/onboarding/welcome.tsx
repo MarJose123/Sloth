@@ -1,12 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  View,
-  Text,
-  Dimensions,
-  Pressable,
-  Alert,
-  useColorScheme,
-} from "react-native";
+import { View, Text, Dimensions, Pressable, Alert } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -31,7 +24,7 @@ import {
   authenticateWithBiometrics,
 } from "@/lib/biometrics";
 import { storage } from "@/lib/storage";
-import { ColorPalette, darkColors, lightColors } from "@/theme/colors";
+import { ColorPalette } from "@/theme/colors";
 import { useColors } from "@/theme/ThemeContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -85,7 +78,7 @@ function createStyles(c: ColorPalette) {
     // ── Slide 1: Welcome ──
     brandMark: {
       fontFamily: "IBMPlexMono_400",
-      fontSize: 13,
+      fontSize: 15,
       letterSpacing: 1.44,
       textTransform: "uppercase" as const,
       color: c.brass,
@@ -103,8 +96,8 @@ function createStyles(c: ColorPalette) {
     },
     welcomeHeadline: {
       fontFamily: "Fraunces_450",
-      fontSize: 32,
-      lineHeight: 38,
+      fontSize: 35,
+      lineHeight: 42,
       letterSpacing: -0.3,
       color: c.textPrimary,
       textAlign: "center" as const,
@@ -112,8 +105,8 @@ function createStyles(c: ColorPalette) {
     },
     welcomeBody: {
       fontFamily: "Manrope_400",
-      fontSize: 15.5,
-      lineHeight: 24,
+      fontSize: 17,
+      lineHeight: 26,
       color: c.textSecondary,
       textAlign: "center" as const,
       paddingHorizontal: 8,
@@ -122,7 +115,7 @@ function createStyles(c: ColorPalette) {
     // ── Slide 2: Privacy ──
     eyebrow: {
       fontFamily: "IBMPlexMono_400",
-      fontSize: 12.5,
+      fontSize: 14,
       letterSpacing: 1.1,
       textTransform: "uppercase" as const,
       color: c.textSecondary,
@@ -130,8 +123,8 @@ function createStyles(c: ColorPalette) {
     },
     privacyHeadline: {
       fontFamily: "Fraunces_450",
-      fontSize: 27,
-      lineHeight: 33,
+      fontSize: 30,
+      lineHeight: 36,
       color: c.textPrimary,
       marginBottom: 26,
     },
@@ -153,41 +146,41 @@ function createStyles(c: ColorPalette) {
     },
     featIconText: {
       fontFamily: "IBMPlexMono_400",
-      fontSize: 15,
+      fontSize: 16,
       color: c.brass,
     },
     featTitle: {
       fontFamily: "Manrope_700Bold",
-      fontSize: 15.5,
+      fontSize: 17,
       color: c.textPrimary,
       marginBottom: 3,
     },
     featDesc: {
       fontFamily: "Manrope_400",
-      fontSize: 14,
-      lineHeight: 21,
+      fontSize: 15.5,
+      lineHeight: 23,
       color: c.textSecondary,
     },
 
     // ── Slide 3: Biometric ──
     biometricHeadline: {
       fontFamily: "Fraunces_450",
-      fontSize: 28,
-      lineHeight: 34,
+      fontSize: 31,
+      lineHeight: 37,
       color: c.textPrimary,
       marginTop: 10,
       marginBottom: 8,
     },
     biometricBody: {
       fontFamily: "Manrope_400",
-      fontSize: 15,
-      lineHeight: 23,
+      fontSize: 16.5,
+      lineHeight: 25,
       color: c.textSecondary,
       marginBottom: 30,
     },
     biometricCaption: {
       fontFamily: "IBMPlexMono_400",
-      fontSize: 13.5,
+      fontSize: 15,
       letterSpacing: 0.72,
       textTransform: "uppercase" as const,
       color: c.brass,
@@ -200,7 +193,7 @@ function createStyles(c: ColorPalette) {
     },
     pinFallbackText: {
       fontFamily: "Manrope_400",
-      fontSize: 14,
+      fontSize: 15,
       color: c.textSecondary,
       textDecorationLine: "underline" as const,
       textDecorationColor: "rgba(167,159,140,0.4)",
@@ -251,7 +244,7 @@ function createStyles(c: ColorPalette) {
     },
     brassBtnLabel: {
       fontFamily: "Manrope_700Bold",
-      fontSize: 16.5,
+      fontSize: 18,
       letterSpacing: 0.15,
       color: c.ink,
     },
@@ -268,11 +261,8 @@ function StepDots({
   activeIndex: number;
   onDotPress: (i: number) => void;
 }) {
-  const colorScheme = useColorScheme() ?? "light";
-  const styles = useMemo(
-    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
-    [colorScheme],
-  );
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.dotsRow}>
@@ -292,11 +282,8 @@ function StepDots({
 
 // ─── Brass button ─────────────────────────────────────────────────────────────
 function BrassBtn({ label, onPress }: { label: string; onPress: () => void }) {
-  const colorScheme = useColorScheme() ?? "light";
-  const styles = useMemo(
-    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
-    [colorScheme],
-  );
+  const color = useColors();
+  const styles = useMemo(() => createStyles(color), [color]);
 
   return (
     <Pressable
@@ -323,12 +310,8 @@ function FeatureRow({
   description: string;
   isLast: boolean;
 }) {
-  const colorScheme = useColorScheme() ?? "light";
-  const colors = colorScheme === "light" ? lightColors : darkColors;
-  const styles = useMemo(
-    () => createStyles(colorScheme === "light" ? lightColors : darkColors),
-    [colorScheme],
-  );
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View
@@ -445,6 +428,7 @@ function SlideBiometric({
 
   return (
     <View style={styles.slideInner}>
+      {/* ── top content: eyebrow + headline + body ── */}
       <Text style={styles.eyebrow}>Step 3 of 3</Text>
 
       <Text style={styles.biometricHeadline}>
@@ -457,16 +441,23 @@ function SlideBiometric({
         }
       </Text>
 
-      {/* DialFrame with variant="brass" — ring only appears on biometric slide */}
-      <DialFrame size={150} innerSize={78} variant="brass">
-        <FingerprintIcon size={30} />
-      </DialFrame>
-
-      {/* Caption */}
-      <Text style={styles.biometricCaption}>Touch the sensor to continue</Text>
-
+      {/* ── flex spacer pushes the icon ring to vertical center ── */}
       <View style={{ flex: 1 }} />
 
+      {/* ── centered icon ring ── */}
+      <View className="items-center">
+        <DialFrame size={150}>
+          <FingerprintIcon size={90} />
+        </DialFrame>
+        <Text style={styles.biometricCaption}>
+          Touch the sensor to continue
+        </Text>
+      </View>
+
+      {/* ── flex spacer pushes the bottom buttons down ── */}
+      <View style={{ flex: 1 }} />
+
+      {/* ── bottom buttons ── */}
       <View style={styles.biometricStack}>
         <BrassBtn
           label={isAuthenticating ? "Waiting\u2026" : "Enable Face / Touch ID"}
