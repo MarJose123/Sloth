@@ -8,13 +8,15 @@ import { TransactionRow } from "@/components/dashboard/TransactionRow";
 import { EmptyAccountsCard } from "@/components/dashboard/EmptyAccountsCard";
 import { formatCurrency, getGreeting } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
+import Color from "color";
 
 export default function DashboardScreen() {
+  const colors = useColors();
+
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
   );
   const { state, refresh } = useDashboardData(selectedAccountId);
-  const colors = useColors();
 
   const onRefresh = useCallback(() => {
     refresh();
@@ -57,7 +59,10 @@ export default function DashboardScreen() {
           {getGreeting()}
         </Text>
 
-        <View className="mb-[22px] flex-row items-center gap-1.5 self-start rounded-full border border-sage/35 px-2.5 py-1">
+        <View
+          className="mb-[22px] flex-row items-center gap-1.5 self-start rounded-full border px-2.5 py-1"
+          style={{ borderColor: Color(colors.sage).alpha(0.35).rgb().string() }}
+        >
           <View
             className="h-1.5 w-1.5 rounded-full "
             style={{ backgroundColor: colors.sage }}
@@ -80,12 +85,22 @@ export default function DashboardScreen() {
               onSelect={setSelectedAccountId}
             />
 
-            <Text className="mb-1.5 text-[13px] text-text-secondary">
+            <Text
+              className="mb-1.5 text-[13px] "
+              style={{
+                color: colors.textSecondary,
+              }}
+            >
               {selectedAccount
                 ? `${selectedAccount.name} balance`
                 : "Total balance"}
             </Text>
-            <Text className="mb-[26px] font-fraunces-medium text-[48px] leading-[52px] text-text-primary">
+            <Text
+              className="mb-[26px] font-fraunces-medium text-[48px] leading-[52px] "
+              style={{
+                color: colors.textPrimary,
+              }}
+            >
               {formatCurrency(totalBalanceCents)}
             </Text>
 
@@ -102,7 +117,12 @@ export default function DashboardScreen() {
             )}
 
             <View className="mb-3 flex-row items-center justify-between">
-              <Text className="font-mono text-xs uppercase tracking-[1px] text-text-secondary">
+              <Text
+                className="font-mono text-xs uppercase tracking-[1px] "
+                style={{
+                  color: colors.textSecondary,
+                }}
+              >
                 Recent
               </Text>
             </View>
@@ -112,7 +132,12 @@ export default function DashboardScreen() {
                 <TransactionRow key={tx.id} transaction={tx} />
               ))
             ) : (
-              <Text className="py-4 text-center text-sm text-text-secondary">
+              <Text
+                className="py-4 text-center text-sm "
+                style={{
+                  color: colors.textSecondary,
+                }}
+              >
                 No transactions yet — tap Add to record your first one.
               </Text>
             )}
