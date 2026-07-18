@@ -13,6 +13,7 @@ import {
 import { router } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import {
   insertAccount,
   type AccountType,
@@ -157,6 +158,7 @@ export default function AddAccountScreen() {
   const [badgeMode, setBadgeMode] = useState<"color" | "logo" | "custom">("color");
   const [selectedLogoKey, setSelectedLogoKey] = useState<string | null>(null);
   const [customLogoUri, setCustomLogoUri] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const selectedColor = BADGE_COLORS[selectedColorIdx] ?? colors.brass;
   const initials = getInitials(name) || "·";
@@ -215,20 +217,55 @@ export default function AddAccountScreen() {
       const asset = result.assets?.[0];
       if (!asset?.uri) return;
 
-      // Copy to a persistent app directory so the URI survives
+      setIsProcessing(true);
+
+      // Resize to a max dimension suitable for badge display
+      const manipResult = await manipulateAsync(
+        asset.uri,
+        [{ resize: { width: 400 } }],
+        { format: SaveFormat.PNG, compress: 0.9 },
+      );
+
+      // Copy the processed image to persistent storage
       const destDir = `${FileSystem.documentDirectory}account-logos/`;
       await FileSystem.makeDirectoryAsync(destDir, { intermediates: true });
-      const ext = asset.name?.split(".").pop() ?? "png";
-      const dest = `${destDir}${Date.now()}.${ext}`;
-      await FileSystem.copyAsync({ from: asset.uri, to: dest });
+      const dest = `${destDir}${Date.now()}.png`;
+      await FileSystem.copyAsync({ from: manipResult.uri, to: dest });
 
       setCustomLogoUri(dest);
       setBadgeMode("custom");
       setSelectedLogoKey(null);
     } catch {
-      Alert.alert("Error", "Could not pick an image. Please try again.");
+      Alert.alert("Error", "Could not process the image. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
   }, []);
+
+  /** Crop the uploaded image to a square (center-crop) at 400×400. */
+  const handleCropToSquare = useCallback(async () => {
+    if (!customLogoUri) return;
+    setIsProcessing(true);
+    try {
+      const manipResult = await manipulateAsync(
+        customLogoUri,
+        [{ resize: { width: 400, height: 400 } }],
+        { format: SaveFormat.PNG, compress: 0.9 },
+      );
+
+      // Overwrite the stored copy with the cropped version
+      const destDir = `${FileSystem.documentDirectory}account-logos/`;
+      await FileSystem.makeDirectoryAsync(destDir, { intermediates: true });
+      const dest = `${destDir}${Date.now()}-cropped.png`;
+      await FileSystem.copyAsync({ from: manipResult.uri, to: dest });
+
+      setCustomLogoUri(dest);
+    } catch {
+      Alert.alert("Error", "Could not crop the image.");
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [customLogoUri]);
 
   // Reset logo selection when switching away from logo mode
   useEffect(() => {
@@ -416,21 +453,42 @@ export default function AddAccountScreen() {
 
           {badgeMode === "custom" && (
             <View className="mb-5 items-center">
-              {customLogoUri ? (
+              {isProcessing ? (
+                <View className="items-center gap-3 py-8">
+                  <Text className="text-[13px] font-manrope-semibold" style={{ color: c.textSecondary }}>
+                    Processing image…
+                  </Text>
+                </View>
+              ) : customLogoUri ? (
                 <View className="items-center gap-3">
-                  <Image
-                    source={{ uri: customLogoUri }}
-                    style={{ width: 120, height: 120, borderRadius: 16 }}
-                    resizeMode="contain"
-                  />
-                  <Pressable
-                    onPress={handlePickImage}
-                    className="rounded-lg bg-surface-elevated px-4 py-2 active:opacity-70"
+                  <View
+                    className="h-[120px] w-[120px] items-center justify-center overflow-hidden rounded-2xl"
+                    style={{ backgroundColor: selectedColor }}
                   >
-                    <Text className="text-[12px] font-manrope-semibold" style={{ color: colors.brass }}>
-                      Choose another image
-                    </Text>
-                  </Pressable>
+                    <Image
+                      source={{ uri: customLogoUri }}
+                      style={{ width: 100, height: 100 }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <View className="flex-row gap-2">
+                    <Pressable
+                      onPress={handleCropToSquare}
+                      className="rounded-lg bg-surface-elevated px-4 py-2 active:opacity-70"
+                    >
+                      <Text className="text-[12px] font-manrope-semibold" style={{ color: colors.brass }}>
+                        Crop to square
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={handlePickImage}
+                      className="rounded-lg bg-surface-elevated px-4 py-2 active:opacity-70"
+                    >
+                      <Text className="text-[12px] font-manrope-semibold" style={{ color: colors.brass }}>
+                        Change image
+                      </Text>
+                    </Pressable>
+                  </View>
                 </View>
               ) : (
                 <Pressable
