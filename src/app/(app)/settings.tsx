@@ -212,12 +212,21 @@ export default function SettingsScreen() {
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text
-          className="mb-[22px] font-fraunces-medium text-[22px] "
-          style={{ color: colors.textPrimary }}
-        >
-          Settings
-        </Text>
+        <View className="mb-[22px] flex-row items-center gap-3">
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={8}
+            className="active:opacity-60"
+          >
+            <Lucide name="arrow-left" size={22} color={colors.textPrimary} />
+          </Pressable>
+          <Text
+            className="font-fraunces-medium text-[22px] "
+            style={{ color: colors.textPrimary }}
+          >
+            Settings
+          </Text>
+        </View>
 
         {/* ── Appearance ──────────────────────────────────────────────────── */}
         <SectionLabel label="Appearance" />

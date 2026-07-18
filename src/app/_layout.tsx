@@ -28,20 +28,44 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <View className="flex-1">
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
           {/* ── Core groups ── */}
           <Stack.Screen name="(app)" />
           <Stack.Screen name="onboarding" />
 
           {/* ── Root-level push screens (no tab bar) ── */}
-          <Stack.Screen name="add-account" />
-          <Stack.Screen name="category-editor" />
-          <Stack.Screen name="transaction/new" />
-          <Stack.Screen name="about" />
-          <Stack.Screen name="receipt-scan" />
-          <Stack.Screen name="import" />
-          <Stack.Screen name="lock" />
-          <Stack.Screen name="donate" />
+          <Stack.Screen
+            name="add-account"
+            options={{ animation: "slide_from_right", animationDuration: 300 }}
+          />
+          <Stack.Screen
+            name="category-editor"
+            options={{ animation: "slide_from_right", animationDuration: 300 }}
+          />
+          <Stack.Screen
+            name="transaction/new"
+            options={{ animation: "slide_from_right", animationDuration: 300 }}
+          />
+          <Stack.Screen
+            name="about"
+            options={{ animation: "slide_from_right", animationDuration: 300 }}
+          />
+          <Stack.Screen
+            name="receipt-scan"
+            options={{ animation: "slide_from_right", animationDuration: 300 }}
+          />
+          <Stack.Screen
+            name="import"
+            options={{ animation: "slide_from_right", animationDuration: 300 }}
+          />
+          <Stack.Screen
+            name="lock"
+            options={{ animation: "slide_from_right", animationDuration: 300 }}
+          />
           <Stack.Screen
             name="fab-sheet"
             options={{ presentation: "transparentModal", animation: "fade" }}
