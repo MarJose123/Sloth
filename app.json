@@ -46,7 +46,15 @@
       ],
       "expo-status-bar",
       "expo-image",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Sloth saves donation QR codes to your photo library.",
+          "savePhotosPermission": "Sloth saves donation QR codes to your photo library."
+        }
+      ],
+      "expo-widgets"
     ],
     "android": {
       "package": "marjose.sloth.app",
@@ -72,6 +80,9 @@
         "projectId": "bb35ddc3-4946-4972-b72a-f292d8570d81"
       }
     },
-    "platforms": ["ios", "android"]
+    "platforms": [
+      "ios",
+      "android"
+    ]
   }
 }
