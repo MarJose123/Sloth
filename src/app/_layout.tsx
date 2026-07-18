@@ -5,6 +5,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useAppFonts } from "@/hooks/useAppFonts";
 import { ThemeProvider } from "@/theme/ThemeContext";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* no-op: safe to ignore if already hidden */
@@ -27,8 +28,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <View className="flex-1">
-        <Stack
+      <ErrorBoundary>
+        <View className="flex-1">
+          <Stack
           screenOptions={{
             headerShown: false,
           }}
@@ -71,7 +73,8 @@ export default function RootLayout() {
             options={{ presentation: "transparentModal", animation: "fade" }}
           />
         </Stack>
-      </View>
+        </View>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }
