@@ -34,7 +34,9 @@ export class ErrorBoundary extends Component<Props, State> {
       return this.props.children;
     }
 
-    return <ErrorFallback error={this.state.error} onReset={this.handleReset} />;
+    return (
+      <ErrorFallback error={this.state.error} onReset={this.handleReset} />
+    );
   }
 }
 
@@ -54,12 +56,13 @@ function ErrorFallback({
       <SlothAppIcon size={96} />
 
       <Text className="mt-6 text-center font-fraunces-medium text-[26px] text-text-primary leading-snug">
-        Something went{"\n"}wrong
+        {"Something went wrong"}
       </Text>
 
       <Text className="mt-3 max-w-[300px] text-center text-[14px] font-manrope text-text-secondary leading-relaxed">
-        Sloth ran into an unexpected issue. Don't worry — your data is safe
-        and encrypted on your device.
+        {
+          "Sloth ran into an unexpected issue. Don't worry — your data is safe and encrypted on your device."
+        }
       </Text>
 
       <Pressable
