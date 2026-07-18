@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
-import * as FileSystem from "expo-file-system";
+import { documentDirectory } from "expo-file-system/legacy";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { formatCurrency } from "@/lib/format";
@@ -54,15 +54,22 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
         style={{ backgroundColor: account.colorHex }}
       >
         {logoSrc?.type === "bundled" && logoSrc.source ? (
-          <Image source={logoSrc.source} style={{ width: 30, height: 30 }} resizeMode="cover" />
+          <Image
+            source={logoSrc.source}
+            style={{ width: 30, height: 30 }}
+            resizeMode="cover"
+          />
         ) : logoSrc?.type === "uri" && logoSrc.uri ? (
           <Image
-            source={{ uri: `${FileSystem.documentDirectory}${logoSrc.uri}` }}
+            source={{ uri: `${documentDirectory}${logoSrc.uri}` }}
             style={{ width: 30, height: 30 }}
             resizeMode="cover"
           />
         ) : (
-          <Text className="font-mono-medium text-xs" style={{ color: colors.ink }}>
+          <Text
+            className="font-mono-medium text-xs"
+            style={{ color: colors.ink }}
+          >
             {initials}
           </Text>
         )}
@@ -113,10 +120,18 @@ export default function AccountsScreen() {
 
   if (state.status === "error") {
     return (
-      <View className="flex-1 items-center justify-center px-8 pt-safe " style={{ backgroundColor: colors.surfaceBg }}>
-        <Text className="text-center text-sm " style={{
-          color: colors.rust,
-        }}>{state.message}</Text>
+      <View
+        className="flex-1 items-center justify-center px-8 pt-safe "
+        style={{ backgroundColor: colors.surfaceBg }}
+      >
+        <Text
+          className="text-center text-sm "
+          style={{
+            color: colors.rust,
+          }}
+        >
+          {state.message}
+        </Text>
       </View>
     );
   }

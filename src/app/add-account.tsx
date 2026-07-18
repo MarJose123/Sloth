@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import {
   Alert,
   Image,
@@ -12,7 +12,11 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
+import {
+  documentDirectory,
+  makeDirectoryAsync,
+  copyAsync,
+} from "expo-file-system/legacy";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import {
   insertAccount,
@@ -46,7 +50,11 @@ const BADGE_COLORS = [
   colors.textSecondary,
 ] as const;
 
-const BADGE_MODES: { key: "color" | "logo" | "custom"; label: string; icon: LucideIconName }[] = [
+const BADGE_MODES: {
+  key: "color" | "logo" | "custom";
+  label: string;
+  icon: LucideIconName;
+}[] = [
   { key: "color", label: "Color", icon: "swatch-book" },
   { key: "logo", label: "Logo", icon: "building" },
   { key: "custom", label: "Custom", icon: "upload" },
@@ -127,11 +135,16 @@ function LogoGridItem({
         className="items-center justify-center rounded-[13px] border p-3"
         style={{
           borderColor: selected ? colors.brass : c.hairline,
-          backgroundColor: selected ? Color(colors.brass).alpha(0.1).toString() : c.surfaceCard,
+          backgroundColor: selected
+            ? Color(colors.brass).alpha(0.1).toString()
+            : c.surfaceCard,
           borderWidth: selected ? 2 : 1,
         }}
       >
-        <Image source={source} style={{ width: 48, height: 48, resizeMode: "contain" }} />
+        <Image
+          source={source}
+          style={{ width: 48, height: 48, resizeMode: "contain" }}
+        />
         <Text
           className="mt-1 text-[10px] font-manrope-medium text-center"
           style={{ color: c.textSecondary }}
@@ -155,7 +168,9 @@ export default function AddAccountScreen() {
   const [isSaving, setIsSaving] = useState(false);
 
   // Badge mode state
-  const [badgeMode, setBadgeMode] = useState<"color" | "logo" | "custom">("color");
+  const [badgeMode, setBadgeMode] = useState<"color" | "logo" | "custom">(
+    "color",
+  );
   const [selectedLogoKey, setSelectedLogoKey] = useState<string | null>(null);
   const [customLogoUri, setCustomLogoUri] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -229,10 +244,10 @@ export default function AddAccountScreen() {
       });
 
       // Copy the processed image to persistent storage
-      const destDir = `${FileSystem.documentDirectory}account-logos/`;
-      await FileSystem.makeDirectoryAsync(destDir, { intermediates: true });
+      const destDir = `${documentDirectory}account-logos/`;
+      await makeDirectoryAsync(destDir, { intermediates: true });
       const dest = `${destDir}${Date.now()}.png`;
-      await FileSystem.copyAsync({ from: manipResult.uri, to: dest });
+      await copyAsync({ from: manipResult.uri, to: dest });
 
       setCustomLogoUri(dest);
       setBadgeMode("custom");
@@ -258,10 +273,10 @@ export default function AddAccountScreen() {
       });
 
       // Overwrite the stored copy with the cropped version
-      const destDir = `${FileSystem.documentDirectory}account-logos/`;
-      await FileSystem.makeDirectoryAsync(destDir, { intermediates: true });
+      const destDir = `${documentDirectory}account-logos/`;
+      await makeDirectoryAsync(destDir, { intermediates: true });
       const dest = `${destDir}${Date.now()}-cropped.png`;
-      await FileSystem.copyAsync({ from: manipResult.uri, to: dest });
+      await copyAsync({ from: manipResult.uri, to: dest });
 
       setCustomLogoUri(dest);
     } catch {
@@ -271,17 +286,15 @@ export default function AddAccountScreen() {
     }
   }, [customLogoUri]);
 
-  // Reset logo selection when switching away from logo mode
-  useEffect(() => {
-    if (badgeMode !== "logo") setSelectedLogoKey(null);
-    if (badgeMode !== "custom") setCustomLogoUri(null);
-  }, [badgeMode]);
+  // Reset logo selection when switching away from logo or custom mode
+  const handleBadgeModeChange = (mode: "color" | "logo" | "custom") => {
+    setBadgeMode(mode);
+    if (mode !== "logo") setSelectedLogoKey(null);
+    if (mode !== "custom") setCustomLogoUri(null);
+  };
 
   return (
-    <View
-      className="flex-1 pt-safe "
-      style={{ backgroundColor: c.surfaceBg }}
-    >
+    <View className="flex-1 pt-safe " style={{ backgroundColor: c.surfaceBg }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -294,15 +307,28 @@ export default function AddAccountScreen() {
         >
           {/* ── Header ── */}
           <View className="mb-8 flex-row items-center justify-between">
-            <Pressable onPress={() => router.back()} className="active:opacity-60">
-              <Text className="text-[14.5px]" style={{ color: c.textSecondary }}>
+            <Pressable
+              onPress={() => router.back()}
+              className="active:opacity-60"
+            >
+              <Text
+                className="text-[14.5px]"
+                style={{ color: c.textSecondary }}
+              >
                 Cancel
               </Text>
             </Pressable>
-            <Text className="font-fraunces-medium text-[20px]" style={{ color: c.textPrimary }}>
+            <Text
+              className="font-fraunces-medium text-[20px]"
+              style={{ color: c.textPrimary }}
+            >
               New account
             </Text>
-            <Pressable onPress={handleSave} disabled={isSaving} className="active:opacity-60">
+            <Pressable
+              onPress={handleSave}
+              disabled={isSaving}
+              className="active:opacity-60"
+            >
               <Text
                 className="font-manrope-bold text-[13px]"
                 style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
@@ -336,7 +362,10 @@ export default function AddAccountScreen() {
           </View>
 
           {/* ── Type selector ── */}
-          <Text className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]" style={{ color: colors.brass }}>
+          <Text
+            className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]"
+            style={{ color: colors.brass }}
+          >
             Type
           </Text>
           <View className="mb-5 flex-row flex-wrap gap-2">
@@ -373,7 +402,10 @@ export default function AddAccountScreen() {
           </View>
 
           {/* ── Badge ── */}
-          <Text className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]" style={{ color: colors.brass }}>
+          <Text
+            className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]"
+            style={{ color: colors.brass }}
+          >
             Badge
           </Text>
 
@@ -390,7 +422,10 @@ export default function AddAccountScreen() {
                   resizeMode="contain"
                 />
               ) : (
-                <Text className="font-mono-medium text-base" style={{ color: colors.ink }}>
+                <Text
+                  className="font-mono-medium text-base"
+                  style={{ color: colors.ink }}
+                >
                   {initials}
                 </Text>
               )}
@@ -398,16 +433,16 @@ export default function AddAccountScreen() {
           </View>
 
           {/* ── Mode pills ── */}
-          <View className="mb-4 flex-row rounded-[10px] p-0.5" style={{ backgroundColor: c.surfaceElevated }}>
+          <View
+            className="mb-4 flex-row rounded-[10px] p-0.5"
+            style={{ backgroundColor: c.surfaceElevated }}
+          >
             {BADGE_MODES.map((mode) => {
               const active = badgeMode === mode.key;
               return (
                 <Pressable
                   key={mode.key}
-                  onPress={() => {
-                    setBadgeMode(mode.key);
-                    if (mode.key !== "custom") setCustomLogoUri(null);
-                  }}
+                  onPress={() => handleBadgeModeChange(mode.key)}
                   className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg px-2 py-2 active:opacity-80"
                   style={{ backgroundColor: active ? colors.brass : undefined }}
                 >
@@ -459,7 +494,10 @@ export default function AddAccountScreen() {
             <View className="mb-5 items-center">
               {isProcessing ? (
                 <View className="items-center gap-3 py-8">
-                  <Text className="text-[13px] font-manrope-semibold" style={{ color: c.textSecondary }}>
+                  <Text
+                    className="text-[13px] font-manrope-semibold"
+                    style={{ color: c.textSecondary }}
+                  >
                     Processing image…
                   </Text>
                 </View>
@@ -480,7 +518,10 @@ export default function AddAccountScreen() {
                       onPress={handleCropToSquare}
                       className="rounded-lg bg-surface-elevated px-4 py-2 active:opacity-70"
                     >
-                      <Text className="text-[12px] font-manrope-semibold" style={{ color: colors.brass }}>
+                      <Text
+                        className="text-[12px] font-manrope-semibold"
+                        style={{ color: colors.brass }}
+                      >
                         Crop to square
                       </Text>
                     </Pressable>
@@ -488,7 +529,10 @@ export default function AddAccountScreen() {
                       onPress={handlePickImage}
                       className="rounded-lg bg-surface-elevated px-4 py-2 active:opacity-70"
                     >
-                      <Text className="text-[12px] font-manrope-semibold" style={{ color: colors.brass }}>
+                      <Text
+                        className="text-[12px] font-manrope-semibold"
+                        style={{ color: colors.brass }}
+                      >
                         Change image
                       </Text>
                     </Pressable>
@@ -501,10 +545,16 @@ export default function AddAccountScreen() {
                   style={{ borderColor: c.hairline }}
                 >
                   <Lucide name="image-plus" size={32} color={c.textSecondary} />
-                  <Text className="text-[13px] font-manrope-semibold" style={{ color: c.textSecondary }}>
+                  <Text
+                    className="text-[13px] font-manrope-semibold"
+                    style={{ color: c.textSecondary }}
+                  >
                     Tap to upload an image
                   </Text>
-                  <Text className="text-[11px] font-manrope" style={{ color: c.textSecondary }}>
+                  <Text
+                    className="text-[11px] font-manrope"
+                    style={{ color: c.textSecondary }}
+                  >
                     PNG, JPG, WEBP
                   </Text>
                 </Pressable>
@@ -513,7 +563,10 @@ export default function AddAccountScreen() {
           )}
 
           {/* ── Starting balance ── */}
-          <View className="mb-8 rounded-2xl border px-4 py-3.5" style={{ borderColor: c.hairline, backgroundColor: c.surfaceCard }}>
+          <View
+            className="mb-8 rounded-2xl border px-4 py-3.5"
+            style={{ borderColor: c.hairline, backgroundColor: c.surfaceCard }}
+          >
             <Text
               className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em]"
               style={{ color: c.textSecondary }}
@@ -537,9 +590,15 @@ export default function AddAccountScreen() {
             onPress={handleSave}
             disabled={isSaving}
             className="rounded-2xl py-4 active:opacity-80"
-            style={{ opacity: isSaving ? 0.6 : 1, backgroundColor: colors.brass }}
+            style={{
+              opacity: isSaving ? 0.6 : 1,
+              backgroundColor: colors.brass,
+            }}
           >
-            <Text className="text-center font-manrope-bold text-sm" style={{ color: colors.ink }}>
+            <Text
+              className="text-center font-manrope-bold text-sm"
+              style={{ color: colors.ink }}
+            >
               {isSaving ? "Adding…" : "Add account"}
             </Text>
           </Pressable>
