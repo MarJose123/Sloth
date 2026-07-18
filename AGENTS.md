@@ -11,6 +11,10 @@ Sloth is a **privacy-first, fully offline, multi-account personal finance tracke
 Android (iOS deferred). All financial data lives **on-device only**, encrypted via
 SQLCipher. There is no cloud sync, no analytics endpoint, no third-party login.
 
+> **⚠️ Pure TypeScript / JSX project:** Every source file uses `.ts` or `.tsx`
+> extensions. No plain JavaScript files exist in `src/`. All React Native / Expo
+> UI is written with JSX syntax and strictly typed throughout.
+
 > **⚠️ Bun-only project:** This project uses **Bun** as its package manager and runtime.
 > Never use `npm`, `yarn`, or `pnpm`. See §1 for details.
 
