@@ -17,6 +17,7 @@ export interface InsertAccountInput {
   name: string;
   type: AccountType;
   colorHex: string;
+  logoKey?: string | null;
   /** Signed cents. Positive for asset accounts; credit cards typically start at 0. */
   startingBalanceCents: number;
 }
@@ -74,12 +75,13 @@ export async function insertAccount(
 
   await db.execute(
     `INSERT INTO accounts (id, name, type, starting_balance, logo_key, color_hex, created_at)
-     VALUES (?, ?, ?, ?, NULL, ?, ?);`,
+     VALUES (?, ?, ?, ?, ?, ?, ?);`,
     [
       id,
       input.name.trim(),
       input.type,
       input.startingBalanceCents,
+      input.logoKey ?? null,
       input.colorHex,
       now,
     ],

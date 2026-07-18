@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import {
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -7,10 +8,12 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
+import * as FileSystem from "expo-file-system";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { formatCurrency } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
+import { resolveLogoSrc } from "@/lib/logoResolver";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -36,6 +39,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
   const initials = getInitials(account.name);
   const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
   const colors = useColors();
+  const logoSrc = resolveLogoSrc(account.logoKey);
 
   return (
     <Pressable
@@ -46,17 +50,22 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
       }}
     >
       <View
-        className="h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-[11px]"
+        className="h-[38px] w-[38px] flex-shrink-0 items-center justify-center overflow-hidden rounded-[11px]"
         style={{ backgroundColor: account.colorHex }}
       >
-        <Text
-          className="font-mono-medium text-xs "
-          style={{
-            color: colors.ink,
-          }}
-        >
-          {initials}
-        </Text>
+        {logoSrc?.type === "bundled" && logoSrc.source ? (
+          <Image source={logoSrc.source} style={{ width: 30, height: 30 }} resizeMode="cover" />
+        ) : logoSrc?.type === "uri" && logoSrc.uri ? (
+          <Image
+            source={{ uri: `${FileSystem.documentDirectory}${logoSrc.uri}` }}
+            style={{ width: 30, height: 30 }}
+            resizeMode="cover"
+          />
+        ) : (
+          <Text className="font-mono-medium text-xs" style={{ color: colors.ink }}>
+            {initials}
+          </Text>
+        )}
       </View>
 
       <View className="flex-1">
