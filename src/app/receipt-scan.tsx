@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import { ArrowRightIcon, XIcon } from "@/components/navigation/icons";
 import { useColors } from "@/theme/ThemeContext";
+import { toast } from "@/hooks/useToast";
 import { extractReceiptData, type OcrResult } from "@/lib/ocr";
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -58,7 +59,9 @@ export default function ReceiptScanScreen() {
         });
       }
     } catch (err) {
-      Alert.alert("Capture Error", "Failed to take photo or process OCR.");
+      toast.error("Capture Error", {
+        description: "Failed to take photo or process OCR.",
+      });
       console.error(err);
     } finally {
       setIsProcessing(false);

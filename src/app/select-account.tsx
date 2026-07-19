@@ -1,11 +1,117 @@
 import { useCallback } from "react";
-import { Text, View, Pressable } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
-import { Lucide } from "@react-native-vector-icons/lucide";
+import { Image, Text, View, Pressable } from "react-native";
+import { router } from "expo-router";
+import { documentDirectory } from "expo-file-system/legacy";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
+import { formatCurrency } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
-import Color from "color";
+import { onAccountSelected } from "@/lib/selectionBus";
+import { resolveLogoSrc } from "@/lib/logoResolver";
+
+// ─── helpers ────────────────────────────────────────────────────────────
+
+function getInitials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) return (words[0] ?? "").slice(0, 2).toUpperCase();
+  return words
+    .slice(0, 2)
+    .map((w) => (w[0] ?? "").toUpperCase())
+    .join("");
+}
+
+const TYPE_LABELS: Record<string, string> = {
+  checking: "CHECKING",
+  savings: "SAVINGS",
+  credit: "CREDIT",
+  cash: "CASH",
+};
+
+// ─── Account row ─────────────────────────────────────────────────────────
+
+function AccountRow({
+  account,
+  onSelect,
+}: {
+  account: AccountWithBalance;
+  onSelect: (id: string) => void;
+}) {
+  const colors = useColors();
+  const logoSrc = resolveLogoSrc(account.logoKey);
+  const initials = getInitials(account.name);
+  const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
+
+  const balanceColor =
+    account.type === "credit"
+      ? account.balanceCents < 0
+        ? colors.rust
+        : colors.sage
+      : colors.textPrimary;
+
+  return (
+    <Pressable
+      onPress={() => onSelect(account.id)}
+      className="mb-2.5 flex-row items-center gap-4 rounded-2xl border px-4 py-3.5 active:opacity-70"
+      style={{
+        borderColor: colors.hairline,
+        backgroundColor: colors.surfaceElevated,
+      }}
+    >
+      {/* ── Badge ── */}
+      <View
+        className="h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl"
+        style={{
+          backgroundColor: logoSrc ? "transparent" : account.colorHex,
+        }}
+      >
+        {logoSrc?.type === "bundled" && logoSrc.source ? (
+          <Image
+            source={logoSrc.source}
+            style={{ width: 46, height: 46 }}
+            resizeMode="cover"
+          />
+        ) : logoSrc?.type === "uri" && logoSrc.uri ? (
+          <Image
+            source={{ uri: `${documentDirectory}${logoSrc.uri}` }}
+            style={{ width: 46, height: 46 }}
+            resizeMode="cover"
+          />
+        ) : (
+          <Text
+            className="font-mono-medium text-xs"
+            style={{ color: colors.ink }}
+          >
+            {initials}
+          </Text>
+        )}
+      </View>
+
+      {/* ── Name + type ── */}
+      <View className="flex-1">
+        <Text
+          className="font-manrope-bold text-[13px]"
+          style={{ color: colors.textPrimary }}
+          numberOfLines={1}
+        >
+          {account.name}
+        </Text>
+        <Text
+          className="mt-0.5 font-mono text-[11px]"
+          style={{ color: colors.textSecondary }}
+        >
+          {typeLabel}
+        </Text>
+      </View>
+
+      {/* ── Balance ── */}
+      <Text className="font-mono text-[13.5px]" style={{ color: balanceColor }}>
+        {formatCurrency(account.balanceCents)}
+      </Text>
+    </Pressable>
+  );
+}
+
+// ─── Screen ──────────────────────────────────────────────────────────────
 
 export default function SelectAccountSheet() {
   const colors = useColors();
@@ -13,17 +119,11 @@ export default function SelectAccountSheet() {
   const accounts: AccountWithBalance[] =
     state.status === "ready" ? state.accounts : [];
   const status = state.status;
-  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
 
-  const handleSelect = useCallback(
-    (accountId: string) => {
-      router.replace({
-        pathname: returnTo ?? "/add-transaction",
-        params: { selectedAccountId: accountId },
-      });
-    },
-    [returnTo],
-  );
+  const handleSelect = useCallback((accountId: string) => {
+    onAccountSelected.emit(accountId);
+    router.back();
+  }, []);
 
   const handleDismiss = useCallback(() => {
     router.back();
@@ -60,50 +160,27 @@ export default function SelectAccountSheet() {
           Select Account
         </Text>
         {status === "loading" && (
-          <Text className="text-center text-text-secondary text-sm font-manrope">
+          <Text
+            className="text-center  text-sm font-manrope"
+            style={{
+              color: colors.textSecondary,
+            }}
+          >
             Loading…
           </Text>
         )}
         {accounts?.map((account) => (
-          <Pressable
+          <AccountRow
             key={account.id}
-            onPress={() => handleSelect(account.id)}
-            className="mb-2.5 flex-row items-center gap-4 rounded-2xl border px-4 py-3.5 active:opacity-70"
-            style={{
-              borderColor: colors.hairline,
-              backgroundColor: colors.surfaceElevated,
-            }}
-          >
-            <View
-              className="h-11 w-11 items-center justify-center rounded-xl"
-              style={{ backgroundColor: account.colorHex }}
-            >
-              <Text
-                className="font-mono-medium text-xs"
-                style={{ color: colors.ink }}
-              >
-                {account.name.slice(0, 2).toUpperCase()}
-              </Text>
-            </View>
-            <View className="flex-1">
-              <Text
-                className="font-manrope-bold text-[13px]"
-                style={{ color: colors.textPrimary }}
-              >
-                {account.name}
-              </Text>
-              <Text
-                className="text-[11.5px] leading-4"
-                style={{ color: colors.textSecondary }}
-              >
-                {account.type}
-              </Text>
-            </View>
-            <Lucide name="chevron-right" size={18} color={colors.textSecondary} />
-          </Pressable>
+            account={account}
+            onSelect={handleSelect}
+          />
         ))}
         {accounts?.length === 0 && status !== "loading" && (
-          <Text className="text-center text-text-secondary text-sm font-manrope py-8">
+          <Text
+            className="text-center  text-sm font-manrope py-8"
+            style={{ color: colors.textSecondary }}
+          >
             No accounts yet. Create one first.
           </Text>
         )}

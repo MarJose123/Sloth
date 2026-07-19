@@ -6,8 +6,6 @@ import {
   ScrollView,
   Text,
   View,
-  Alert,
-  TextInput,
 } from "react-native";
 import { router } from "expo-router";
 import { documentDirectory } from "expo-file-system/legacy";
@@ -16,7 +14,6 @@ import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { formatCurrency } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
 import { resolveLogoSrc } from "@/lib/logoResolver";
-import { updateAccount } from "@/lib/db/repositories/accounts";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -45,20 +42,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
   const logoSrc = resolveLogoSrc(account.logoKey);
 
   const handleEdit = () => {
-    Alert.alert(
-      "Account",
-      account.name,
-      [
-        {
-          text: "Edit name",
-          onPress: () => {
-            // Navigate to add-account in edit mode
-            router.push("/add-account?editId=" + account.id);
-          },
-        },
-        { text: "Cancel", style: "cancel" },
-      ],
-    );
+    router.push("/add-account?editId=" + account.id);
   };
 
   return (
@@ -79,15 +63,16 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
         {logoSrc?.type === "bundled" && logoSrc.source ? (
           <Image
             source={logoSrc.source}
-            style={{ width: 40, height: 40 }}
+            style={{ width: 40, height: 39 }}
             resizeMode="cover"
-            className="rounded-xl"
+            className="rounded-2xl"
           />
         ) : logoSrc?.type === "uri" && logoSrc.uri ? (
           <Image
             source={{ uri: `${documentDirectory}${logoSrc.uri}` }}
-            style={{ width: 40, height: 40 }}
+            style={{ width: 40, height: 39 }}
             resizeMode="cover"
+            className="rounded-2xl"
           />
         ) : (
           <Text

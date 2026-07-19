@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 import type { RecentTransaction } from "@/lib/db/repositories/transactions";
-import { formatRelativeDate, formatSignedCurrency } from "@/lib/format";
+import { formatRelativeTime, formatSignedCurrency } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
 
 export function TransactionRow({
@@ -36,7 +36,7 @@ export function TransactionRow({
           }}
         >
           {transaction.categoryName ?? "Uncategorized"} ·{" "}
-          {formatRelativeDate(transaction.occurredAt)}
+          {formatRelativeTime(transaction.occurredAt)}
         </Text>
       </View>
       <Text

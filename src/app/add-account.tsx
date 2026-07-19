@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -24,11 +23,12 @@ import {
 } from "@/lib/db/repositories/accounts";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import type { LucideIconName } from "@react-native-vector-icons/lucide";
-import { useColors, useTheme } from "@/theme/ThemeContext";
+import { useColors } from "@/theme/ThemeContext";
 import { colors } from "@/theme/colors";
 import { formatAmountOnBlur } from "@/lib/format";
 import { BANK_LOGOS } from "@/lib/logoResolver";
 import Color from "color";
+import { useToast } from "@/hooks/useToast";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -169,7 +169,7 @@ function LogoGridItem({
 
 export default function AddAccountScreen() {
   const c = useColors();
-  const { resolved } = useTheme();
+  const toast = useToast();
   const [name, setName] = useState("");
   const [selectedType, setSelectedType] = useState<AccountType>("checking");
   const [selectedColorIdx, setSelectedColorIdx] = useState(0);
@@ -204,7 +204,9 @@ export default function AddAccountScreen() {
   const handleSave = useCallback(async () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      Alert.alert("Missing name", "Please enter an account name.");
+      toast.warning("Missing name", {
+        description: "Please enter an account name.",
+      });
       return;
     }
 
@@ -219,15 +221,14 @@ export default function AddAccountScreen() {
       });
       router.back();
     } catch (err) {
-      Alert.alert(
-        "Could not save",
-        err instanceof Error ? err.message : "Something went wrong.",
-        [{ text: "OK" }],
-      );
+      toast.error("Could not save account", {
+        description:
+          err instanceof Error ? err.message : "Something went wrong.",
+      });
     } finally {
       setIsSaving(false);
     }
-  }, [name, selectedType, selectedColor, resolvedLogoKey, balanceText]);
+  }, [name, selectedType, selectedColor, resolvedLogoKey, balanceText, toast]);
 
   // ── Custom image picker ──────────────────────────────────────────────────
 
@@ -263,11 +264,13 @@ export default function AddAccountScreen() {
       setBadgeMode("custom");
       setSelectedLogoKey(null);
     } catch {
-      Alert.alert("Error", "Could not process the image. Please try again.");
+      toast.error("Could not process the image", {
+        description: "Please try again.",
+      });
     } finally {
       setIsProcessing(false);
     }
-  }, []);
+  }, [toast]);
 
   /** Crop the uploaded image to a square (center-crop) at 400×400. */
   const handleCropToSquare = useCallback(async () => {
@@ -290,11 +293,11 @@ export default function AddAccountScreen() {
 
       setCustomLogoUri(dest);
     } catch {
-      Alert.alert("Error", "Could not crop the image.");
+      toast.error("Could not crop the image");
     } finally {
       setIsProcessing(false);
     }
-  }, [customLogoUri]);
+  }, [customLogoUri, toast]);
 
   // Reset logo selection when switching away from logo or custom mode
   const handleBadgeModeChange = (mode: "color" | "logo" | "custom") => {

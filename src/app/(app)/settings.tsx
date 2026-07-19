@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useState, useEffect } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import * as ScreenCapture from "expo-screen-capture";
 import { storage } from "@/lib/storage";
@@ -155,6 +155,7 @@ export default function SettingsScreen() {
   const [pinHash, setPinHash] = useState<string | null>(null);
   const [showDonate, setShowDonate] = useState(false);
   const colors = useColors();
+  const toast = useToast();
 
   const { preference, loaded, setPreference } = useTheme();
 
@@ -183,17 +184,11 @@ export default function SettingsScreen() {
     if (!value) {
       const hash = await storage.getPinHash();
       if (!hash) {
-        Alert.alert(
-          "Backup PIN required",
-          "Set a 6-digit backup PIN first so you can still access Sloth if biometrics fail.",
-          [
-            { text: "Cancel", style: "cancel" },
-            {
-              text: "Set up PIN",
-              onPress: () => router.push("/pin-setup"),
-            },
-          ],
-        );
+        toast.warning("Backup PIN required", {
+          description:
+            "Set a 6-digit backup PIN first so you can still access Sloth if biometrics fail.",
+        });
+        router.push("/pin-setup");
         return; // keep toggle on
       }
     }
@@ -218,11 +213,9 @@ export default function SettingsScreen() {
   // ── navigation / action helpers ──────────────────────────────────────────────
 
   const comingSoon = (feature: string) => {
-    Alert.alert(
-      "Coming soon",
-      `${feature} will be available in a future update.`,
-      [{ text: "OK" }],
-    );
+    toast.warning("Coming soon", {
+      description: `${feature} will be available in a future update.`,
+    });
   };
 
   // ── render ───────────────────────────────────────────────────────────────────
@@ -303,34 +296,20 @@ export default function SettingsScreen() {
             if (!hash) {
               router.push("/pin-setup");
             } else {
-              Alert.alert("Backup PIN", "What would you like to do?", [
-                { text: "Cancel", style: "cancel" },
-                {
-                  text: "Change PIN",
-                  onPress: () => router.push("/pin-setup"),
-                },
-                {
-                  text: "Remove PIN",
-                  style: "destructive",
-                  onPress: () => {
-                    Alert.alert(
-                      "Remove backup PIN?",
-                      "You won't be able to disable biometrics without a backup PIN.",
-                      [
-                        { text: "Cancel", style: "cancel" },
-                        {
-                          text: "Remove",
-                          style: "destructive",
-                          onPress: async () => {
-                            await storage.removePinHash();
-                            setPinHash(null);
-                          },
-                        },
-                      ],
-                    );
+              router.push("/pin-setup");
+              toast("Remove backup PIN?", {
+                description:
+                  "You won't be able to disable biometrics without a backup PIN.",
+                action: {
+                  label: "Remove",
+                  onClick: async () => {
+                    await storage.removePinHash();
+                    setPinHash(null);
+                    toast.success("Backup PIN removed");
                   },
                 },
-              ]);
+                duration: 6000,
+              });
             }
           }}
           right={<Chevron />}

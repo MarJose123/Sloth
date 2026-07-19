@@ -91,7 +91,9 @@ export function CategoryRingCard({
             },
           ]}
         >
-          <Text style={styles.icon}>{category.icon}</Text>
+          <Text className="font-mono-medium text-[11px] text-ink text-center">
+            {percent > 0 ? `${percent}%` : "\u2014"}
+          </Text>
         </View>
       </View>
 
@@ -121,8 +123,5 @@ const styles = StyleSheet.create({
     // Overridden at runtime by useColors() inline style
     alignItems: "center",
     justifyContent: "center",
-  },
-  icon: {
-    fontSize: 18,
   },
 });

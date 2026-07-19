@@ -4,6 +4,7 @@ import { View } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
+import { Toaster } from "sonner-native";
 import { useAppFonts } from "@/hooks/useAppFonts";
 import { ThemeProvider, useTheme } from "@/theme/ThemeContext";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -111,7 +112,36 @@ export default function RootLayout() {
               name="fab-sheet"
               options={{ presentation: "transparentModal", animation: "fade" }}
             />
+            <Stack.Screen
+              name="select-account"
+              options={{ presentation: "transparentModal", animation: "fade" }}
+            />
+            <Stack.Screen
+              name="select-category"
+              options={{ presentation: "transparentModal", animation: "fade" }}
+            />
           </Stack>
+          <Toaster
+            position="top-center"
+            visibleToasts={3}
+            toastOptions={{
+              style: {
+                backgroundColor: "#242920",
+                borderWidth: 1,
+                borderColor: "rgba(243,238,225,0.09)",
+              },
+              titleStyle: {
+                color: "#F3EEE1",
+                fontSize: 13.5,
+                fontFamily: "Manrope_600SemiBold",
+              },
+              descriptionStyle: {
+                color: "#A79F8C",
+                fontSize: 12,
+                fontFamily: "Manrope_400Regular",
+              },
+            }}
+          />
         </View>
       </ErrorBoundary>
     </ThemeProvider>

@@ -777,6 +777,7 @@ This runs `prettier --write . && expo lint` (see `package.json` scripts).
 | 13 | Font alias names in `global.css` (`--font-*`) MUST match the alias keys in `useAppFonts.ts` exactly |
 | 14 | **Never use `npm`, `yarn`, or `pnpm`** — only `bun` commands (`bun install`, `bun add`, `bun remove`, `bun lint`, etc.). The lock file is `bun.lock`, not `package-lock.json` |
 | 15 | **Never use `useColors()` + inline `style` for a static colour** that has a Tailwind utility equivalent. Use `className="bg-surface-bg"` instead of `style={{ backgroundColor: colors.surfaceBg }}`. See §8.6 for the full rule and legitimate exceptions. |
+| 16 | **Never install or add a package directly via a tool command.** If a new package dependency is needed, ask the user to install it themselves (e.g. "please run `bun add <package>`"). The sandboxed environment may not have the correct permissions, and tool-driven installs can corrupt the lockfile or modify the project state unexpectedly. |
 
 ---
 

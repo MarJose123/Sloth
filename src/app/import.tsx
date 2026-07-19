@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { useState, useEffect } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
@@ -9,6 +9,8 @@ import {
   ChevronRightIcon,
 } from "@/components/navigation/icons";
 import { useColors } from "@/theme/ThemeContext";
+import { onAccountSelected } from "@/lib/selectionBus";
+import { useToast } from "@/hooks/useToast";
 import {
   parseCsv,
   parseOfx,
@@ -51,7 +53,9 @@ const DEFAULT_MAPPING: Record<string, FieldOption> = {
  */
 export default function ImportScreen() {
   const colors = useColors();
+  const toast = useToast();
   const { state: accountsState } = useAccountsData();
+
   const [parsedFile, setParsedFile] = useState<ParsedFile | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
@@ -59,6 +63,16 @@ export default function ImportScreen() {
   const [columnMapping, setColumnMapping] =
     useState<Record<string, FieldOption>>(DEFAULT_MAPPING);
   const [isImporting, setIsImporting] = useState(false);
+
+  // ── Picker sheet subscriptions ──
+  useEffect(() => {
+    const unsubAccount = onAccountSelected.subscribe((id) => {
+      setSelectedAccountId(id);
+    });
+    return () => {
+      unsubAccount();
+    };
+  }, []);
 
   const handlePickFile = async () => {
     try {
@@ -126,10 +140,14 @@ export default function ImportScreen() {
           Memo: "Note",
         });
       } else {
-        Alert.alert("Unsupported format", "Please choose a .csv or .ofx file.");
+        toast.error("Unsupported format", {
+          description: "Please choose a .csv or .ofx file.",
+        });
       }
     } catch (err) {
-      Alert.alert("Error picking file", "Could not read the selected file.");
+      toast.error("Error picking file", {
+        description: "Could not read the selected file.",
+      });
       console.error(err);
     }
   };
@@ -184,16 +202,17 @@ export default function ImportScreen() {
         importedCount++;
       }
 
-      Alert.alert(
-        "Import complete",
-        `Successfully imported ${importedCount} transactions.`,
-      );
+      toast.success("Import complete", {
+        description: `Successfully imported ${importedCount} transactions.`,
+      });
       router.back();
     } catch (err) {
-      Alert.alert(
-        "Import failed",
-        err instanceof Error ? err.message : "An error occurred during import.",
-      );
+      toast.error("Import failed", {
+        description:
+          err instanceof Error
+            ? err.message
+            : "An error occurred during import.",
+      });
     } finally {
       setIsImporting(false);
     }
@@ -275,20 +294,13 @@ export default function ImportScreen() {
             <Pressable
               onPress={() => {
                 if (accountsState.status === "ready") {
-                  const accountButtons: {
-                    text: string;
-                    onPress?: () => void;
-                    style?: "cancel";
-                  }[] = accountsState.accounts.map((a) => ({
-                    text: a.name,
-                    onPress: () => setSelectedAccountId(a.id),
-                  }));
-                  accountButtons.push({ text: "Cancel", style: "cancel" });
-                  Alert.alert(
-                    "Select Account",
-                    "Choose an account to import into:",
-                    accountButtons,
-                  );
+                  if (accountsState.accounts.length === 0) {
+                    toast.warning("No accounts", {
+                      description: "Create an account first.",
+                    });
+                    return;
+                  }
+                  router.push("/select-account");
                 }
               }}
               className="mb-5 flex-row items-center justify-between rounded-2xl border border-hairline bg-surface-card px-4 py-3.5 active:opacity-70"
@@ -330,29 +342,18 @@ export default function ImportScreen() {
                             "Amount",
                             "Category",
                             "Note",
-                            "—",
+                            "\u2014",
                           ];
-                          const fieldButtons: {
-                            text: string;
-                            onPress?: () => void;
-                            style?: "cancel";
-                          }[] = options.map((opt) => ({
-                            text: opt,
-                            onPress: () =>
-                              setColumnMapping((prev) => ({
-                                ...prev,
-                                [col]: opt,
-                              })),
+                          const current = columnMapping[col] ?? "\u2014";
+                          const idx = options.indexOf(current);
+                          const next = options[(idx + 1) % options.length];
+                          setColumnMapping((prev) => ({
+                            ...prev,
+                            [col]: next,
                           }));
-                          fieldButtons.push({
-                            text: "Cancel",
-                            style: "cancel",
+                          toast(`"${col}" mapped to ${next}`, {
+                            duration: 1500,
                           });
-                          Alert.alert(
-                            "Map to Field",
-                            `What does "${col}" represent?`,
-                            fieldButtons,
-                          );
                         }}
                         className="flex-1"
                       >

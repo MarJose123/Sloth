@@ -1,6 +1,5 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,7 +12,10 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useAddTransactionData } from "@/hooks/useAddTransactionData";
 import { useColors } from "@/theme/ThemeContext";
 import { formatCurrency, formatAmountOnBlur } from "@/lib/format";
+import { onAccountSelected, onCategorySelected } from "@/lib/selectionBus";
+import { useToast } from "@/hooks/useToast";
 import { insertTransaction } from "@/lib/db/repositories/transactions";
+import Color from "color";
 
 type Method = "manual" | "scan" | "import";
 
@@ -26,17 +28,25 @@ function MethodPill({
   label: string;
   onPress: () => void;
 }) {
+  const colors = useColors();
   return (
     <Pressable
       onPress={onPress}
-      className={`rounded-full px-4 py-2 ${
-        active ? "border border-brass/50 bg-brass/10" : "bg-surface-elevated"
-      }`}
+      className={`rounded-full px-4 py-2 ${active && "border"}`}
+      style={{
+        backgroundColor: active
+          ? Color(colors.brass).alpha(0.1).toString()
+          : colors.surfaceElevated,
+        borderColor: active
+          ? Color(colors.brass).alpha(0.5).toString()
+          : undefined,
+      }}
     >
       <Text
-        className={`text-[12px] font-manrope-semibold ${
-          active ? "text-brass" : "text-text-secondary"
-        }`}
+        className="text-[12px] font-manrope-semibold "
+        style={{
+          color: active ? colors.brass : colors.textSecondary,
+        }}
       >
         {label}
       </Text>
@@ -53,15 +63,23 @@ function PickerRow({
   value: string;
   onPress: () => void;
 }) {
+  const colors = useColors();
   return (
     <Pressable
       onPress={onPress}
-      className="rounded-2xl border border-hairline bg-surface-card px-4 py-3.5 active:opacity-70"
+      className="rounded-2xl border  px-4 py-3.5 active:opacity-70"
+      style={{
+        backgroundColor: colors.surfaceCard,
+        borderColor: colors.hairline,
+      }}
     >
-      <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
+      <Text
+        className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] "
+        style={{ color: colors.textSecondary }}
+      >
         {label}
       </Text>
-      <Text className="text-[13.5px] text-text-primary">
+      <Text className="text-[13.5px] " style={{ color: colors.textPrimary }}>
         {value || "Select…"}
       </Text>
     </Pressable>
@@ -70,6 +88,7 @@ function PickerRow({
 
 export default function AddTransactionScreen() {
   const colors = useColors();
+  const toast = useToast();
   const formData = useAddTransactionData();
   const params = useLocalSearchParams<{
     merchant?: string;
@@ -103,6 +122,20 @@ export default function AddTransactionScreen() {
   });
   const [isSaving, setIsSaving] = useState(false);
 
+  // ── Picker sheet subscriptions ──
+  useEffect(() => {
+    const unsubAccount = onAccountSelected.subscribe((id) => {
+      setSelectedAccountId(id);
+    });
+    const unsubCategory = onCategorySelected.subscribe((id) => {
+      setSelectedCategoryId(id);
+    });
+    return () => {
+      unsubAccount();
+      unsubCategory();
+    };
+  }, []);
+
   const parseAmountCents = useCallback(() => {
     const clean = amountText.replace(/[$,]/g, "").trim();
     if (clean === "" || clean === "-") return 0;
@@ -124,17 +157,23 @@ export default function AddTransactionScreen() {
 
   const handleSave = useCallback(async () => {
     if (!selectedAccountId) {
-      Alert.alert("Missing account", "Please select an account.");
+      toast.warning("Missing account", {
+        description: "Please select an account.",
+      });
       return;
     }
     if (!merchant.trim()) {
-      Alert.alert("Missing merchant", "Please enter a merchant name.");
+      toast.warning("Missing merchant", {
+        description: "Please enter a merchant name.",
+      });
       return;
     }
 
     const amountCents = parseAmountCents();
     if (amountCents === 0) {
-      Alert.alert("Missing amount", "Please enter an amount.");
+      toast.warning("Missing amount", {
+        description: "Please enter an amount.",
+      });
       return;
     }
 
@@ -154,10 +193,10 @@ export default function AddTransactionScreen() {
       });
       router.back();
     } catch (err) {
-      Alert.alert(
-        "Could not save",
-        err instanceof Error ? err.message : "Something went wrong.",
-      );
+      toast.error("Could not save", {
+        description:
+          err instanceof Error ? err.message : "Something went wrong.",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -169,20 +208,43 @@ export default function AddTransactionScreen() {
     dateText,
     method,
     parseAmountCents,
+    toast,
   ]);
 
   if (formData.status === "loading") {
     return (
-      <View className="flex-1 items-center justify-center pt-safe bg-surface-bg">
-        <Text className="text-sm text-text-secondary">Loading…</Text>
+      <View
+        className="flex-1 items-center justify-center pt-safe "
+        style={{
+          backgroundColor: colors.surfaceBg,
+        }}
+      >
+        <Text
+          className="text-sm "
+          style={{
+            color: colors.textSecondary,
+          }}
+        >
+          Loading…
+        </Text>
       </View>
     );
   }
 
   if (formData.status === "error") {
     return (
-      <View className="flex-1 items-center justify-center px-8 pt-safe bg-surface-bg">
-        <Text className="text-center text-sm text-rust">
+      <View
+        className="flex-1 items-center justify-center px-8 pt-safe "
+        style={{
+          backgroundColor: colors.surfaceBg,
+        }}
+      >
+        <Text
+          className="text-center text-sm "
+          style={{
+            color: colors.rust,
+          }}
+        >
           {formData.message}
         </Text>
       </View>
@@ -192,7 +254,12 @@ export default function AddTransactionScreen() {
   const { accounts, categories } = formData.data;
 
   return (
-    <View className="flex-1 pt-safe bg-surface-bg">
+    <View
+      className="flex-1 pt-safe-offset-5 "
+      style={{
+        backgroundColor: colors.surfaceBg,
+      }}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -208,9 +275,21 @@ export default function AddTransactionScreen() {
               onPress={() => router.back()}
               className="active:opacity-60"
             >
-              <Text className="text-[14.5px] text-text-secondary">Cancel</Text>
+              <Text
+                className="text-[14.5px] "
+                style={{
+                  color: colors.textSecondary,
+                }}
+              >
+                Cancel
+              </Text>
             </Pressable>
-            <Text className="font-fraunces-medium text-[18px] text-text-primary">
+            <Text
+              className="font-fraunces-medium text-[18px] "
+              style={{
+                color: colors.textPrimary,
+              }}
+            >
               New expense
             </Text>
             <Pressable
@@ -219,8 +298,11 @@ export default function AddTransactionScreen() {
               className="active:opacity-60"
             >
               <Text
-                className="font-manrope-bold text-[13px] text-brass"
-                style={{ opacity: isSaving ? 0.4 : 1 }}
+                className="font-manrope-bold text-[13px] "
+                style={{
+                  opacity: isSaving ? 0.4 : 1,
+                  color: colors.textPrimary,
+                }}
               >
                 Save
               </Text>
@@ -245,7 +327,10 @@ export default function AddTransactionScreen() {
               }}
             />
             {selectedAccount && (
-              <Text className="mt-1 font-mono text-[11px] text-text-secondary">
+              <Text
+                className="mt-1 font-mono text-[11px] "
+                style={{ color: colors.textSecondary }}
+              >
                 {selectedAccount.name} · Balance{" "}
                 {formatCurrency(selectedAccount.balanceCents)}
               </Text>
@@ -278,10 +363,12 @@ export default function AddTransactionScreen() {
               value={selectedAccount?.name ?? "Select account"}
               onPress={() => {
                 if (accounts.length === 0) {
-                  Alert.alert("No accounts", "Create an account first.");
+                  toast.warning("No accounts", {
+                    description: "Create an account first.",
+                  });
                   return;
                 }
-                router.push("/select-account?returnTo=add-transaction");
+                router.push("/select-account");
               }}
             />
 
@@ -297,15 +384,28 @@ export default function AddTransactionScreen() {
                   (c) => c.kind === "expense",
                 );
                 if (expenseCats.length === 0) {
-                  Alert.alert("No categories", "Create a category first.");
+                  toast.warning("No categories", {
+                    description: "Create a category first.",
+                  });
                   return;
                 }
-                router.push("/select-category?returnTo=add-transaction");
+                router.push("/select-category");
               }}
             />
 
-            <View className="rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
-              <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
+            <View
+              className="rounded-2xl border   px-4 py-3.5"
+              style={{
+                backgroundColor: colors.surfaceCard,
+                borderColor: colors.hairline,
+              }}
+            >
+              <Text
+                className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] "
+                style={{
+                  color: colors.textSecondary,
+                }}
+              >
                 Merchant
               </Text>
               <TextInput
@@ -322,8 +422,17 @@ export default function AddTransactionScreen() {
               />
             </View>
 
-            <View className="rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
-              <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
+            <View
+              className="rounded-2xl border   px-4 py-3.5"
+              style={{
+                backgroundColor: colors.surfaceCard,
+                borderColor: colors.hairline,
+              }}
+            >
+              <Text
+                className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] "
+                style={{ color: colors.textSecondary }}
+              >
                 Note (optional)
               </Text>
               <TextInput
@@ -339,8 +448,19 @@ export default function AddTransactionScreen() {
               />
             </View>
 
-            <View className="rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
-              <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
+            <View
+              className="rounded-2xl border  px-4 py-3.5"
+              style={{
+                backgroundColor: colors.surfaceCard,
+                borderColor: colors.hairline,
+              }}
+            >
+              <Text
+                className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] "
+                style={{
+                  color: colors.textSecondary,
+                }}
+              >
                 Date
               </Text>
               <TextInput

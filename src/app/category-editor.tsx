@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -19,7 +18,7 @@ import {
   type CategoryKind,
 } from "@/lib/db/repositories/categories";
 import { useColors } from "@/theme/ThemeContext";
-import { colors } from "@/theme/colors";
+import { useToast } from "@/hooks/useToast";
 
 // ─── icon library ─────────────────────────────────────────────────────────────
 
@@ -48,56 +47,14 @@ const ICONS = [
   "🎵",
 ] as const;
 
-// ─── color palette ────────────────────────────────────────────────────────────
-
-const RING_COLORS = [
-  colors.brass,
-  colors.sage,
-  colors.rust,
-  colors.dustyBlue,
-  "#9B9787",
-] as const;
-
-// ─── color swatch ─────────────────────────────────────────────────────────────
-
-function ColorSwatch({
-  color,
-  selected,
-  onPress,
-}: {
-  color: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable onPress={onPress} className="active:opacity-70">
-      <View
-        className="border-brass"
-        style={{
-          padding: selected ? 3 : 0,
-          borderRadius: 15,
-          borderWidth: selected ? 2 : 0,
-        }}
-      >
-        <View
-          style={{
-            width: selected ? 20 : 26,
-            height: selected ? 20 : 26,
-            borderRadius: selected ? 10 : 13,
-            backgroundColor: color,
-          }}
-        />
-      </View>
-    </Pressable>
-  );
-}
-
 // ─── ring preview (full circle, 58px) ────────────────────────────────────────
 
-function PreviewRing({ icon, color }: { icon: string; color: string }) {
+function PreviewRing({ icon }: { icon: string }) {
+  const colors = useColors();
   const SIZE = 58;
   const RADIUS = 26;
   const CENTER = SIZE / 2;
+  const ringColor = colors.brass;
   return (
     <View style={styles.previewContainer}>
       <Svg width={SIZE} height={SIZE} style={StyleSheet.absoluteFill}>
@@ -106,11 +63,11 @@ function PreviewRing({ icon, color }: { icon: string; color: string }) {
           cy={CENTER}
           r={RADIUS}
           fill="none"
-          stroke={color}
-          strokeWidth={3}
+          stroke={ringColor}
+          strokeWidth={1}
         />
       </Svg>
-      <View style={[styles.previewInner, { backgroundColor: color }]}>
+      <View style={[styles.previewInner, { backgroundColor: "transparent" }]}>
         <Text style={styles.previewIcon}>{icon}</Text>
       </View>
     </View>
@@ -119,15 +76,17 @@ function PreviewRing({ icon, color }: { icon: string; color: string }) {
 
 // ─── screen ───────────────────────────────────────────────────────────────────
 
+const DEFAULT_COLOR = "#C87B54";
+
 export default function CategoryEditorScreen() {
   const colors = useColors();
+  const toast = useToast();
   const params = useLocalSearchParams<{ id?: string }>();
   const categoryId = params.id;
   const isEditing = !!categoryId;
 
   const [name, setName] = useState("");
   const [selectedIcon, setSelectedIcon] = useState<string>("🛒");
-  const [selectedColor, setSelectedColor] = useState<string>(colors.brass);
   const [selectedKind, setSelectedKind] = useState<CategoryKind>("expense");
   const [isLoadingData, setIsLoadingData] = useState(isEditing);
   const [isSaving, setIsSaving] = useState(false);
@@ -143,7 +102,6 @@ export default function CategoryEditorScreen() {
         if (cancelled || !existing) return;
         setName(existing.name);
         setSelectedIcon(existing.icon);
-        setSelectedColor(existing.colorHex);
         setSelectedKind(existing.kind);
       } finally {
         if (!cancelled) setIsLoadingData(false);
@@ -158,7 +116,9 @@ export default function CategoryEditorScreen() {
   const handleSave = useCallback(async () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      Alert.alert("Missing name", "Please enter a category name.");
+      toast.warning("Missing name", {
+        description: "Please enter a category name.",
+      });
       return;
     }
 
@@ -168,28 +128,27 @@ export default function CategoryEditorScreen() {
         await updateCategory(categoryId, {
           name: trimmedName,
           icon: selectedIcon,
-          colorHex: selectedColor,
+          colorHex: DEFAULT_COLOR,
           kind: selectedKind,
         });
       } else {
         await insertCategory({
           name: trimmedName,
           icon: selectedIcon,
-          colorHex: selectedColor,
+          colorHex: DEFAULT_COLOR,
           kind: selectedKind,
         });
       }
       router.back();
     } catch (err) {
-      Alert.alert(
-        "Could not save",
-        err instanceof Error ? err.message : "Something went wrong.",
-        [{ text: "OK" }],
-      );
+      toast.error("Could not save", {
+        description:
+          err instanceof Error ? err.message : "Something went wrong.",
+      });
     } finally {
       setIsSaving(false);
     }
-  }, [name, selectedIcon, selectedColor, selectedKind, isEditing, categoryId]);
+  }, [name, selectedIcon, selectedKind, isEditing, categoryId, toast]);
 
   if (isLoadingData) {
     return (
@@ -238,7 +197,7 @@ export default function CategoryEditorScreen() {
 
           {/* ── Preview + name ── */}
           <View className="mb-6 flex-row items-center gap-3.5">
-            <PreviewRing icon={selectedIcon} color={selectedColor} />
+            <PreviewRing icon={selectedIcon} />
             <View className="flex-1 rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
               <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
                 Name
@@ -278,21 +237,6 @@ export default function CategoryEditorScreen() {
             })}
           </View>
 
-          {/* ── Color picker ── */}
-          <Text className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.08em] text-brass">
-            Color
-          </Text>
-          <View className="mb-6 flex-row gap-3">
-            {RING_COLORS.map((color) => (
-              <ColorSwatch
-                key={color}
-                color={color}
-                selected={selectedColor === color}
-                onPress={() => setSelectedColor(color)}
-              />
-            ))}
-          </View>
-
           {/* ── Type selector ── */}
           <Text className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.08em] text-brass">
             Type
@@ -315,7 +259,7 @@ export default function CategoryEditorScreen() {
                       active ? "text-brass" : "text-text-secondary"
                     }`}
                   >
-                    {kind === "expense" ? "−" : "+"}
+                    {kind === "expense" ? "\u2212" : "+"}
                   </Text>
                   <Text
                     className={`text-[12.5px] font-manrope-semibold capitalize ${
@@ -338,7 +282,7 @@ export default function CategoryEditorScreen() {
           >
             <Text className="text-center font-manrope-bold text-sm text-ink">
               {isSaving
-                ? "Saving…"
+                ? "Saving\u2026"
                 : isEditing
                   ? "Update category"
                   : "Create category"}

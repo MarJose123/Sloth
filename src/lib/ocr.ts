@@ -110,17 +110,12 @@ export async function extractReceiptData(
  * Checks for the native ML Kit module.
  */
 export function isOcrAvailable(): boolean {
-  try {
-    // expo-mlkit-ocr will throw if the native module isn't available
-    return true;
-  } catch {
-    return false;
-  }
+  return true;
 }
 
 // ─── Extraction helpers ───────────────────────────────────────────────────────
 
-function extractMerchant(lines: string[], rawText: string): string | null {
+function extractMerchant(lines: string[], _rawText: string): string | null {
   // 1. Use the first line if it looks like a business name (not a keyword)
   const firstLine = lines[0];
   if (
@@ -151,7 +146,7 @@ function extractMerchant(lines: string[], rawText: string): string | null {
   return null;
 }
 
-function extractAmount(lines: string[], rawText: string): number | null {
+function extractAmount(lines: string[], _rawText: string): number | null {
   for (const pattern of TOTAL_PATTERNS) {
     // Search from the bottom up — total is usually near the end
     for (let i = lines.length - 1; i >= 0; i--) {
@@ -169,7 +164,7 @@ function extractAmount(lines: string[], rawText: string): number | null {
   return null;
 }
 
-function extractDate(lines: string[], rawText: string): string | null {
+function extractDate(lines: string[], _rawText: string): string | null {
   for (const line of lines) {
     for (const pattern of DATE_PATTERNS) {
       const match = line.match(pattern);

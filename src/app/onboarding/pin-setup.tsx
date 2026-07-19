@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
-import { Text, Alert, View } from "react-native";
+import { Text, View } from "react-native";
 import { router } from "expo-router";
 import { PinDots } from "@/components/ui/PinDots";
 import { Keypad } from "@/components/Keypad";
 import { hashPin, isValidPinFormat } from "@/lib/pin";
 import { storage } from "@/lib/storage";
+import { toast } from "@/hooks/useToast";
 import { lightColors } from "@/theme/lightColors";
 
 const PIN_LENGTH = 6;
@@ -26,7 +27,9 @@ export default function PinSetupScreen() {
 
       if (stage === "enter") {
         if (!isValidPinFormat(next)) {
-          Alert.alert("Invalid PIN", "PIN must be 6 digits.");
+          toast.error("Invalid PIN", {
+            description: "PIN must be 6 digits.",
+          });
           setCurrentInput("");
           return;
         }
@@ -38,7 +41,9 @@ export default function PinSetupScreen() {
 
       // stage === 'confirm'
       if (next !== firstPin) {
-        Alert.alert("PINs didn't match", "Try setting your PIN again.");
+        toast.error("PINs didn't match", {
+          description: "Try setting your PIN again.",
+        });
         setStage("enter");
         setFirstPin("");
         setCurrentInput("");

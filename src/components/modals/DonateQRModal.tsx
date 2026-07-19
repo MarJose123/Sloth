@@ -1,17 +1,11 @@
 import { useCallback, useRef, useState } from "react";
-import {
-  Alert,
-  Image as RNImage,
-  Modal,
-  Pressable,
-  Text,
-  View,
-} from "react-native";
+import { Image as RNImage, Modal, Pressable, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import { Image } from "expo-image";
 import { File, Paths } from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import { useColors } from "@/theme/ThemeContext";
+import { toast } from "@/hooks/useToast";
 import Color from "color";
 
 // ─── asset ────────────────────────────────────────────────────────────────────
@@ -35,10 +29,10 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
       // Request photo library permission
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert(
-          "Permission Required",
-          "Sloth needs access to your photo library to save the QR code.",
-        );
+        toast.error("Permission Required", {
+          description:
+            "Sloth needs access to your photo library to save the QR code.",
+        });
         return;
       }
 
@@ -58,7 +52,7 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "An unexpected error occurred.";
-      Alert.alert("Save Failed", message);
+      toast.error("Save Failed", { description: message });
     }
   }, []);
 

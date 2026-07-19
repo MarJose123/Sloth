@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { Text, View, Pressable } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
-import { Lucide } from "@react-native-vector-icons/lucide";
+import { router } from "expo-router";
 import { useCategoriesData } from "@/hooks/useCategoriesData";
 import type { CategorySpend } from "@/lib/db/repositories/categories";
 import { useColors } from "@/theme/ThemeContext";
+import { onCategorySelected } from "@/lib/selectionBus";
 
 export default function SelectCategorySheet() {
   const colors = useColors();
@@ -12,17 +12,11 @@ export default function SelectCategorySheet() {
   const categories: CategorySpend[] =
     state.status === "ready" ? state.data.categories : [];
   const status = state.status;
-  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
 
-  const handleSelect = useCallback(
-    (categoryId: string) => {
-      router.replace({
-        pathname: returnTo ?? "/add-transaction",
-        params: { selectedCategoryId: categoryId },
-      });
-    },
-    [returnTo],
-  );
+  const handleSelect = useCallback((categoryId: string) => {
+    onCategorySelected.emit(categoryId);
+    router.back();
+  }, []);
 
   const handleDismiss = useCallback(() => {
     router.back();
@@ -63,7 +57,10 @@ export default function SelectCategorySheet() {
           Select Category
         </Text>
         {status === "loading" && (
-          <Text className="text-center text-text-secondary text-sm font-manrope">
+          <Text
+            className="text-center  text-sm font-manrope"
+            style={{ color: colors.textSecondary }}
+          >
             Loading…
           </Text>
         )}
@@ -77,10 +74,7 @@ export default function SelectCategorySheet() {
               backgroundColor: colors.surfaceElevated,
             }}
           >
-            <View
-              className="h-11 w-11 items-center justify-center rounded-xl"
-              style={{ backgroundColor: cat.colorHex }}
-            >
+            <View className="h-11 w-11 items-center justify-center rounded-full border">
               <Text className="text-lg">{cat.icon}</Text>
             </View>
             <View className="flex-1">
@@ -91,17 +85,19 @@ export default function SelectCategorySheet() {
                 {cat.name}
               </Text>
               <Text
-                className="text-[11.5px] leading-4"
+                className="text-[11.5px] leading-4 uppercase"
                 style={{ color: colors.textSecondary }}
               >
                 {cat.kind}
               </Text>
             </View>
-            <Lucide name="chevron-right" size={18} color={colors.textSecondary} />
           </Pressable>
         ))}
         {expenseCategories.length === 0 && status !== "loading" && (
-          <Text className="text-center text-text-secondary text-sm font-manrope py-8">
+          <Text
+            className="text-center text-text-secondary text-sm font-manrope py-8"
+            style={{ color: colors.textSecondary }}
+          >
             No categories yet.
           </Text>
         )}

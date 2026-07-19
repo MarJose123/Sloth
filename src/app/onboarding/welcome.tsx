@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, Text, Dimensions, Pressable, Alert } from "react-native";
+import { View, Text, Dimensions, Pressable } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -18,6 +18,7 @@ import {
 import { router } from "expo-router";
 import { DialFrame } from "@/components/DialFrame";
 import { SlothAppIcon } from "@/components/SlothAppIcon";
+import { toast } from "@/hooks/useToast";
 import { FingerprintIcon } from "@/components/ui/FingerprintIcon";
 import {
   checkBiometricAvailability,
@@ -409,12 +410,12 @@ function SlideBiometric({
     try {
       const availability = await checkBiometricAvailability();
       if (!availability.available) {
-        Alert.alert(
-          "Biometrics unavailable",
-          availability.reason === "no_hardware"
-            ? "This device doesn\u2019t support Face ID or Touch ID. Use a PIN instead."
-            : "No biometrics are enrolled. Set one up in system settings, or use a PIN instead.",
-        );
+        toast.error("Biometrics unavailable", {
+          description:
+            availability.reason === "no_hardware"
+              ? "This device doesn\u2019t support Face ID or Touch ID. Use a PIN instead."
+              : "No biometrics are enrolled. Set one up in system settings, or use a PIN instead.",
+        });
         return;
       }
       const success = await authenticateWithBiometrics(

@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
-import { Text, Alert, View, Pressable } from "react-native";
+import { Text, View, Pressable } from "react-native";
 import { router } from "expo-router";
 import { PinDots } from "@/components/ui/PinDots";
 import { Keypad } from "@/components/Keypad";
 import { hashPin } from "@/lib/pin";
 import { storage } from "@/lib/storage";
 import { useColors } from "@/theme/ThemeContext";
+import { toast } from "@/hooks/useToast";
 import { Lucide } from "@react-native-vector-icons/lucide";
 
 const PIN_LENGTH = 6;
@@ -35,7 +36,9 @@ export default function BackupPinSetupScreen() {
 
       // stage === 'confirm'
       if (next !== firstPin) {
-        Alert.alert("PINs didn't match", "Try setting your PIN again.");
+        toast.error("PINs didn't match", {
+          description: "Try setting your PIN again.",
+        });
         setStage("enter");
         setFirstPin("");
         setCurrentInput("");
