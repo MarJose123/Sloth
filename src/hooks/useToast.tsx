@@ -1,5 +1,5 @@
 /**
- * useToast.ts
+ * useToast.tsx
  *
  * Reusable hook wrapping sonner-native's toast() with the app's design-system
  * colors and Lucide icons. Use in place of Alert.alert() for lightweight notifications.
@@ -14,35 +14,7 @@
 import { toast } from "sonner-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import { useTheme } from "@/theme/ThemeContext";
-
-// ─── theme types & palettes ────────────────────────────────────────────────
-
-interface ToastVariantTheme {
-  bg: string;
-  border: string;
-  text: string;
-}
-
-interface ToastTheme {
-  success: ToastVariantTheme;
-  error: ToastVariantTheme;
-  warning: ToastVariantTheme;
-  info: ToastVariantTheme;
-}
-
-const darkToastTheme: ToastTheme = {
-  success: { bg: "#2E3428", border: "#7FA06B", text: "#F3EEE1" },
-  error: { bg: "#2E2622", border: "#9C4A3D", text: "#F3EEE1" },
-  warning: { bg: "#332A1A", border: "#C9A227", text: "#F3EEE1" },
-  info: { bg: "#2E3428", border: "#7FA06B", text: "#F3EEE1" },
-};
-
-const lightToastTheme: ToastTheme = {
-  success: { bg: "#E8F2E8", border: "#5A8A4A", text: "#1B1F1A" },
-  error: { bg: "#F5EBE8", border: "#B85A50", text: "#1B1F1A" },
-  warning: { bg: "#FBF5E8", border: "#D4A944", text: "#1B1F1A" },
-  info: { bg: "#E8F0F5", border: "#6E8FB0", text: "#1B1F1A" },
-};
+import { getToastTheme } from "@/config/toastTheme";
 
 // ─── icon components ───────────────────────────────────────────────────────
 
@@ -74,7 +46,7 @@ interface ToastOptions {
 
 export function useToast() {
   const { resolved } = useTheme();
-  const theme = resolved === "dark" ? darkToastTheme : lightToastTheme;
+  const theme = getToastTheme(resolved);
 
   return {
     /** A plain informational toast. */
@@ -150,6 +122,9 @@ export function useToast() {
     },
   };
 }
+
+/** Alias for consistency with Sonner conventions. */
+export const useSlothToast = useToast;
 
 /** Convenience exports for use outside React components. */
 export { toast };

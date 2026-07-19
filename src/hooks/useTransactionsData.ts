@@ -1,18 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect } from "expo-router";
-import {
-  listAllTransactions,
-  type TransactionLedgerItem,
-} from "@/lib/db/repositories/transactions";
-
-export type TransactionsState =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | {
-      status: "ready";
-      transactions: TransactionLedgerItem[];
-      isRefreshing: boolean;
-    };
+import { listAllTransactions } from "@/lib/db/repositories/transactions";
+import type { TransactionsState } from "@/types";
 
 /**
  * Loads the full transaction ledger. Refetches on tab focus so the list

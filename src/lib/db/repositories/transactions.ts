@@ -1,52 +1,12 @@
 import * as ExpoCrypto from "expo-crypto";
 import { getDb } from "../client";
-
-export type CategoryKind = "expense" | "income";
+import type {
+  RecentTransaction,
+  TransactionLedgerItem,
+  InsertTransactionInput,
+} from "@/types";
 
 // ─── types ────────────────────────────────────────────────────────────────────
-
-export interface RecentTransaction {
-  id: string;
-  merchant: string;
-  amountCents: number;
-  occurredAt: number;
-  accountId: string;
-  categoryName: string | null;
-  categoryIcon: string | null;
-  categoryKind: CategoryKind | null;
-}
-
-/**
- * Full transaction row for the ledger view — includes account name and note
- * in addition to the fields exposed by RecentTransaction.
- */
-export interface TransactionLedgerItem {
-  id: string;
-  merchant: string;
-  amountCents: number;
-  occurredAt: number;
-  accountId: string;
-  accountName: string;
-  categoryName: string | null;
-  categoryIcon: string | null;
-  categoryKind: CategoryKind | null;
-  note: string | null;
-  source: "manual" | "scan" | "import";
-}
-
-export interface InsertTransactionInput {
-  accountId: string;
-  categoryId: string | null;
-  merchant: string;
-  /**
-   * Signed cents — negative = expense, positive = income.
-   * Caller applies the correct sign; repository stores as-is.
-   */
-  amountCents: number;
-  occurredAt: number;
-  note?: string;
-  source?: "manual" | "scan" | "import";
-}
 
 // ─── row shapes (internal) ────────────────────────────────────────────────────
 

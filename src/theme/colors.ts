@@ -1,6 +1,6 @@
 import { darkColors } from "./darkColors";
 import { lightColors } from "./lightColors";
-import { IThemeColors } from "@/types";
+import type { IThemeColors } from "@/types";
 
 export type ColorPalette = IThemeColors;
 

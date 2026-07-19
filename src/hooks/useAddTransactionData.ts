@@ -1,22 +1,7 @@
 import { useEffect, useState } from "react";
-import {
-  listAccountsWithBalances,
-  type AccountWithBalance,
-} from "@/lib/db/repositories/accounts";
-import {
-  listAllCategories,
-  type Category,
-} from "@/lib/db/repositories/categories";
-
-export interface AddTransactionFormData {
-  accounts: AccountWithBalance[];
-  categories: Category[];
-}
-
-export type AddTransactionDataState =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; data: AddTransactionFormData };
+import { listAccountsWithBalances } from "@/lib/db/repositories/accounts";
+import { listAllCategories } from "@/lib/db/repositories/categories";
+import type { AddTransactionDataState } from "@/types";
 
 /**
  * Loads the reference data (accounts + categories) needed to populate the

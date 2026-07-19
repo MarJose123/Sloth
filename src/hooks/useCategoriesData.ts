@@ -4,18 +4,8 @@ import {
   currentMonthRange,
   getTotalExpenseCents,
   listAllCategoriesWithSpend,
-  type CategorySpend,
 } from "@/lib/db/repositories/categories";
-
-export interface CategoriesData {
-  categories: CategorySpend[];
-  totalExpenseCents: number;
-}
-
-export type CategoriesState =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; data: CategoriesData; isRefreshing: boolean };
+import type { CategoriesData, CategoriesState } from "@/types";
 
 async function fetchCategoriesData(): Promise<CategoriesData> {
   const range = currentMonthRange();

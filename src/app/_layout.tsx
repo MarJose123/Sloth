@@ -124,23 +124,8 @@ export default function RootLayout() {
           <Toaster
             position="top-center"
             visibleToasts={3}
-            toastOptions={{
-              style: {
-                backgroundColor: "#242920",
-                borderWidth: 1,
-                borderColor: "rgba(243,238,225,0.09)",
-              },
-              titleStyle: {
-                color: "#F3EEE1",
-                fontSize: 13.5,
-                fontFamily: "Manrope_600SemiBold",
-              },
-              descriptionStyle: {
-                color: "#A79F8C",
-                fontSize: 12,
-                fontFamily: "Manrope_400Regular",
-              },
-            }}
+            gap={8}
+            pauseWhenPageIsHidden
           />
         </GestureHandlerRootView>
       </ErrorBoundary>

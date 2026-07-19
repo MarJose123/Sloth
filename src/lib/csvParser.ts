@@ -14,6 +14,13 @@
  * Handles quoted fields containing commas, double-quotes (escaped as ""),
  * and line breaks inside quoted fields.
  */
+// ─── OFX / QFX Parser ─────────────────────────────────────────────────────────
+
+/**
+ * A single parsed transaction from an OFX/QFX <STMTTRN> block.
+ */
+import type { OfxTransaction } from "@/types";
+
 export function parseCsv(text: string): {
   headers: string[];
   rows: Record<string, string>[];
@@ -104,26 +111,6 @@ function parseCsvLine(line: string): string[] {
 
   fields.push(current);
   return fields;
-}
-
-// ─── OFX / QFX Parser ─────────────────────────────────────────────────────────
-
-/**
- * A single parsed transaction from an OFX/QFX <STMTTRN> block.
- */
-export interface OfxTransaction {
-  /** e.g. "DEBIT", "CREDIT", "CHECK" */
-  type: string;
-  /** Human-readable merchant or description */
-  name: string;
-  /** Date string in OFX format (YYYYMMDD) */
-  datePosted: string;
-  /** Amount as a string (e.g. "-18.40" or "1500.00") */
-  amount: string;
-  /** Optional memo / extra description */
-  memo: string;
-  /** Optional check number or reference */
-  checkNum: string;
 }
 
 /**

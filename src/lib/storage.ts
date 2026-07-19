@@ -1,5 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 
+import type { ThemePreference } from "@/types";
+
 /**
  * Wraps expo-secure-store for small boolean/string flags (onboarding state,
  * biometric preference, theme preference, screenshots flag).
@@ -14,8 +16,6 @@ const KEYS = {
   themePreference: "sloth.theme_preference",
   screenshotsEnabled: "sloth.screenshots_enabled",
 } as const;
-
-export type ThemePreference = "light" | "dark" | "auto";
 
 export const storage = {
   // ── onboarding ──────────────────────────────────────────────────────────────

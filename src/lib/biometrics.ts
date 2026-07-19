@@ -1,8 +1,5 @@
 import * as LocalAuthentication from "expo-local-authentication";
-
-export type BiometricAvailability =
-  | { available: true; type: "facial" | "fingerprint" | "iris" }
-  | { available: false; reason: "no_hardware" | "not_enrolled" };
+import type { BiometricAvailability } from "@/types";
 
 export async function checkBiometricAvailability(): Promise<BiometricAvailability> {
   const hasHardware = await LocalAuthentication.hasHardwareAsync();

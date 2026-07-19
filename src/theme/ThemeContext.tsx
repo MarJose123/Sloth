@@ -7,25 +7,9 @@ import {
   type ReactNode,
 } from "react";
 import { Appearance } from "react-native";
-import type { ColorPalette } from "@/theme/colors";
+import type { ColorPalette, ThemePreference, ThemeContextValue } from "@/types";
 import { darkColors, lightColors } from "@/theme/colors";
-import type { ThemePreference } from "@/lib/storage";
 import { storage } from "@/lib/storage";
-
-// ─── types ────────────────────────────────────────────────────────────────────
-
-export interface ThemeContextValue {
-  /** The user's stored preference: "light", "dark", or "auto" (follow system). */
-  preference: ThemePreference;
-  /** The resolved effective theme: always "light" or "dark". */
-  resolved: "light" | "dark";
-  /** The active colour palette matching the resolved theme. */
-  palette: ColorPalette;
-  /** True once the stored preference has been loaded from SecureStore. */
-  loaded: boolean;
-  /** Persist a new preference and apply it immediately. */
-  setPreference: (preference: ThemePreference) => void;
-}
 
 // ─── resolve helpers ──────────────────────────────────────────────────────────
 

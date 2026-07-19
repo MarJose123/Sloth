@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useTransactionsData } from "@/hooks/useTransactionsData";
-import type { TransactionLedgerItem } from "@/lib/db/repositories/transactions";
+import type { TransactionLedgerItem } from "@/types";
 import { formatRelativeDate, formatSignedCurrency } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
 

@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
-import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
+import type { AccountWithBalance } from "@/types";
 import { useColors } from "@/theme/ThemeContext";
 import Color from "color";
 

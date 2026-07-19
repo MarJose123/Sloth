@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { Text, View, Pressable } from "react-native";
 import { router } from "expo-router";
 import { useCategoriesData } from "@/hooks/useCategoriesData";
-import type { CategorySpend } from "@/lib/db/repositories/categories";
+import type { CategorySpend } from "@/types";
 import { useColors } from "@/theme/ThemeContext";
 import { onCategorySelected } from "@/lib/selectionBus";
 

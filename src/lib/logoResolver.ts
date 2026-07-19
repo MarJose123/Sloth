@@ -5,6 +5,8 @@
  * - "custom/<filename>" → filesystem URI, path relative to documentDirectory
  * - null → no logo (fall back to initials + colorHex)
  */
+import type { LogoSource } from "@/types";
+
 export function resolveLogoSrc(logoKey: string | null): LogoSource | null {
   if (!logoKey) return null;
 
@@ -20,12 +22,6 @@ export function resolveLogoSrc(logoKey: string | null): LogoSource | null {
   }
 
   return null;
-}
-
-export interface LogoSource {
-  type: "bundled" | "uri";
-  source?: ReturnType<typeof require>;
-  uri?: string;
 }
 
 /** Static require map for bundled bank logos. */

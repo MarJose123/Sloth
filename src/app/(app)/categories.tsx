@@ -10,7 +10,7 @@ import {
 import { router } from "expo-router";
 import Svg, { Circle, G } from "react-native-svg";
 import { useCategoriesData } from "@/hooks/useCategoriesData";
-import type { CategorySpend } from "@/lib/db/repositories/categories";
+import type { CategorySpend } from "@/types";
 import { formatCurrency } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
 

@@ -10,7 +10,7 @@
  */
 
 import { Text, View } from "react-native";
-import type { RecentTransaction } from "@/lib/db/repositories/transactions";
+import type { RecentTransaction } from "@/types";
 import { formatRelativeTime, formatSignedCurrency } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
 

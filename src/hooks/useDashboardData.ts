@@ -1,34 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect } from "expo-router";
-import {
-  listAccountsWithBalances,
-  type AccountWithBalance,
-} from "@/lib/db/repositories/accounts";
+import { listAccountsWithBalances } from "@/lib/db/repositories/accounts";
 import {
   currentMonthRange,
   getTotalExpenseCents,
   listTopExpenseCategories,
-  type CategorySpend,
 } from "@/lib/db/repositories/categories";
-import {
-  listRecentTransactions,
-  type RecentTransaction,
-} from "@/lib/db/repositories/transactions";
+import { listRecentTransactions } from "@/lib/db/repositories/transactions";
 
 const RECENT_TRANSACTIONS_LIMIT = 5;
 const TOP_CATEGORIES_LIMIT = 3;
-
-export interface DashboardData {
-  accounts: AccountWithBalance[];
-  categories: CategorySpend[];
-  totalExpenseCents: number;
-  recentTransactions: RecentTransaction[];
-}
-
-export type DashboardState =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; data: DashboardData; isRefreshing: boolean };
 
 async function fetchDashboardData(
   selectedAccountId: string | null,

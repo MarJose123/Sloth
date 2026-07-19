@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, G } from "react-native-svg";
-import type { CategorySpend } from "@/lib/db/repositories/categories";
+import type { CategorySpend } from "@/types";
 import { useColors } from "@/theme/ThemeContext";
 
 interface CategoryRingCardProps {

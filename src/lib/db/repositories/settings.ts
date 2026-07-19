@@ -1,9 +1,5 @@
 import { getDb } from "../client";
-
-export interface SettingRow {
-  key: string;
-  value: string;
-}
+import type { SettingRow } from "@/types";
 
 /**
  * DB-backed settings table.

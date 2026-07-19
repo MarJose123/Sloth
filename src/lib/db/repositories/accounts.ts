@@ -1,26 +1,11 @@
 import * as ExpoCrypto from "expo-crypto";
 import { getDb } from "../client";
-
-export type AccountType = "checking" | "savings" | "credit" | "cash";
-
-export interface AccountWithBalance {
-  id: string;
-  name: string;
-  type: AccountType;
-  colorHex: string;
-  logoKey: string | null;
-  /** starting_balance + sum of all account transactions, in cents. */
-  balanceCents: number;
-}
-
-export interface InsertAccountInput {
-  name: string;
-  type: AccountType;
-  colorHex: string;
-  logoKey?: string | null;
-  /** Signed cents. Positive for asset accounts; credit cards typically start at 0. */
-  startingBalanceCents: number;
-}
+import type {
+  AccountType,
+  AccountWithBalance,
+  InsertAccountInput,
+  UpdateAccountInput,
+} from "@/types";
 
 interface AccountRow {
   id: string;
@@ -88,14 +73,6 @@ export async function insertAccount(
   );
 
   return id;
-}
-
-export interface UpdateAccountInput {
-  id: string;
-  name: string;
-  type: AccountType;
-  colorHex: string;
-  logoKey: string | null;
 }
 
 export async function updateAccount(input: UpdateAccountInput): Promise<void> {

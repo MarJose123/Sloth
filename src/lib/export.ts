@@ -1,5 +1,5 @@
 import { Paths, File } from "expo-file-system";
-import type { TransactionLedgerItem } from "@/lib/db/repositories/transactions";
+import type { TransactionLedgerItem } from "@/types";
 
 /**
  * Exports a list of transactions as a CSV file and triggers the OS share

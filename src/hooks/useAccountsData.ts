@@ -1,14 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect } from "expo-router";
-import {
-  listAccountsWithBalances,
-  type AccountWithBalance,
-} from "@/lib/db/repositories/accounts";
-
-export type AccountsState =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; accounts: AccountWithBalance[]; isRefreshing: boolean };
+import { listAccountsWithBalances } from "@/lib/db/repositories/accounts";
+import type { AccountsState } from "@/types";
 
 /**
  * Loads all accounts with their computed balances. Mirrors the

@@ -10,7 +10,7 @@ import {
 import { router } from "expo-router";
 import { documentDirectory } from "expo-file-system/legacy";
 import { useAccountsData } from "@/hooks/useAccountsData";
-import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
+import type { AccountWithBalance } from "@/types";
 import { formatCurrency } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
 import { resolveLogoSrc } from "@/lib/logoResolver";
