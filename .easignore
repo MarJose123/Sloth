@@ -55,6 +55,7 @@ example
 .ai/tmp/*
 .junie/design/*
 .junie
+.agents
 
 # Markdown files
 *.md
