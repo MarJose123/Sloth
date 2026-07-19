@@ -11,9 +11,9 @@ import {
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useAddTransactionData } from "@/hooks/useAddTransactionData";
-import { insertTransaction } from "@/lib/db/repositories/transactions";
-import { formatCurrency } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
+import { formatCurrency } from "@/lib/format";
+import { insertTransaction } from "@/lib/db/repositories/transactions";
 
 type Method = "manual" | "scan" | "import";
 
@@ -220,7 +220,7 @@ export default function AddTransactionScreen() {
             </Pressable>
           </View>
 
-          {/* ── Amount display ── */}
+          {/*── Amount display ── */}
           <View className="mb-6 items-center">
             <TextInput
               value={amountText}
@@ -228,8 +228,13 @@ export default function AddTransactionScreen() {
               keyboardType="decimal-pad"
               placeholder="0.00"
               placeholderTextColor={colors.textSecondary}
-              className="text-center font-fraunces-medium text-[46px] text-brass"
-              style={{ minWidth: 120 }}
+              style={{
+                textAlign: "center",
+                fontWeight: "600",
+                fontSize: 46,
+                color: colors.brass,
+                minWidth: 120,
+              }}
             />
             {selectedAccount && (
               <Text className="mt-1 font-mono text-[11px] text-text-secondary">
@@ -307,7 +312,10 @@ export default function AddTransactionScreen() {
                 onChangeText={setMerchant}
                 placeholder="e.g. Whole Foods"
                 placeholderTextColor={colors.textSecondary}
-                className="text-[13.5px] text-text-primary"
+                style={{
+                  fontSize: 13.5,
+                  color: colors.textPrimary,
+                }}
                 autoCapitalize="words"
                 returnKeyType="next"
               />
@@ -322,7 +330,10 @@ export default function AddTransactionScreen() {
                 onChangeText={setNote}
                 placeholder="Groceries for the week"
                 placeholderTextColor={colors.textSecondary}
-                className="text-[13.5px] text-text-primary"
+                style={{
+                  fontSize: 13.5,
+                  color: colors.textPrimary,
+                }}
                 returnKeyType="done"
               />
             </View>
@@ -336,7 +347,10 @@ export default function AddTransactionScreen() {
                 onChangeText={setDateText}
                 placeholder="YYYY-MM-DD"
                 placeholderTextColor={colors.textSecondary}
-                className="text-[13.5px] text-text-primary"
+                style={{
+                  fontSize: 13.5,
+                  color: colors.textPrimary,
+                }}
                 keyboardType="numbers-and-punctuation"
               />
             </View>

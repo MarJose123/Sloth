@@ -73,6 +73,13 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
+              name="add-transaction"
+              options={{
+                animation: "slide_from_right",
+                animationDuration: 300,
+              }}
+            />
+            <Stack.Screen
               name="receipt-scan"
               options={{
                 animation: "slide_from_right",

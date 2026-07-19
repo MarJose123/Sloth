@@ -223,6 +223,8 @@ function extractDate(lines: string[], rawText: string): string | null {
 function capitalizeWords(str: string): string {
   return str
     .split(/\s+/)
-    .map((w) => (w.length > 0 ? w[0]!.toUpperCase() + w.slice(1).toLowerCase() : w))
+    .map((w) =>
+      w.length > 0 ? w[0]!.toUpperCase() + w.slice(1).toLowerCase() : w,
+    )
     .join(" ");
 }

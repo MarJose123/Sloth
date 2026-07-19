@@ -4,7 +4,5 @@ declare module "expo-mlkit-ocr" {
     text: string;
     lines: { text: string }[];
   }
-  export function recognizeText(
-    uri: string,
-  ): Promise<{ blocks: TextBlock[] }>;
+  export function recognizeText(uri: string): Promise<{ blocks: TextBlock[] }>;
 }
