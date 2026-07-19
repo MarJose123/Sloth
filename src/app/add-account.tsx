@@ -24,7 +24,7 @@ import {
 } from "@/lib/db/repositories/accounts";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import type { LucideIconName } from "@react-native-vector-icons/lucide";
-import { useColors } from "@/theme/ThemeContext";
+import { useColors, useTheme } from "@/theme/ThemeContext";
 import { colors } from "@/theme/colors";
 import { BANK_LOGOS } from "@/lib/logoResolver";
 import Color from "color";
@@ -161,6 +161,7 @@ function LogoGridItem({
 
 export default function AddAccountScreen() {
   const c = useColors();
+  const { resolved } = useTheme();
   const [name, setName] = useState("");
   const [selectedType, setSelectedType] = useState<AccountType>("checking");
   const [selectedColorIdx, setSelectedColorIdx] = useState(0);
@@ -413,7 +414,13 @@ export default function AddAccountScreen() {
           <View className="mb-4 items-center">
             <View
               className="h-16 w-16 items-center justify-center overflow-hidden rounded-2xl"
-              style={{ backgroundColor: selectedColor }}
+              style={{
+                backgroundColor: previewSource
+                  ? resolved === "dark"
+                    ? "#FFFFFF"
+                    : "transparent"
+                  : selectedColor,
+              }}
             >
               {previewSource ? (
                 <Image
@@ -477,17 +484,24 @@ export default function AddAccountScreen() {
           )}
 
           {badgeMode === "logo" && (
-            <View className="mb-5 flex-row flex-wrap gap-2">
-              {BANK_LOGOS.map((logo) => (
-                <LogoGridItem
-                  key={logo.key}
-                  source={logo.source}
-                  name={logo.name}
-                  selected={selectedLogoKey === logo.key}
-                  onPress={() => setSelectedLogoKey(logo.key)}
-                />
-              ))}
-            </View>
+            <ScrollView
+              className="mb-5"
+              style={{ maxHeight: 260 }}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator={false}
+            >
+              <View className="flex-row flex-wrap gap-2">
+                {BANK_LOGOS.map((logo) => (
+                  <LogoGridItem
+                    key={logo.key}
+                    source={logo.source}
+                    name={logo.name}
+                    selected={selectedLogoKey === logo.key}
+                    onPress={() => setSelectedLogoKey(logo.key)}
+                  />
+                ))}
+              </View>
+            </ScrollView>
           )}
 
           {badgeMode === "custom" && (

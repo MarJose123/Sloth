@@ -12,7 +12,7 @@ import { documentDirectory } from "expo-file-system/legacy";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { formatCurrency } from "@/lib/format";
-import { useColors } from "@/theme/ThemeContext";
+import { useColors, useTheme } from "@/theme/ThemeContext";
 import { resolveLogoSrc } from "@/lib/logoResolver";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -39,6 +39,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
   const initials = getInitials(account.name);
   const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
   const colors = useColors();
+  const { resolved } = useTheme();
   const logoSrc = resolveLogoSrc(account.logoKey);
 
   return (
@@ -51,7 +52,13 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
     >
       <View
         className="h-[38px] w-[38px] flex-shrink-0 items-center justify-center overflow-hidden rounded-[11px]"
-        style={{ backgroundColor: account.colorHex }}
+        style={{
+          backgroundColor: logoSrc
+            ? resolved === "dark"
+              ? "#FFFFFF"
+              : "transparent"
+            : account.colorHex,
+        }}
       >
         {logoSrc?.type === "bundled" && logoSrc.source ? (
           <Image
