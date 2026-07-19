@@ -96,7 +96,7 @@ function createStyles(c: ColorPalette) {
     },
     welcomeHeadline: {
       fontFamily: "Fraunces_450",
-      fontSize: 35,
+      fontSize: 42,
       lineHeight: 42,
       letterSpacing: -0.3,
       color: c.textPrimary,
@@ -105,7 +105,7 @@ function createStyles(c: ColorPalette) {
     },
     welcomeBody: {
       fontFamily: "Manrope_400",
-      fontSize: 17,
+      fontSize: 19,
       lineHeight: 26,
       color: c.textSecondary,
       textAlign: "center" as const,
@@ -123,7 +123,7 @@ function createStyles(c: ColorPalette) {
     },
     privacyHeadline: {
       fontFamily: "Fraunces_450",
-      fontSize: 30,
+      fontSize: 33,
       lineHeight: 36,
       color: c.textPrimary,
       marginBottom: 26,
@@ -173,7 +173,7 @@ function createStyles(c: ColorPalette) {
     },
     biometricBody: {
       fontFamily: "Manrope_400",
-      fontSize: 16.5,
+      fontSize: 17,
       lineHeight: 25,
       color: c.textSecondary,
       marginBottom: 30,
@@ -188,8 +188,8 @@ function createStyles(c: ColorPalette) {
       marginTop: 14,
     },
     biometricStack: {
-      gap: 10,
-      paddingBottom: 8,
+      gap: 2,
+      paddingBottom: 3,
     },
     pinFallbackText: {
       fontFamily: "Manrope_400",
@@ -339,21 +339,24 @@ function SlideWelcome({ styles }: { styles: OnboardingStyles }) {
       {/* "SLOTH" mono brand mark — top anchor */}
       <Text style={styles.brandMark}>Sloth</Text>
 
-      {/* Full-colour app icon at 120px */}
-      <View style={styles.welcomeIconWrapper}>
-        <SlothAppIcon size={120} />
+      <View className="items-center pt-safe-offset-10">
+        {/* Full-colour app icon at 120px */}
+        <View style={styles.welcomeIconWrapper}>
+          <SlothAppIcon size={120} />
+        </View>
+
+        {/* Headline: font-size 30, line-height 1.18×30=35 */}
+        <Text style={styles.welcomeHeadline}>
+          {"Your money.\nYour device.\nNobody else\u2019s."}
+        </Text>
+
+        {/* Body: font-size 14, line-height 1.55×14=21.7 */}
+        <Text style={styles.welcomeBody}>
+          {
+            "No bank logins. No third-party servers reading your transactions. Everything lives here, encrypted, and never leaves this device."
+          }
+        </Text>
       </View>
-
-      {/* Headline: font-size 30, line-height 1.18×30=35 */}
-      <Text style={styles.welcomeHeadline}>
-        {"Your money.\nYour device.\nNobody else\u2019s."}
-      </Text>
-
-      {/* Body: font-size 14, line-height 1.55×14=21.7 */}
-      <Text style={styles.welcomeBody}>
-        No bank logins. No third-party servers reading your transactions.
-        Everything lives here, encrypted, and never leaves this device.
-      </Text>
 
       {/* Single flex:1 — lets the bottom bar (dots + Continue) sit at the bottom */}
       <View style={{ flex: 1 }} />
