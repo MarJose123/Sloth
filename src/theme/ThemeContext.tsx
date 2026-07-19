@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  type ReactNode,
 } from "react";
 import { Appearance } from "react-native";
 import type { ColorPalette } from "@/theme/colors";
@@ -45,7 +46,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 // ─── provider ─────────────────────────────────────────────────────────────────
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>("auto");
   const [systemScheme, setSystemScheme] = useState<"light" | "dark">("light");
   const [loaded, setLoaded] = useState(false);
