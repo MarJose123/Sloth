@@ -13,6 +13,7 @@ import { ChevronRightIcon } from "@/components/navigation/icons";
 import type { ThemePreference } from "@/lib/storage";
 import { useTheme, useColors } from "@/theme/ThemeContext";
 import { colors } from "@/theme/colors";
+import { useToast } from "@/hooks/useToast";
 
 // ─── local primitives ────────────────────────────────────────────────────────
 

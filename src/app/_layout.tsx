@@ -1,9 +1,9 @@
 import "@/global.css";
 import { useEffect, useCallback } from "react";
-import { View } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toaster } from "sonner-native";
 import { useAppFonts } from "@/hooks/useAppFonts";
 import { ThemeProvider, useTheme } from "@/theme/ThemeContext";
@@ -41,7 +41,7 @@ export default function RootLayout() {
     <ThemeProvider>
       <ThemedStatusBar />
       <ErrorBoundary>
-        <View className="flex-1">
+        <GestureHandlerRootView style={{ flex: 1 }}>
           <Stack
             screenOptions={{
               headerShown: false,
@@ -142,7 +142,7 @@ export default function RootLayout() {
               },
             }}
           />
-        </View>
+        </GestureHandlerRootView>
       </ErrorBoundary>
     </ThemeProvider>
   );
