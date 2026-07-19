@@ -1,7 +1,6 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { useColors } from "@/theme/ThemeContext";
-import { colors } from "@/theme/colors";
 import Color from "color";
 
 interface AccountSwitcherProps {

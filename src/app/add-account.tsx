@@ -48,6 +48,13 @@ const BADGE_COLORS = [
   colors.rust,
   colors.dustyBlue,
   colors.textSecondary,
+  colors.ochre,
+  colors.brassSoft,
+  "#D48FB8", // rose/pink
+  "#A78BDB", // violet
+  "#6FC9B8", // teal
+  "#F0C27A", // warm yellow
+  "#8CA89B", // muted mint
 ] as const;
 
 const BADGE_MODES: {
@@ -177,9 +184,10 @@ export default function AddAccountScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const selectedColor = BADGE_COLORS[selectedColorIdx] ?? colors.brass;
-  const initials = getInitials(name) || "·";
+  const initials = getInitials(name);
+  const hasName = name.trim().length > 0;
 
-  // Resolve the final logoKey to save
+  // Resolve the final logoKey to save and preview source
   let resolvedLogoKey: string | null = null;
   let previewSource: ReturnType<typeof require> | { uri: string } | null = null;
 
@@ -410,32 +418,33 @@ export default function AddAccountScreen() {
             Badge
           </Text>
 
-          {/* Preview */}
+          {/* Preview badge */}
           <View className="mb-4 items-center">
             <View
               className="h-16 w-16 items-center justify-center overflow-hidden rounded-2xl"
               style={{
-                backgroundColor: previewSource
-                  ? resolved === "dark"
-                    ? "#FFFFFF"
-                    : "transparent"
-                  : selectedColor,
+                backgroundColor:
+                  badgeMode === "color" ? selectedColor : "transparent",
               }}
             >
-              {previewSource ? (
+              {previewSource && (
                 <Image
                   source={previewSource}
                   style={{ width: 56, height: 56 }}
-                  resizeMode="contain"
+                  resizeMode="cover"
                 />
-              ) : (
-                <Text
-                  className="font-mono-medium text-base"
-                  style={{ color: colors.ink }}
-                >
-                  {initials}
-                </Text>
               )}
+              {badgeMode === "color" &&
+                (hasName ? (
+                  <Text
+                    className="font-mono-medium text-base"
+                    style={{ color: colors.ink }}
+                  >
+                    {initials}
+                  </Text>
+                ) : (
+                  <Lucide name="image" size={22} color={colors.ink} />
+                ))}
             </View>
           </View>
 
@@ -471,16 +480,28 @@ export default function AddAccountScreen() {
 
           {/* ── Mode content ── */}
           {badgeMode === "color" && (
-            <View className="mb-5 flex-row gap-3">
-              {BADGE_COLORS.map((clr, idx) => (
-                <ColorSwatch
-                  key={clr}
-                  color={clr}
-                  selected={selectedColorIdx === idx}
-                  onPress={() => setSelectedColorIdx(idx)}
-                />
-              ))}
-            </View>
+            <ScrollView
+              className="mb-4"
+              style={{ maxHeight: 140 }}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator={false}
+            >
+              <View className="flex-row flex-wrap">
+                {BADGE_COLORS.map((clr, idx) => (
+                  <View
+                    key={clr}
+                    className="items-center pb-4"
+                    style={{ width: `${100 / 6}%` }}
+                  >
+                    <ColorSwatch
+                      color={clr}
+                      selected={selectedColorIdx === idx}
+                      onPress={() => setSelectedColorIdx(idx)}
+                    />
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
           )}
 
           {badgeMode === "logo" && (
@@ -490,7 +511,7 @@ export default function AddAccountScreen() {
               nestedScrollEnabled
               showsVerticalScrollIndicator={false}
             >
-              <View className="flex-row flex-wrap gap-2">
+              <View className="flex-row flex-wrap gap-2 mb-4">
                 {BANK_LOGOS.map((logo) => (
                   <LogoGridItem
                     key={logo.key}
@@ -519,7 +540,7 @@ export default function AddAccountScreen() {
                 <View className="items-center gap-3">
                   <View
                     className="h-[120px] w-[120px] items-center justify-center overflow-hidden rounded-2xl"
-                    style={{ backgroundColor: selectedColor }}
+                    style={{ backgroundColor: "transparent" }}
                   >
                     <Image
                       source={{ uri: customLogoUri }}

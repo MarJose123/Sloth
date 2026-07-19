@@ -12,7 +12,7 @@ import { documentDirectory } from "expo-file-system/legacy";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { formatCurrency } from "@/lib/format";
-import { useColors, useTheme } from "@/theme/ThemeContext";
+import { useColors } from "@/theme/ThemeContext";
 import { resolveLogoSrc } from "@/lib/logoResolver";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -39,7 +39,6 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
   const initials = getInitials(account.name);
   const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
   const colors = useColors();
-  const { resolved } = useTheme();
   const logoSrc = resolveLogoSrc(account.logoKey);
 
   return (
@@ -51,25 +50,22 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
       }}
     >
       <View
-        className="h-[38px] w-[38px] flex-shrink-0 items-center justify-center overflow-hidden rounded-[11px]"
+        className="h-[38px] w-[38px] flex-shrink-0 items-center justify-center overflow-hidden"
         style={{
-          backgroundColor: logoSrc
-            ? resolved === "dark"
-              ? "#FFFFFF"
-              : "transparent"
-            : account.colorHex,
+          backgroundColor: logoSrc ? "transparent" : account.colorHex,
         }}
       >
         {logoSrc?.type === "bundled" && logoSrc.source ? (
           <Image
             source={logoSrc.source}
-            style={{ width: 30, height: 30 }}
+            style={{ width: 40, height: 40 }}
             resizeMode="cover"
+            className="rounded-xl"
           />
         ) : logoSrc?.type === "uri" && logoSrc.uri ? (
           <Image
             source={{ uri: `${documentDirectory}${logoSrc.uri}` }}
-            style={{ width: 30, height: 30 }}
+            style={{ width: 40, height: 40 }}
             resizeMode="cover"
           />
         ) : (
@@ -222,8 +218,9 @@ export default function AccountsScreen() {
                 color: colors.textSecondary,
               }}
             >
-              Add your first account — checking, savings, credit, or cash — to
-              start tracking your money.
+              {
+                "Add your first account — checking, savings, credit, or cash — to start tracking your money."
+              }
             </Text>
             <Pressable
               onPress={() => router.push("/add-account")}
@@ -263,13 +260,14 @@ export default function AccountsScreen() {
             </Pressable>
 
             <Text
-              className="mt-5 text-center text-[12px] leading-[1.5]"
+              className="mt-5 text-center text-[12px] leading-[1.5] text-balance"
               style={{
                 color: colors.textSecondary,
               }}
             >
-              {"Every account's balance and history is stored only on this"}
-              {"device — nothing is uploaded, ever."}
+              {
+                "Every account's balance and history is stored only on this device — nothing is uploaded, ever."
+              }
             </Text>
           </>
         )}
