@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useState, useEffect } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
-import { usePreventScreenCapture } from "expo-screen-capture";
+import * as ScreenCapture from "expo-screen-capture";
 import { storage } from "@/lib/storage";
 import { Toggle } from "@/components/ui/Toggle";
 import { DonateQRModal } from "@/components/modals/DonateQRModal";
@@ -204,10 +204,12 @@ export default function SettingsScreen() {
   const handleScreenshotsToggle = async (value: boolean) => {
     setScreenshotsEnabled(value);
     await storage.setScreenshotsEnabled(value);
+    if (value) {
+      await ScreenCapture.allowScreenCaptureAsync();
+    } else {
+      await ScreenCapture.preventScreenCaptureAsync();
+    }
   };
-
-  // Prevent/allow screenshots based on toggle state
-  usePreventScreenCapture(!screenshotsEnabled);
 
   const handleThemeChange = (newPreference: ThemePreference) => {
     setPreference(newPreference);

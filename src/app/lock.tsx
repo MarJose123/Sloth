@@ -123,7 +123,7 @@ export default function LockScreen() {
         </View>
 
         {/* Biometric ring with fingerprint */}
-        <DialFrame size={110} innerSize={60} variant="brass">
+        <DialFrame size={110}>
           <FingerprintIcon size={32} />
         </DialFrame>
 

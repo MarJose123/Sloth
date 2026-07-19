@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   viewport: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   topBar: {
     position: "absolute",

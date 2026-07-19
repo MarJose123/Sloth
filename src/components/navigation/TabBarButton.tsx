@@ -1,9 +1,9 @@
 import { Pressable, View, type PressableProps } from "react-native";
-import type { SvgProps } from "react-native-svg";
 import { useColors } from "@/theme/ThemeContext";
+import type { TabIconProps } from "./icons";
 
 interface TabBarButtonProps extends PressableProps {
-  Icon: React.ComponentType<SvgProps>;
+  Icon: React.ComponentType<TabIconProps>;
   isFocused?: boolean;
 }
 

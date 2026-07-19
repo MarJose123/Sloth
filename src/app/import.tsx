@@ -275,15 +275,19 @@ export default function ImportScreen() {
             <Pressable
               onPress={() => {
                 if (accountsState.status === "ready") {
+                  const accountButtons: {
+                    text: string;
+                    onPress?: () => void;
+                    style?: "cancel";
+                  }[] = accountsState.accounts.map((a) => ({
+                    text: a.name,
+                    onPress: () => setSelectedAccountId(a.id),
+                  }));
+                  accountButtons.push({ text: "Cancel", style: "cancel" });
                   Alert.alert(
                     "Select Account",
                     "Choose an account to import into:",
-                    accountsState.accounts
-                      .map((a) => ({
-                        text: a.name,
-                        onPress: () => setSelectedAccountId(a.id),
-                      }))
-                      .concat([{ text: "Cancel", style: "cancel" }]),
+                    accountButtons,
                   );
                 }
               }}
@@ -328,19 +332,26 @@ export default function ImportScreen() {
                             "Note",
                             "—",
                           ];
+                          const fieldButtons: {
+                            text: string;
+                            onPress?: () => void;
+                            style?: "cancel";
+                          }[] = options.map((opt) => ({
+                            text: opt,
+                            onPress: () =>
+                              setColumnMapping((prev) => ({
+                                ...prev,
+                                [col]: opt,
+                              })),
+                          }));
+                          fieldButtons.push({
+                            text: "Cancel",
+                            style: "cancel",
+                          });
                           Alert.alert(
                             "Map to Field",
                             `What does "${col}" represent?`,
-                            options
-                              .map((opt) => ({
-                                text: opt,
-                                onPress: () =>
-                                  setColumnMapping((prev) => ({
-                                    ...prev,
-                                    [col]: opt,
-                                  })),
-                              }))
-                              .concat([{ text: "Cancel", style: "cancel" }]),
+                            fieldButtons,
                           );
                         }}
                         className="flex-1"
