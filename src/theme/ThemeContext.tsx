@@ -61,7 +61,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       ]);
       if (cancelled) return;
       setPreferenceState(stored);
-      setSystemScheme(scheme ?? "light");
+      setSystemScheme(scheme === "dark" ? "dark" : "light");
       setLoaded(true);
     })();
     return () => {
@@ -72,7 +72,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Subscribe to system appearance changes (for "auto" mode)
   useEffect(() => {
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      setSystemScheme(colorScheme ?? "light");
+      setSystemScheme(colorScheme === "dark" ? "dark" : "light");
     });
     return () => subscription.remove();
   }, []);
