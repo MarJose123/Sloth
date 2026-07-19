@@ -262,7 +262,14 @@ existing `SafeAreaProvider`.
 - **Elements:** "Accounts" (Fraunces 450 20px) + "+ Add" brass link, account cards
   (`--surface-card`, 16px radius, 38×38 logo tile 11px radius), balance (IBM Plex Mono 14px),
   "Add another account" dashed card, footnote (11px dim centered), tab bar
-- **Logo tile:** solid colour bg + 2-char initials (IBM Plex Mono 12px 700 `--ink` text)
+- **Logo tile (badge):** 3-mode selector (Color / Bank Logo / Custom Upload). Color mode: one of 12
+  swatches rendered in a 6-column scrollable grid (`BADGE_COLORS`) — brass, sage, rust, dusty blue,
+  text secondary, ochre, brass soft, rose, violet, teal, warm yellow, muted mint. Logo mode: 16 bundled
+  bank `.png` images from `assets/bank/` shown in a scrollable 3-column grid. Custom mode: upload via
+  `expo-document-picker` with crop/resize via `expo-image-manipulator`. Preview badge (64×64 rounded-2xl)
+  updates live: transparent background for logos/images, colored background + initials for color mode.
+  `logoKey` stored in DB as `"bank/<filename>"` or `"custom/<timestamp>.png"`. Resolved via
+  `resolveLogoSrc()` in `src/lib/logoResolver.ts`.
 
 ### Screen 07 — Settings
 - **File:** `src/app/(app)/settings.tsx`
@@ -870,7 +877,8 @@ sloth/
 ├── bun.lock                        ← Bun lockfile
 │
 ├── assets/
-│   └── icons/                      ← icon.png, adaptive-icon-*.png, favicon.png
+│   ├── bank/                         ← 16 bundled bank logo PNGs (BDO, BPI, GCash, etc.)
+│   └── icons/                        ← icon.png, adaptive-icon-*.png, favicon.png
 │
 ├── .github/
 │   ├── FUNDING.yml
@@ -959,6 +967,7 @@ sloth/
     │   ├── csvParser.ts            ← CSV/OFX parser
     │   ├── export.ts               ← Data export + QR save
     │   ├── format.ts               ← Currency/date formatting
+    │   ├── logoResolver.ts          ← Resolves logoKey → bundled require() or filesystem URI
     │   ├── ocr.ts                  ← OCR shim/scaffold
     │   ├── pin.ts                  ← PIN hashing/verification
     │   └── storage.ts              ← SecureStore/AsyncStorage wrapper

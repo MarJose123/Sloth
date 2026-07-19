@@ -1,6 +1,0 @@
-[[plugins]]
-name = "jetbrains"
-type = "stdio"
-command = "/Volumes/External/Applications/WebStorm.app/Contents/MacOS/webstorm"
-env = [["IJ_MCP_SERVER_PROJECT_PATH", "/Volumes/External/Documents/Self Project/sloth"], ["IJ_MCP_SERVER_PORT", "64542"]]
-args = ["stdioMcpServer"]
