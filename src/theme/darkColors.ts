@@ -1,10 +1,12 @@
+import { IThemeColors } from "@/types";
+
 /**
  * Dark theme colour palette for Sloth.
  *
  * This is the default / original theme — deep ink backgrounds with
  * warm parchment text and brass accents.
  */
-export const darkColors = {
+export const darkColors: IThemeColors = {
   surfaceBg: "#1B1F1A",
   surfaceCard: "#242920",
   surfaceElevated: "#2E3428",

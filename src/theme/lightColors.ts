@@ -1,3 +1,5 @@
+import { IThemeColors } from "@/types";
+
 /**
  * Light theme colour palette for Sloth.
  *
@@ -5,7 +7,7 @@
  * Accent colours (brass, sage, rust) are retained but adjusted for
  * sufficient contrast on light backgrounds.
  */
-export const lightColors = {
+export const lightColors: IThemeColors = {
   surfaceBg: "#F5F0E4",
   surfaceCard: "#EBE6D8",
   surfaceElevated: "#E0DBCB",
