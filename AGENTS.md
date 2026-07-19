@@ -323,10 +323,16 @@ existing `SafeAreaProvider`.
 ### Screen 13 — Receipt Scan / OCR
 - **File:** `src/app/receipt-scan.tsx`
 - **Camera:** `expo-camera@~57.0.0` still-image capture — **not** `react-native-vision-camera`
+- **OCR:** `expo-mlkit-ocr v0.2.7` — Google ML Kit Text Recognition, on-device, no network.
+  Receipt heuristics in `src/lib/ocr.ts` extract merchant, total (in cents), and date from
+  raw text blocks. API: `recognizeText(imageUri) → { blocks: [{ text, lines }] }`.
+- **Flow:** capture → OCR → detected results card (merchant, amount, date) →
+  "Use these details" → pre-fills `/transaction/new` via `router.replace` with params
+  (`merchant`, `amountCents`, `date`, `source: "scan"`).
 - **Elements:** camera viewport overlay gradient, ✕ close + "Flash: Auto" top bar,
-  "◈ Lottie — align receipt in frame" caption, dashed receipt frame with brass scan-line
-  animation (Lottie), detected results card (`--surface-card`, sage "Detected on-device" tag),
-  shutter ring (64px, 3px parchment border, brass fill circle)
+  "Align receipt in frame · processed on-device" caption, dashed receipt frame with brass scan-line,
+  detected results card (`--surface-card`, sage "Detected on-device" tag),
+  shutter ring (64px, 3px parchment border, brass fill circle), retake button.
 
 ### Screen 14 — CSV / OFX Import
 - **File:** `src/app/import.tsx`

@@ -54,7 +54,8 @@
           "savePhotosPermission": "Sloth saves donation QR codes to your photo library."
         }
       ],
-      "expo-widgets"
+      "expo-widgets",
+      "expo-mlkit-ocr"
     ],
     "android": {
       "package": "marjose.sloth.app",
