@@ -9,15 +9,42 @@ import {
   View,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import { useForm, Controller, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useAddTransactionData } from "@/hooks/useAddTransactionData";
 import { useColors } from "@/theme/ThemeContext";
 import { formatCurrency, formatAmountOnBlur } from "@/lib/format";
 import { onAccountSelected, onCategorySelected } from "@/lib/selectionBus";
 import { useToast } from "@/hooks/useToast";
 import { insertTransaction } from "@/lib/db/repositories/transactions";
+import { FormField } from "@/components/ui/FormField";
 import Color from "color";
 
+// ─── types ────────────────────────────────────────────────────────────────
+
 type Method = "manual" | "scan" | "import";
+
+// ─── schema ────────────────────────────────────────────────────────────────
+
+const transactionSchema = z.object({
+  accountId: z.string().min(1, "Select an account"),
+  merchant: z.string().min(1, "Enter a merchant name"),
+  amount: z.string().refine((val) => {
+    const clean = val.replace(/[$,]/g, "").trim();
+    if (clean === "" || clean === "-" || clean === "0" || clean === "0.00")
+      return false;
+    const num = parseFloat(clean);
+    return !isNaN(num) && num > 0;
+  }, "Enter a valid amount"),
+  date: z.string().min(1, "Enter a date"),
+  note: z.string().optional(),
+  categoryId: z.string().min(1, "Select a category"),
+});
+
+type TransactionFormData = z.infer<typeof transactionSchema>;
+
+// ─── local components ─────────────────────────────────────────────────────
 
 function MethodPill({
   active,
@@ -44,9 +71,7 @@ function MethodPill({
     >
       <Text
         className="text-[12px] font-manrope-semibold "
-        style={{
-          color: active ? colors.brass : colors.textSecondary,
-        }}
+        style={{ color: active ? colors.brass : colors.textSecondary }}
       >
         {label}
       </Text>
@@ -80,11 +105,13 @@ function PickerRow({
         {label}
       </Text>
       <Text className="text-[13.5px] " style={{ color: colors.textPrimary }}>
-        {value || "Select…"}
+        {value || "Select\u2026"}
       </Text>
     </Pressable>
   );
 }
+
+// ─── screen ───────────────────────────────────────────────────────────────
 
 export default function AddTransactionScreen() {
   const colors = useColors();
@@ -100,49 +127,55 @@ export default function AddTransactionScreen() {
   }>();
 
   const [method, setMethod] = useState<Method>(params.source ?? "manual");
-  const [amountText, setAmountText] = useState(() => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const defaultAmount = (() => {
     const cents = parseInt(params.amountCents ?? "", 10);
     return !isNaN(cents) ? (cents / 100).toFixed(2) : "0";
-  });
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-    params.selectedAccountId ?? null,
-  );
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    params.selectedCategoryId ?? null,
-  );
-  const [merchant, setMerchant] = useState(params.merchant ?? "");
-  const [note, setNote] = useState("");
-  const [dateText, setDateText] = useState(() => {
+  })();
+
+  const defaultDate = (() => {
     if (params.date) return params.date;
     const d = new Date();
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     const year = d.getFullYear();
     return `${month}/${day}/${year}`;
+  })();
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<TransactionFormData>({
+    resolver: zodResolver(transactionSchema),
+    defaultValues: {
+      accountId: params.selectedAccountId ?? "",
+      merchant: params.merchant ?? "",
+      amount: defaultAmount,
+      date: defaultDate,
+      note: "",
+      categoryId: params.selectedCategoryId ?? "",
+    },
   });
-  const [isSaving, setIsSaving] = useState(false);
+
+  const selectedAccountId = useWatch({ control, name: "accountId" });
+  const selectedCategoryId = useWatch({ control, name: "categoryId" });
 
   // ── Picker sheet subscriptions ──
   useEffect(() => {
     const unsubAccount = onAccountSelected.subscribe((id) => {
-      setSelectedAccountId(id);
+      setValue("accountId", id, { shouldValidate: true });
     });
     const unsubCategory = onCategorySelected.subscribe((id) => {
-      setSelectedCategoryId(id);
+      setValue("categoryId", id, { shouldValidate: true });
     });
     return () => {
       unsubAccount();
       unsubCategory();
     };
-  }, []);
-
-  const parseAmountCents = useCallback(() => {
-    const clean = amountText.replace(/[$,]/g, "").trim();
-    if (clean === "" || clean === "-") return 0;
-    const num = parseFloat(clean);
-    if (isNaN(num)) return 0;
-    return Math.round(Math.abs(num) * 100);
-  }, [amountText]);
+  }, [setValue]);
 
   const selectedAccount =
     formData.status === "ready"
@@ -155,77 +188,59 @@ export default function AddTransactionScreen() {
         null)
       : null;
 
-  const handleSave = useCallback(async () => {
-    if (!selectedAccountId) {
-      toast.warning("Missing account", {
-        description: "Please select an account.",
-      });
-      return;
-    }
-    if (!merchant.trim()) {
-      toast.warning("Missing merchant", {
-        description: "Please enter a merchant name.",
-      });
-      return;
-    }
+  const onSubmit = useCallback(
+    async (data: TransactionFormData) => {
+      const clean = data.amount.replace(/[$,]/g, "").trim();
+      const amountCents = Math.round(Math.abs(parseFloat(clean)) * 100);
+      const occurredAt = Date.parse(data.date);
+      const finalDate = isNaN(occurredAt) ? Date.now() : occurredAt;
 
-    const amountCents = parseAmountCents();
-    if (amountCents === 0) {
-      toast.warning("Missing amount", {
-        description: "Please enter an amount.",
-      });
-      return;
-    }
+      setIsSaving(true);
+      try {
+        await insertTransaction({
+          accountId: data.accountId,
+          categoryId: data.categoryId,
+          merchant: data.merchant.trim(),
+          amountCents: -amountCents,
+          occurredAt: finalDate,
+          note: (data.note ?? "").trim() || undefined,
+          source: method,
+        });
+        router.back();
+      } catch (err) {
+        toast.error("Could not save", {
+          description:
+            err instanceof Error ? err.message : "Something went wrong.",
+        });
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [method, toast],
+  );
 
-    const occurredAt = Date.parse(dateText);
-    const finalDate = isNaN(occurredAt) ? Date.now() : occurredAt;
-
-    setIsSaving(true);
-    try {
-      await insertTransaction({
-        accountId: selectedAccountId,
-        categoryId: selectedCategoryId,
-        merchant: merchant.trim(),
-        amountCents: -Math.abs(amountCents),
-        occurredAt: finalDate,
-        note: note.trim() || undefined,
-        source: method,
-      });
-      router.back();
-    } catch (err) {
-      toast.error("Could not save", {
-        description:
-          err instanceof Error ? err.message : "Something went wrong.",
-      });
-    } finally {
-      setIsSaving(false);
+  const handleSave = handleSubmit(onSubmit, (fieldErrors) => {
+    const entry = Object.entries(fieldErrors)[0];
+    if (entry) {
+      const [fieldName, error] = entry;
+      const label =
+        fieldName === "accountId"
+          ? "Account"
+          : fieldName === "categoryId"
+            ? "Category"
+            : fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+      toast.warning(label, { description: error.message as string });
     }
-  }, [
-    selectedAccountId,
-    selectedCategoryId,
-    merchant,
-    note,
-    dateText,
-    method,
-    parseAmountCents,
-    toast,
-  ]);
+  });
 
   if (formData.status === "loading") {
     return (
       <View
-        className="flex-1 items-center justify-center pt-safe "
-        style={{
-          backgroundColor: colors.surfaceBg,
-        }}
+        className="flex-1 items-center justify-center pt-safe-offset-5 "
+        style={{ backgroundColor: colors.surfaceBg }}
       >
-        <Text
-          className="text-sm "
-          style={{
-            color: colors.textSecondary,
-          }}
-        >
-          Loading…
+        <Text className="text-sm " style={{ color: colors.textSecondary }}>
+          Loading\u2026
         </Text>
       </View>
     );
@@ -234,17 +249,10 @@ export default function AddTransactionScreen() {
   if (formData.status === "error") {
     return (
       <View
-        className="flex-1 items-center justify-center px-8 pt-safe "
-        style={{
-          backgroundColor: colors.surfaceBg,
-        }}
+        className="flex-1 items-center justify-center px-8 pt-safe-offset-5 "
+        style={{ backgroundColor: colors.surfaceBg }}
       >
-        <Text
-          className="text-center text-sm "
-          style={{
-            color: colors.rust,
-          }}
-        >
+        <Text className="text-center text-sm " style={{ color: colors.rust }}>
           {formData.message}
         </Text>
       </View>
@@ -256,9 +264,7 @@ export default function AddTransactionScreen() {
   return (
     <View
       className="flex-1 pt-safe-offset-5 "
-      style={{
-        backgroundColor: colors.surfaceBg,
-      }}
+      style={{ backgroundColor: colors.surfaceBg }}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -270,6 +276,7 @@ export default function AddTransactionScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* ── Header ── */}
           <View className="mb-6 flex-row items-center justify-between">
             <Pressable
               onPress={() => router.back()}
@@ -277,18 +284,14 @@ export default function AddTransactionScreen() {
             >
               <Text
                 className="text-[14.5px] "
-                style={{
-                  color: colors.textSecondary,
-                }}
+                style={{ color: colors.textSecondary }}
               >
                 Cancel
               </Text>
             </Pressable>
             <Text
               className="font-fraunces-medium text-[18px] "
-              style={{
-                color: colors.textPrimary,
-              }}
+              style={{ color: colors.textPrimary }}
             >
               New expense
             </Text>
@@ -311,27 +314,41 @@ export default function AddTransactionScreen() {
 
           {/*── Amount display ── */}
           <View className="mb-6 items-center">
-            <TextInput
-              value={amountText}
-              onChangeText={setAmountText}
-              onBlur={() => setAmountText(formatAmountOnBlur(amountText))}
-              keyboardType="decimal-pad"
-              placeholder="0.00"
-              placeholderTextColor={colors.textSecondary}
-              style={{
-                textAlign: "center",
-                fontWeight: "600",
-                fontSize: 46,
-                color: colors.brass,
-                minWidth: 120,
-              }}
+            <Controller
+              control={control}
+              name="amount"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={() => {
+                    onBlur();
+                    onChange(formatAmountOnBlur(value));
+                  }}
+                  keyboardType="decimal-pad"
+                  placeholder="0.00"
+                  placeholderTextColor={colors.textSecondary}
+                  style={{
+                    textAlign: "center",
+                    fontWeight: "600",
+                    fontSize: 46,
+                    color: colors.brass,
+                    minWidth: 120,
+                  }}
+                />
+              )}
             />
+            {errors.amount && (
+              <Text className="mt-1 font-mono text-[10px] text-rust">
+                {errors.amount.message}
+              </Text>
+            )}
             {selectedAccount && (
               <Text
                 className="mt-1 font-mono text-[11px] "
                 style={{ color: colors.textSecondary }}
               >
-                {selectedAccount.name} · Balance{" "}
+                {selectedAccount.name} \u00B7 Balance{" "}
                 {formatCurrency(selectedAccount.balanceCents)}
               </Text>
             )}
@@ -358,123 +375,114 @@ export default function AddTransactionScreen() {
 
           {/* ── Field blocks ── */}
           <View className="mb-3 gap-3">
-            <PickerRow
-              label="Account"
-              value={selectedAccount?.name ?? "Select account"}
-              onPress={() => {
-                if (accounts.length === 0) {
-                  toast.warning("No accounts", {
-                    description: "Create an account first.",
-                  });
-                  return;
+            {/* Account picker */}
+            <View>
+              <PickerRow
+                label="Account"
+                value={selectedAccount?.name ?? "Select account"}
+                onPress={() => {
+                  if (accounts.length === 0) {
+                    toast.warning("No accounts", {
+                      description: "Create an account first.",
+                    });
+                    return;
+                  }
+                  router.push("/select-account");
+                }}
+              />
+              {errors.accountId && (
+                <Text className="ml-1 mt-1 font-mono text-[10px] text-rust">
+                  {errors.accountId.message}
+                </Text>
+              )}
+            </View>
+
+            {/* Category picker */}
+            <View>
+              <PickerRow
+                label="Category"
+                value={
+                  selectedCategory
+                    ? `${selectedCategory.icon} ${selectedCategory.name}`
+                    : "Select category"
                 }
-                router.push("/select-account");
-              }}
-            />
-
-            <PickerRow
-              label="Category"
-              value={
-                selectedCategory
-                  ? `${selectedCategory.icon} ${selectedCategory.name}`
-                  : "Select category"
-              }
-              onPress={() => {
-                const expenseCats = categories.filter(
-                  (c) => c.kind === "expense",
-                );
-                if (expenseCats.length === 0) {
-                  toast.warning("No categories", {
-                    description: "Create a category first.",
-                  });
-                  return;
-                }
-                router.push("/select-category");
-              }}
-            />
-
-            <View
-              className="rounded-2xl border   px-4 py-3.5"
-              style={{
-                backgroundColor: colors.surfaceCard,
-                borderColor: colors.hairline,
-              }}
-            >
-              <Text
-                className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] "
-                style={{
-                  color: colors.textSecondary,
+                onPress={() => {
+                  const expenseCats = categories.filter(
+                    (c) => c.kind === "expense",
+                  );
+                  if (expenseCats.length === 0) {
+                    toast.warning("No categories", {
+                      description: "Create a category first.",
+                    });
+                    return;
+                  }
+                  router.push("/select-category");
                 }}
-              >
-                Merchant
-              </Text>
-              <TextInput
-                value={merchant}
-                onChangeText={setMerchant}
-                placeholder="e.g. Whole Foods"
-                placeholderTextColor={colors.textSecondary}
-                style={{
-                  fontSize: 13.5,
-                  color: colors.textPrimary,
-                }}
-                autoCapitalize="words"
-                returnKeyType="next"
               />
+              {errors.categoryId && (
+                <Text className="ml-1 mt-1 font-mono text-[10px] text-rust">
+                  {errors.categoryId.message}
+                </Text>
+              )}
             </View>
 
-            <View
-              className="rounded-2xl border   px-4 py-3.5"
-              style={{
-                backgroundColor: colors.surfaceCard,
-                borderColor: colors.hairline,
-              }}
-            >
-              <Text
-                className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] "
-                style={{ color: colors.textSecondary }}
-              >
-                Note (optional)
-              </Text>
-              <TextInput
-                value={note}
-                onChangeText={setNote}
-                placeholder="Groceries for the week"
-                placeholderTextColor={colors.textSecondary}
-                style={{
-                  fontSize: 13.5,
-                  color: colors.textPrimary,
-                }}
-                returnKeyType="done"
+            {/* Merchant */}
+            <FormField label="Merchant" error={errors.merchant?.message}>
+              <Controller
+                control={control}
+                name="merchant"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    placeholder="e.g. Whole Foods"
+                    placeholderTextColor={colors.textSecondary}
+                    style={{ fontSize: 13.5, color: colors.textPrimary }}
+                    autoCapitalize="words"
+                    returnKeyType="next"
+                  />
+                )}
               />
-            </View>
+            </FormField>
 
-            <View
-              className="rounded-2xl border  px-4 py-3.5"
-              style={{
-                backgroundColor: colors.surfaceCard,
-                borderColor: colors.hairline,
-              }}
-            >
-              <Text
-                className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] "
-                style={{
-                  color: colors.textSecondary,
-                }}
-              >
-                Date
-              </Text>
-              <TextInput
-                value={dateText}
-                onChangeText={setDateText}
-                placeholder="MM/DD/YYYY"
-                placeholderTextColor={colors.textSecondary}
-                style={{
-                  fontSize: 13.5,
-                  color: colors.textPrimary,
-                }}
-                keyboardType="numbers-and-punctuation"
+            {/* Note */}
+            <FormField label="Note (optional)">
+              <Controller
+                control={control}
+                name="note"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    placeholder="Groceries for the week"
+                    placeholderTextColor={colors.textSecondary}
+                    style={{ fontSize: 13.5, color: colors.textPrimary }}
+                    returnKeyType="done"
+                  />
+                )}
               />
-            </View>
+            </FormField>
+
+            {/* Date */}
+            <FormField label="Date" error={errors.date?.message}>
+              <Controller
+                control={control}
+                name="date"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    placeholder="MM/DD/YYYY"
+                    placeholderTextColor={colors.textSecondary}
+                    style={{ fontSize: 13.5, color: colors.textPrimary }}
+                    keyboardType="numbers-and-punctuation"
+                  />
+                )}
+              />
+            </FormField>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

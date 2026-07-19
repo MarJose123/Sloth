@@ -19,6 +19,7 @@ import {
 } from "@/lib/csvParser";
 import { useAccountsData } from "@/hooks/useAccountsData";
 import { insertTransaction } from "@/lib/db/repositories/transactions";
+import { listAllCategories } from "@/lib/db/repositories/categories";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -157,6 +158,16 @@ export default function ImportScreen() {
 
     setIsImporting(true);
     try {
+      // Find a default expense category for imported transactions
+      const allCategories = await listAllCategories();
+      const defaultCategoryId =
+        allCategories.find((c) => c.kind === "expense")?.id ?? "";
+      if (!defaultCategoryId) {
+        toast.error("No expense category", {
+          description: "Create an expense category before importing.",
+        });
+        return;
+      }
       let importedCount = 0;
       for (const row of parsedFile.rawRows) {
         let dateValue = Date.now();
@@ -192,7 +203,7 @@ export default function ImportScreen() {
 
         await insertTransaction({
           accountId: selectedAccountId,
-          categoryId: null,
+          categoryId: defaultCategoryId,
           merchant,
           amountCents,
           occurredAt: dateValue,

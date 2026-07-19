@@ -19,6 +19,19 @@ import {
 } from "@/lib/db/repositories/categories";
 import { useColors } from "@/theme/ThemeContext";
 import { useToast } from "@/hooks/useToast";
+import { useForm, Controller, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// ─── schema ────────────────────────────────────────────────────────────────
+
+const categorySchema = z.object({
+  name: z.string().min(1, "Enter a category name"),
+  icon: z.string().min(1),
+  kind: z.enum(["expense", "income"]),
+});
+
+type CategoryFormData = z.infer<typeof categorySchema>;
 
 // ─── icon library ─────────────────────────────────────────────────────────────
 
@@ -64,10 +77,10 @@ function PreviewRing({ icon }: { icon: string }) {
           r={RADIUS}
           fill="none"
           stroke={ringColor}
-          strokeWidth={1}
+          strokeWidth={3}
         />
       </Svg>
-      <View style={[styles.previewInner, { backgroundColor: "transparent" }]}>
+      <View style={[styles.previewInner, { backgroundColor: ringColor }]}>
         <Text style={styles.previewIcon}>{icon}</Text>
       </View>
     </View>
@@ -85,11 +98,25 @@ export default function CategoryEditorScreen() {
   const categoryId = params.id;
   const isEditing = !!categoryId;
 
-  const [name, setName] = useState("");
-  const [selectedIcon, setSelectedIcon] = useState<string>("🛒");
-  const [selectedKind, setSelectedKind] = useState<CategoryKind>("expense");
   const [isLoadingData, setIsLoadingData] = useState(isEditing);
   const [isSaving, setIsSaving] = useState(false);
+
+  const {
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<CategoryFormData>({
+    resolver: zodResolver(categorySchema),
+    defaultValues: {
+      name: "",
+      icon: "🛒",
+      kind: "expense",
+    },
+  });
+
+  const selectedIcon = useWatch({ control, name: "icon" });
+  const kind = useWatch({ control, name: "kind" });
 
   // Pre-populate fields when editing an existing category
   useEffect(() => {
@@ -100,9 +127,11 @@ export default function CategoryEditorScreen() {
       try {
         const existing = await getCategoryById(categoryId);
         if (cancelled || !existing) return;
-        setName(existing.name);
-        setSelectedIcon(existing.icon);
-        setSelectedKind(existing.kind);
+        reset({
+          name: existing.name,
+          icon: existing.icon,
+          kind: existing.kind,
+        });
       } finally {
         if (!cancelled) setIsLoadingData(false);
       }
@@ -111,49 +140,56 @@ export default function CategoryEditorScreen() {
     return () => {
       cancelled = true;
     };
-  }, [categoryId]);
+  }, [categoryId, reset]);
 
-  const handleSave = useCallback(async () => {
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      toast.warning("Missing name", {
-        description: "Please enter a category name.",
-      });
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      if (isEditing && categoryId) {
-        await updateCategory(categoryId, {
-          name: trimmedName,
-          icon: selectedIcon,
-          colorHex: DEFAULT_COLOR,
-          kind: selectedKind,
+  const onSubmit = useCallback(
+    async (data: CategoryFormData) => {
+      setIsSaving(true);
+      try {
+        if (isEditing && categoryId) {
+          await updateCategory(categoryId, {
+            name: data.name.trim(),
+            icon: data.icon,
+            colorHex: DEFAULT_COLOR,
+            kind: data.kind,
+          });
+        } else {
+          await insertCategory({
+            name: data.name.trim(),
+            icon: data.icon,
+            colorHex: DEFAULT_COLOR,
+            kind: data.kind,
+          });
+        }
+        router.back();
+      } catch (err) {
+        toast.error("Could not save", {
+          description:
+            err instanceof Error ? err.message : "Something went wrong.",
         });
-      } else {
-        await insertCategory({
-          name: trimmedName,
-          icon: selectedIcon,
-          colorHex: DEFAULT_COLOR,
-          kind: selectedKind,
-        });
+      } finally {
+        setIsSaving(false);
       }
-      router.back();
-    } catch (err) {
-      toast.error("Could not save", {
-        description:
-          err instanceof Error ? err.message : "Something went wrong.",
-      });
-    } finally {
-      setIsSaving(false);
+    },
+    [isEditing, categoryId, toast],
+  );
+
+  const handleSave = handleSubmit(onSubmit, (fieldErrors) => {
+    const entry = Object.entries(fieldErrors)[0];
+    if (entry) {
+      const [fieldName, error] = entry;
+      const label =
+        fieldName === "kind"
+          ? "Type"
+          : fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+      toast.warning(label, { description: error.message as string });
     }
-  }, [name, selectedIcon, selectedKind, isEditing, categoryId, toast]);
+  });
 
   if (isLoadingData) {
     return (
       <View className="flex-1 items-center justify-center pt-safe bg-surface-bg">
-        <Text className="text-sm text-text-secondary">Loading…</Text>
+        <Text className="text-sm text-text-secondary">Loading\u2026</Text>
       </View>
     );
   }
@@ -202,15 +238,27 @@ export default function CategoryEditorScreen() {
               <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
                 Name
               </Text>
-              <TextInput
-                value={name}
-                onChangeText={setName}
-                placeholder="e.g. Groceries"
-                placeholderTextColor={colors.textSecondary}
-                className="text-[14px] text-text-primary"
-                autoCapitalize="words"
-                returnKeyType="done"
+              <Controller
+                control={control}
+                name="name"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    placeholder="e.g. Groceries"
+                    placeholderTextColor={colors.textSecondary}
+                    className="text-[14px] text-text-primary"
+                    autoCapitalize="words"
+                    returnKeyType="done"
+                  />
+                )}
               />
+              {errors.name && (
+                <Text className="mt-1 font-mono text-[10px] text-rust">
+                  {errors.name.message}
+                </Text>
+              )}
             </View>
           </View>
 
@@ -224,7 +272,9 @@ export default function CategoryEditorScreen() {
               return (
                 <Pressable
                   key={icon}
-                  onPress={() => setSelectedIcon(icon)}
+                  onPress={() =>
+                    setValue("icon", icon, { shouldValidate: true })
+                  }
                   className={`h-11 w-11 items-center justify-center rounded-[11px] border active:opacity-70 ${
                     active
                       ? "border-brass/60 bg-brass/10"
@@ -242,12 +292,14 @@ export default function CategoryEditorScreen() {
             Type
           </Text>
           <View className="mb-8 flex-row gap-2">
-            {(["expense", "income"] as CategoryKind[]).map((kind) => {
-              const active = selectedKind === kind;
+            {(["expense", "income"] as CategoryKind[]).map((kindOpt) => {
+              const active = kind === kindOpt;
               return (
                 <Pressable
-                  key={kind}
-                  onPress={() => setSelectedKind(kind)}
+                  key={kindOpt}
+                  onPress={() =>
+                    setValue("kind", kindOpt, { shouldValidate: true })
+                  }
                   className={`flex-1 flex-row items-center gap-2 rounded-2xl border p-3.5 active:opacity-80 ${
                     active
                       ? "border-brass/50 bg-brass/10"
@@ -259,14 +311,14 @@ export default function CategoryEditorScreen() {
                       active ? "text-brass" : "text-text-secondary"
                     }`}
                   >
-                    {kind === "expense" ? "\u2212" : "+"}
+                    {kindOpt === "expense" ? "\u2212" : "+"}
                   </Text>
                   <Text
                     className={`text-[12.5px] font-manrope-semibold capitalize ${
                       active ? "text-text-primary" : "text-text-secondary"
                     }`}
                   >
-                    {kind}
+                    {kindOpt}
                   </Text>
                 </Pressable>
               );

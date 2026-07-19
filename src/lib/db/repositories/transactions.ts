@@ -137,7 +137,7 @@ export async function insertTransaction(
     [
       id,
       input.accountId,
-      input.categoryId ?? null,
+      input.categoryId,
       input.merchant.trim(),
       input.amountCents,
       input.occurredAt,

@@ -28,7 +28,7 @@ export const SCHEMA_STATEMENTS = [
   `CREATE TABLE IF NOT EXISTS transactions (
     id TEXT PRIMARY KEY NOT NULL,
     account_id TEXT NOT NULL REFERENCES accounts(id),
-    category_id TEXT REFERENCES categories(id),
+    category_id TEXT NOT NULL REFERENCES categories(id),
     merchant TEXT NOT NULL,
     amount_cents INTEGER NOT NULL,
     occurred_at INTEGER NOT NULL,

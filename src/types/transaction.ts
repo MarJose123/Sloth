@@ -33,7 +33,7 @@ export interface TransactionLedgerItem {
 
 export interface InsertTransactionInput {
   accountId: string;
-  categoryId: string | null;
+  categoryId: string;
   merchant: string;
   /**
    * Signed cents — negative = expense, positive = income.

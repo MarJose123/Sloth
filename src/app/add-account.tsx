@@ -27,8 +27,21 @@ import { useColors } from "@/theme/ThemeContext";
 import { colors } from "@/theme/colors";
 import { formatAmountOnBlur } from "@/lib/format";
 import { BANK_LOGOS } from "@/lib/logoResolver";
-import Color from "color";
+import { FormField } from "@/components/ui/FormField";
 import { useToast } from "@/hooks/useToast";
+import { useForm, Controller, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import Color from "color";
+
+// ─── schema ────────────────────────────────────────────────────────────────
+
+const accountSchema = z.object({
+  name: z.string().min(1, "Enter an account name"),
+  balance: z.string().optional(),
+});
+
+type AccountFormData = z.infer<typeof accountSchema>;
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -51,11 +64,11 @@ const BADGE_COLORS = [
   colors.textSecondary,
   colors.ochre,
   colors.brassSoft,
-  "#D48FB8", // rose/pink
-  "#A78BDB", // violet
-  "#6FC9B8", // teal
-  "#F0C27A", // warm yellow
-  "#8CA89B", // muted mint
+  "#D48FB8",
+  "#A78BDB",
+  "#6FC9B8",
+  "#F0C27A",
+  "#8CA89B",
 ] as const;
 
 const BADGE_MODES: {
@@ -170,10 +183,8 @@ function LogoGridItem({
 export default function AddAccountScreen() {
   const c = useColors();
   const toast = useToast();
-  const [name, setName] = useState("");
   const [selectedType, setSelectedType] = useState<AccountType>("checking");
   const [selectedColorIdx, setSelectedColorIdx] = useState(0);
-  const [balanceText, setBalanceText] = useState("0.00");
   const [isSaving, setIsSaving] = useState(false);
 
   // Badge mode state
@@ -184,6 +195,19 @@ export default function AddAccountScreen() {
   const [customLogoUri, setCustomLogoUri] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<AccountFormData>({
+    resolver: zodResolver(accountSchema),
+    defaultValues: {
+      name: "",
+      balance: "0.00",
+    },
+  });
+
+  const name = useWatch({ control, name: "name" });
   const selectedColor = BADGE_COLORS[selectedColorIdx] ?? colors.brass;
   const initials = getInitials(name);
   const hasName = name.trim().length > 0;
@@ -201,34 +225,41 @@ export default function AddAccountScreen() {
     previewSource = { uri: customLogoUri };
   }
 
-  const handleSave = useCallback(async () => {
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      toast.warning("Missing name", {
-        description: "Please enter an account name.",
-      });
-      return;
-    }
+  const onSubmit = useCallback(
+    async (data: AccountFormData) => {
+      setIsSaving(true);
+      try {
+        await insertAccount({
+          name: data.name.trim(),
+          type: selectedType,
+          colorHex: selectedColor,
+          logoKey: resolvedLogoKey,
+          startingBalanceCents: parseBalanceCents(data.balance ?? "0.00"),
+        });
+        router.back();
+      } catch (err) {
+        toast.error("Could not save account", {
+          description:
+            err instanceof Error ? err.message : "Something went wrong.",
+        });
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [selectedType, selectedColor, resolvedLogoKey, toast],
+  );
 
-    setIsSaving(true);
-    try {
-      await insertAccount({
-        name: trimmedName,
-        type: selectedType,
-        colorHex: selectedColor,
-        logoKey: resolvedLogoKey,
-        startingBalanceCents: parseBalanceCents(balanceText),
-      });
-      router.back();
-    } catch (err) {
-      toast.error("Could not save account", {
-        description:
-          err instanceof Error ? err.message : "Something went wrong.",
-      });
-    } finally {
-      setIsSaving(false);
+  const handleSave = handleSubmit(onSubmit, (fieldErrors) => {
+    const entry = Object.entries(fieldErrors)[0];
+    if (entry) {
+      const [fieldName, error] = entry;
+      const label =
+        fieldName === "name"
+          ? "Name"
+          : fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+      toast.warning(label, { description: error.message as string });
     }
-  }, [name, selectedType, selectedColor, resolvedLogoKey, balanceText, toast]);
+  });
 
   // ── Custom image picker ──────────────────────────────────────────────────
 
@@ -245,7 +276,6 @@ export default function AddAccountScreen() {
 
       setIsProcessing(true);
 
-      // Resize to a max dimension suitable for badge display
       const context = ImageManipulator.manipulate(asset.uri);
       context.resize({ width: 400 });
       const imageRef = await context.renderAsync();
@@ -254,7 +284,6 @@ export default function AddAccountScreen() {
         compress: 0.9,
       });
 
-      // Copy the processed image to persistent storage
       const destDir = `${documentDirectory}account-logos/`;
       await makeDirectoryAsync(destDir, { intermediates: true });
       const dest = `${destDir}${Date.now()}.png`;
@@ -285,7 +314,6 @@ export default function AddAccountScreen() {
         compress: 0.9,
       });
 
-      // Overwrite the stored copy with the cropped version
       const destDir = `${documentDirectory}account-logos/`;
       await makeDirectoryAsync(destDir, { intermediates: true });
       const dest = `${destDir}${Date.now()}-cropped.png`;
@@ -299,7 +327,6 @@ export default function AddAccountScreen() {
     }
   }, [customLogoUri, toast]);
 
-  // Reset logo selection when switching away from logo or custom mode
   const handleBadgeModeChange = (mode: "color" | "logo" | "custom") => {
     setBadgeMode(mode);
     if (mode !== "logo") setSelectedLogoKey(null);
@@ -352,27 +379,27 @@ export default function AddAccountScreen() {
           </View>
 
           {/* ── Account name ── */}
-          <View
-            className="mb-5 rounded-2xl border px-4 py-3.5"
-            style={{ backgroundColor: c.surfaceCard, borderColor: c.hairline }}
-          >
-            <Text
-              className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em]"
-              style={{ color: c.textSecondary }}
-            >
-              Account name
-            </Text>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="e.g. BPI Savings"
-              placeholderTextColor={c.textSecondary}
-              className="text-sm"
-              autoCapitalize="words"
-              returnKeyType="next"
-              style={{ color: c.textPrimary }}
+          <FormField label="Account name" error={errors.name?.message}>
+            <Controller
+              control={control}
+              name="name"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  placeholder="e.g. BPI Savings"
+                  placeholderTextColor={c.textSecondary}
+                  className="text-sm"
+                  autoCapitalize="words"
+                  returnKeyType="next"
+                  style={{ color: c.textPrimary }}
+                />
+              )}
             />
-          </View>
+          </FormField>
+
+          <View className="mb-5" />
 
           {/* ── Type selector ── */}
           <Text
@@ -537,7 +564,7 @@ export default function AddAccountScreen() {
                     className="text-[13px] font-manrope-semibold"
                     style={{ color: c.textSecondary }}
                   >
-                    Processing image…
+                    Processing image\u2026
                   </Text>
                 </View>
               ) : customLogoUri ? (
@@ -602,28 +629,27 @@ export default function AddAccountScreen() {
           )}
 
           {/* ── Starting balance ── */}
-          <View
-            className="mb-8 rounded-2xl border px-4 py-3.5"
-            style={{ borderColor: c.hairline, backgroundColor: c.surfaceCard }}
-          >
-            <Text
-              className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em]"
-              style={{ color: c.textSecondary }}
-            >
-              Starting balance
-            </Text>
-            <TextInput
-              value={balanceText}
-              onChangeText={setBalanceText}
-              onBlur={() => setBalanceText(formatAmountOnBlur(balanceText))}
-              placeholder="0.00"
-              placeholderTextColor={c.textSecondary}
-              keyboardType="decimal-pad"
-              className="font-fraunces-medium text-[20px]"
-              returnKeyType="done"
-              style={{ color: c.textPrimary }}
+          <FormField label="Starting balance">
+            <Controller
+              control={control}
+              name="balance"
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={() => onChange(formatAmountOnBlur(value))}
+                  placeholder="0.00"
+                  placeholderTextColor={c.textSecondary}
+                  keyboardType="decimal-pad"
+                  className="font-fraunces-medium text-[20px]"
+                  returnKeyType="done"
+                  style={{ color: c.textPrimary }}
+                />
+              )}
             />
-          </View>
+          </FormField>
+
+          <View className="mb-8" />
 
           {/* ── Save button ── */}
           <Pressable
@@ -639,7 +665,7 @@ export default function AddAccountScreen() {
               className="text-center font-manrope-bold text-sm"
               style={{ color: colors.ink }}
             >
-              {isSaving ? "Adding…" : "Add account"}
+              {isSaving ? "Adding\u2026" : "Add account"}
             </Text>
           </Pressable>
         </ScrollView>
