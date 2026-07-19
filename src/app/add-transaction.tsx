@@ -76,6 +76,8 @@ export default function AddTransactionScreen() {
     amountCents?: string;
     date?: string;
     source?: Method;
+    selectedAccountId?: string;
+    selectedCategoryId?: string;
   }>();
 
   const [method, setMethod] = useState<Method>(params.source ?? "manual");
@@ -84,10 +86,10 @@ export default function AddTransactionScreen() {
     return !isNaN(cents) ? (cents / 100).toFixed(2) : "0";
   });
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-    null,
+    params.selectedAccountId ?? null,
   );
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    null,
+    params.selectedCategoryId ?? null,
   );
   const [merchant, setMerchant] = useState(params.merchant ?? "");
   const [note, setNote] = useState("");
@@ -279,17 +281,7 @@ export default function AddTransactionScreen() {
                   Alert.alert("No accounts", "Create an account first.");
                   return;
                 }
-                const accountButtons: { text: string; onPress?: () => void; style?: "cancel" }[] =
-                  accounts.map((a) => ({
-                    text: a.name,
-                    onPress: () => setSelectedAccountId(a.id),
-                  }));
-                accountButtons.push({ text: "Cancel", style: "cancel" });
-                Alert.alert(
-                  "Select Account",
-                  "Choose an account:",
-                  accountButtons,
-                );
+                router.push("/select-account?returnTo=add-transaction");
               }}
             />
 
@@ -301,24 +293,14 @@ export default function AddTransactionScreen() {
                   : "Select category"
               }
               onPress={() => {
-                const expenseCategories = categories.filter(
+                const expenseCats = categories.filter(
                   (c) => c.kind === "expense",
                 );
-                if (expenseCategories.length === 0) {
+                if (expenseCats.length === 0) {
                   Alert.alert("No categories", "Create a category first.");
                   return;
                 }
-                const categoryButtons: { text: string; onPress?: () => void; style?: "cancel" }[] =
-                  expenseCategories.map((c) => ({
-                    text: `${c.icon} ${c.name}`,
-                    onPress: () => setSelectedCategoryId(c.id),
-                  }));
-                categoryButtons.push({ text: "Cancel", style: "cancel" });
-                Alert.alert(
-                  "Select Category",
-                  "Choose a category:",
-                  categoryButtons,
-                );
+                router.push("/select-category?returnTo=add-transaction");
               }}
             />
 
