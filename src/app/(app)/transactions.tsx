@@ -133,7 +133,7 @@ export default function TransactionsScreen() {
             Transactions
           </Text>
           <Pressable
-            onPress={() => router.push("/transaction/new")}
+            onPress={() => router.push("/transaction/create")}
             className="active:opacity-60"
           >
             <Text
@@ -186,7 +186,7 @@ export default function TransactionsScreen() {
               import from a CSV file.
             </Text>
             <Pressable
-              onPress={() => router.push("/transaction/new")}
+              onPress={() => router.push("/transaction/create")}
               className="rounded-2xl  px-6 py-3.5 active:opacity-80"
               style={{
                 backgroundColor: colors.brass,

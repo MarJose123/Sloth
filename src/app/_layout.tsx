@@ -66,7 +66,7 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
-              name="transaction/new"
+              name="transaction/create"
               options={{
                 animation: "slide_from_right",
                 animationDuration: 300,

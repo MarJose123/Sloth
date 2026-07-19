@@ -21,7 +21,7 @@ const ACTIONS: FabAction[] = [
     icon: "pen-line",
     label: "Manual transaction",
     description: "Enter an expense or income by hand",
-    route: "/transaction/new",
+    route: "/transaction/create",
   },
   {
     icon: "camera",

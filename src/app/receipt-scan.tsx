@@ -70,7 +70,7 @@ export default function ReceiptScanScreen() {
 
     // Pass detected values to the new transaction screen
     router.replace({
-      pathname: "/transaction/new",
+      pathname: "/transaction/create",
       params: {
         merchant: detected.merchant ?? "",
         amountCents: detected.amountCents?.toString() ?? "",

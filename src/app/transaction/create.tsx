@@ -13,7 +13,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useAddTransactionData } from "@/hooks/useAddTransactionData";
 import { insertTransaction } from "@/lib/db/repositories/transactions";
 import { formatCurrency } from "@/lib/format";
-import { colors } from "@/theme/colors";
+import { useColors } from "@/theme/ThemeContext";
 
 type Method = "manual" | "scan" | "import";
 
@@ -69,6 +69,7 @@ function PickerRow({
 }
 
 export default function AddTransactionScreen() {
+  const colors = useColors();
   const formData = useAddTransactionData();
   const params = useLocalSearchParams<{
     merchant?: string;
