@@ -10,10 +10,10 @@ import {
   View,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { useAddTransactionData } from "@/hooks/useAddTransactionData";
-import { insertTransaction } from "@/lib/db/repositories/transactions";
-import { formatCurrency } from "@/lib/format";
-import { useColors } from "@/theme/ThemeContext";
+import { useAddTransactionData } from "../hooks/useAddTransactionData";
+import { insertTransaction } from "../lib/db/repositories/transactions";
+import { formatCurrency } from "../lib/format";
+import { useColors } from "../theme/ThemeContext";
 
 type Method = "manual" | "scan" | "import";
 
@@ -96,7 +96,6 @@ export default function AddTransactionScreen() {
   );
   const [isSaving, setIsSaving] = useState(false);
 
-  // Parse amount: user types "12.50" → 1250 cents (expense = negative)
   const parseAmountCents = useCallback(() => {
     const clean = amountText.replace(/[$,]/g, "").trim();
     if (clean === "" || clean === "-") return 0;
@@ -132,7 +131,6 @@ export default function AddTransactionScreen() {
       return;
     }
 
-    // Parse date — default to today if invalid
     const occurredAt = Date.parse(dateText);
     const finalDate = isNaN(occurredAt) ? Date.now() : occurredAt;
 
@@ -142,7 +140,7 @@ export default function AddTransactionScreen() {
         accountId: selectedAccountId,
         categoryId: selectedCategoryId,
         merchant: merchant.trim(),
-        amountCents: -Math.abs(amountCents), // expense = negative cents
+        amountCents: -Math.abs(amountCents),
         occurredAt: finalDate,
         note: note.trim() || undefined,
         source: method,
@@ -198,7 +196,6 @@ export default function AddTransactionScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* ── Header ── */}
           <View className="mb-6 flex-row items-center justify-between">
             <Pressable
               onPress={() => router.back()}
@@ -267,8 +264,6 @@ export default function AddTransactionScreen() {
               label="Account"
               value={selectedAccount?.name ?? "Select account"}
               onPress={() => {
-                // Toggle between first account and null for quick demo;
-                // a full picker modal would be used in production.
                 const next =
                   selectedAccountId === null && accounts.length > 0
                     ? accounts[0].id
