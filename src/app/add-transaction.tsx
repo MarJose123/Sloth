@@ -12,7 +12,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { useAddTransactionData } from "@/hooks/useAddTransactionData";
 import { useColors } from "@/theme/ThemeContext";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatAmountOnBlur } from "@/lib/format";
 import { insertTransaction } from "@/lib/db/repositories/transactions";
 
 type Method = "manual" | "scan" | "import";
@@ -91,9 +91,14 @@ export default function AddTransactionScreen() {
   );
   const [merchant, setMerchant] = useState(params.merchant ?? "");
   const [note, setNote] = useState("");
-  const [dateText, setDateText] = useState(
-    params.date ?? new Date().toISOString().slice(0, 10),
-  );
+  const [dateText, setDateText] = useState(() => {
+    if (params.date) return params.date;
+    const d = new Date();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${month}/${day}/${year}`;
+  });
   const [isSaving, setIsSaving] = useState(false);
 
   const parseAmountCents = useCallback(() => {
@@ -225,6 +230,7 @@ export default function AddTransactionScreen() {
             <TextInput
               value={amountText}
               onChangeText={setAmountText}
+              onBlur={() => setAmountText(formatAmountOnBlur(amountText))}
               keyboardType="decimal-pad"
               placeholder="0.00"
               placeholderTextColor={colors.textSecondary}
@@ -269,14 +275,21 @@ export default function AddTransactionScreen() {
               label="Account"
               value={selectedAccount?.name ?? "Select account"}
               onPress={() => {
-                const next =
-                  selectedAccountId === null && accounts.length > 0
-                    ? accounts[0].id
-                    : accounts.length > 1 &&
-                        accounts[0].id === selectedAccountId
-                      ? accounts[1].id
-                      : null;
-                setSelectedAccountId(next);
+                if (accounts.length === 0) {
+                  Alert.alert("No accounts", "Create an account first.");
+                  return;
+                }
+                const accountButtons: { text: string; onPress?: () => void; style?: "cancel" }[] =
+                  accounts.map((a) => ({
+                    text: a.name,
+                    onPress: () => setSelectedAccountId(a.id),
+                  }));
+                accountButtons.push({ text: "Cancel", style: "cancel" });
+                Alert.alert(
+                  "Select Account",
+                  "Choose an account:",
+                  accountButtons,
+                );
               }}
             />
 
@@ -291,15 +304,21 @@ export default function AddTransactionScreen() {
                 const expenseCategories = categories.filter(
                   (c) => c.kind === "expense",
                 );
-                if (expenseCategories.length === 0) return;
-                const currentIdx = expenseCategories.findIndex(
-                  (c) => c.id === selectedCategoryId,
+                if (expenseCategories.length === 0) {
+                  Alert.alert("No categories", "Create a category first.");
+                  return;
+                }
+                const categoryButtons: { text: string; onPress?: () => void; style?: "cancel" }[] =
+                  expenseCategories.map((c) => ({
+                    text: `${c.icon} ${c.name}`,
+                    onPress: () => setSelectedCategoryId(c.id),
+                  }));
+                categoryButtons.push({ text: "Cancel", style: "cancel" });
+                Alert.alert(
+                  "Select Category",
+                  "Choose a category:",
+                  categoryButtons,
                 );
-                const nextIdx =
-                  currentIdx < expenseCategories.length - 1
-                    ? currentIdx + 1
-                    : 0;
-                setSelectedCategoryId(expenseCategories[nextIdx].id);
               }}
             />
 
@@ -345,7 +364,7 @@ export default function AddTransactionScreen() {
               <TextInput
                 value={dateText}
                 onChangeText={setDateText}
-                placeholder="YYYY-MM-DD"
+                placeholder="MM/DD/YYYY"
                 placeholderTextColor={colors.textSecondary}
                 style={{
                   fontSize: 13.5,

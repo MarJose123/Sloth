@@ -26,6 +26,7 @@ import { Lucide } from "@react-native-vector-icons/lucide";
 import type { LucideIconName } from "@react-native-vector-icons/lucide";
 import { useColors, useTheme } from "@/theme/ThemeContext";
 import { colors } from "@/theme/colors";
+import { formatAmountOnBlur } from "@/lib/format";
 import { BANK_LOGOS } from "@/lib/logoResolver";
 import Color from "color";
 
@@ -611,6 +612,7 @@ export default function AddAccountScreen() {
             <TextInput
               value={balanceText}
               onChangeText={setBalanceText}
+              onBlur={() => setBalanceText(formatAmountOnBlur(balanceText))}
               placeholder="0.00"
               placeholderTextColor={c.textSecondary}
               keyboardType="decimal-pad"

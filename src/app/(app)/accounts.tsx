@@ -6,6 +6,8 @@ import {
   ScrollView,
   Text,
   View,
+  Alert,
+  TextInput,
 } from "react-native";
 import { router } from "expo-router";
 import { documentDirectory } from "expo-file-system/legacy";
@@ -14,6 +16,7 @@ import type { AccountWithBalance } from "@/lib/db/repositories/accounts";
 import { formatCurrency } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
 import { resolveLogoSrc } from "@/lib/logoResolver";
+import { updateAccount } from "@/lib/db/repositories/accounts";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -41,8 +44,26 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
   const colors = useColors();
   const logoSrc = resolveLogoSrc(account.logoKey);
 
+  const handleEdit = () => {
+    Alert.alert(
+      "Account",
+      account.name,
+      [
+        {
+          text: "Edit name",
+          onPress: () => {
+            // Navigate to add-account in edit mode
+            router.push("/add-account?editId=" + account.id);
+          },
+        },
+        { text: "Cancel", style: "cancel" },
+      ],
+    );
+  };
+
   return (
     <Pressable
+      onPress={handleEdit}
       className="mb-3 flex-row items-center gap-3 rounded-2xl border p-4 active:opacity-80"
       style={{
         backgroundColor: colors.surfaceCard,

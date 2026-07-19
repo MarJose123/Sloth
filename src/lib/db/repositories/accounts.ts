@@ -89,3 +89,25 @@ export async function insertAccount(
 
   return id;
 }
+
+export interface UpdateAccountInput {
+  id: string;
+  name: string;
+  type: AccountType;
+  colorHex: string;
+  logoKey: string | null;
+}
+
+export async function updateAccount(input: UpdateAccountInput): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `UPDATE accounts SET name = ?, type = ?, color_hex = ?, logo_key = ? WHERE id = ?;`,
+    [
+      input.name.trim(),
+      input.type,
+      input.colorHex,
+      input.logoKey ?? null,
+      input.id,
+    ],
+  );
+}
