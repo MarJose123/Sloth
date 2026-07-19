@@ -10,10 +10,10 @@ import {
   View,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { useAddTransactionData } from "../hooks/useAddTransactionData";
-import { insertTransaction } from "../lib/db/repositories/transactions";
-import { formatCurrency } from "../lib/format";
-import { useColors } from "../theme/ThemeContext";
+import { useAddTransactionData } from "@/hooks/useAddTransactionData";
+import { insertTransaction } from "@/lib/db/repositories/transactions";
+import { formatCurrency } from "@/lib/format";
+import { useColors } from "@/theme/ThemeContext";
 
 type Method = "manual" | "scan" | "import";
 
