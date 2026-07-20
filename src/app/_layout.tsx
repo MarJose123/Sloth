@@ -60,7 +60,21 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
+              name="edit-account"
+              options={{
+                animation: "slide_from_right",
+                animationDuration: 300,
+              }}
+            />
+            <Stack.Screen
               name="category-editor"
+              options={{
+                animation: "slide_from_right",
+                animationDuration: 300,
+              }}
+            />
+            <Stack.Screen
+              name="edit-category"
               options={{
                 animation: "slide_from_right",
                 animationDuration: 300,

@@ -273,7 +273,7 @@ export default function CategoriesScreen() {
               totalExpenseCents={totalExpenseCents}
               onPress={() =>
                 router.push({
-                  pathname: "/category-editor",
+                  pathname: "/edit-category",
                   params: { id: category.id },
                 })
               }

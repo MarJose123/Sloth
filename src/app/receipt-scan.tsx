@@ -1,110 +1,142 @@
-import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { router } from "expo-router";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import { Lucide } from "@react-native-vector-icons/lucide";
-import { ArrowRightIcon, XIcon } from "@/components/navigation/icons";
-import { useColors } from "@/theme/ThemeContext";
-import { toast } from "@/hooks/useToast";
-import { extractReceiptData, type OcrResult } from "@/lib/ocr";
-
-// ─── types ────────────────────────────────────────────────────────────────────
-
-interface DetectedReceipt extends OcrResult {
-  formattedAmount: string;
-}
-
-// ─── screen ───────────────────────────────────────────────────────────────────
-
 /**
  * Receipt scan screen — Screen 13.
  *
- * Uses `expo-camera` for capture and `extractReceiptData` (OCR shim)
- * for processing. Detected values can be confirmed to pre-fill the
- * Add Transaction form.
+ * Uses `expo-camera` for still-image capture and `@/lib/ocr` for on-device
+ * receipt parsing via ML Kit. Detected fields can be confirmed to pre-fill
+ * the Add Transaction form.
+ *
+ * Ref: Sloth app mockup.html Screen 13.
  */
-export default function ReceiptScanScreen() {
-  const colors = useColors();
-  const [permission, requestPermission] = useCameraPermissions();
-  const [camera, setCamera] = useState<CameraView | null>(null);
-  const [detected, setDetected] = useState<DetectedReceipt | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
 
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { router } from "expo-router";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { Lucide } from "@react-native-vector-icons/lucide";
+import { useColors } from "@/theme/ThemeContext";
+import { colors } from "@/theme/colors";
+import { useToast } from "@/hooks/useToast";
+import {
+  extractReceiptData,
+  isOcrAvailable,
+  formatPhilippineCurrency,
+  formatReceiptDate,
+} from "@/lib/ocr";
+import type { OcrResult } from "@/types";
+
+// ─── screen ───────────────────────────────────────────────────────────────────
+
+export default function ReceiptScanScreen() {
+  const c = useColors();
+  const toast = useToast();
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [result, setResult] = useState<OcrResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Request camera permission on mount
   useEffect(() => {
     if (permission && !permission.granted && permission.canAskAgain) {
       requestPermission();
     }
   }, [permission, requestPermission]);
 
-  const handleShutter = async () => {
-    if (isProcessing || !camera) return;
+  // ── Capture + OCR ─────────────────────────────────────────────────────────
+
+  const handleShutter = useCallback(async () => {
+    if (isProcessing || !cameraRef.current) return;
+
+    // Check OCR availability
+    if (!isOcrAvailable()) {
+      setError("OCR is not available on this device");
+      toast.error("OCR Unavailable", {
+        description: "Receipt scanning is not supported on this device.",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+    setResult(null);
 
     try {
-      setIsProcessing(true);
-      const photo = await camera.takePictureAsync({
+      const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
         skipProcessing: false,
       });
 
-      if (photo) {
-        const result = await extractReceiptData(photo.uri);
-        setDetected({
-          ...result,
-          formattedAmount: result.amountCents
-            ? (result.amountCents / 100).toLocaleString("en-US", {
-                style: "currency",
-                currency: "USD",
-              })
-            : "—",
-        });
+      if (!photo) {
+        throw new Error("Camera returned no image");
       }
+
+      const ocrResult = await extractReceiptData(photo.uri);
+      setResult(ocrResult);
     } catch (err) {
-      toast.error("Capture Error", {
-        description: "Failed to take photo or process OCR.",
+      const message =
+        err instanceof Error ? err.message : "Failed to process receipt";
+      setError(message);
+      toast.error("Scan Error", {
+        description: message,
       });
-      console.error(err);
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [isProcessing, toast]);
 
-  const handleConfirm = () => {
-    if (!detected) return;
+  // ── Confirm → pre-fill Add Transaction ──────────────────────────────────
 
-    // Pass detected values to the new transaction screen
+  const handleConfirm = useCallback(() => {
+    if (!result) return;
+
     router.replace({
       pathname: "/add-transaction",
       params: {
-        merchant: detected.merchant ?? "",
-        amountCents: detected.amountCents?.toString() ?? "",
-        date: detected.date ?? "",
+        merchant: result.merchant ?? "",
+        amountCents: result.amountCents?.toString() ?? "",
+        date: result.date ?? "",
         source: "scan",
       },
     });
-  };
+  }, [result]);
+
+  // ── Scan again (retake) ──────────────────────────────────────────────────
+
+  const handleRetake = useCallback(() => {
+    setResult(null);
+    setError(null);
+  }, []);
+
+  // ── Permission loading ───────────────────────────────────────────────────
 
   if (!permission) {
-    return <View className="bg-surface-bg" style={styles.root} />;
+    return (
+      <View className="flex-1 items-center justify-center bg-surface-bg">
+        <Text
+          className="text-sm font-manrope"
+          style={{ color: c.textSecondary }}
+        >
+          {"Requesting camera permission\u2026"}
+        </Text>
+      </View>
+    );
   }
+
+  // ── Permission denied ────────────────────────────────────────────────────
 
   if (!permission.granted) {
     return (
-      <View
-        className="bg-surface-bg"
-        style={[
-          styles.root,
-          {
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 20,
-          },
-        ]}
-      >
+      <View className="flex-1 items-center justify-center bg-surface-bg px-5">
         <Text
-          className="text-text-primary"
+          className="mb-5 text-center text-sm leading-[1.55]"
           style={{
-            textAlign: "center",
-            marginBottom: 20,
+            color: c.textPrimary,
             fontFamily: "Manrope_400Regular",
           }}
         >
@@ -112,14 +144,12 @@ export default function ReceiptScanScreen() {
         </Text>
         <Pressable
           onPress={requestPermission}
-          className="bg-brass"
-          style={{
-            paddingHorizontal: 20,
-            paddingVertical: 12,
-            borderRadius: 12,
-          }}
+          className="rounded-2xl bg-brass px-5 py-3 active:opacity-80"
         >
-          <Text className="text-ink" style={{ fontFamily: "Manrope_700Bold" }}>
+          <Text
+            className="text-sm font-manrope-bold"
+            style={{ color: colors.ink }}
+          >
             Grant Permission
           </Text>
         </Pressable>
@@ -127,119 +157,220 @@ export default function ReceiptScanScreen() {
     );
   }
 
+  // ── Main view ────────────────────────────────────────────────────────────
+
   return (
-    <View className="bg-surface-bg" style={styles.root}>
+    <View className="flex-1 bg-surface-bg">
       {/* ── Camera viewport ── */}
       <CameraView
-        ref={(ref) => setCamera(ref)}
-        style={styles.viewport}
+        ref={cameraRef}
+        style={StyleSheet.absoluteFill}
         facing="back"
-        barcodeScannerSettings={{
-          barcodeTypes: ["qr"],
-        }}
       />
 
+      {/* ── Processing overlay ── */}
+      {isProcessing && (
+        <View style={styles.overlay}>
+          <View
+            className="items-center rounded-2xl px-8 py-6"
+            style={{ backgroundColor: c.surfaceCard }}
+          >
+            <ActivityIndicator size="large" color={colors.brass} />
+            <Text
+              className="mt-4 text-sm font-manrope-semibold"
+              style={{ color: c.textPrimary }}
+            >
+              {"Processing receipt\u2026"}
+            </Text>
+            <Text
+              className="mt-1 text-xs font-manrope"
+              style={{ color: c.textSecondary }}
+            >
+              {"Recognising text on-device"}
+            </Text>
+          </View>
+        </View>
+      )}
+
       {/* ── Top bar ── */}
-      <View style={styles.topBar} className="pt-safe">
+      <View className="pt-safe" style={styles.topBar}>
         <Pressable
           onPress={() => router.back()}
           hitSlop={20}
           className="active:opacity-60"
         >
-          <XIcon size={24} color={colors.textSecondary} />
+          <Lucide name="x" size={24} color={c.textSecondary} />
         </Pressable>
-
-        <Text className="text-text-secondary" style={[styles.flashLabel]}>
+        <Text
+          className="text-xs font-mono tracking-[0.06em]"
+          style={{ color: c.textSecondary }}
+        >
           Flash: Auto
         </Text>
       </View>
 
-      {/* ── Scan caption ── */}
-      {!detected && (
-        <Text className="text-text-secondary" style={[styles.caption]}>
-          Align receipt in frame · processed on-device
+      {/* ── Scan caption (only when idle) ── */}
+      {!result && !error && !isProcessing && (
+        <Text
+          className="font-mono text-xs tracking-[0.04em]"
+          style={styles.caption}
+        >
+          {"Align receipt in frame \u00B7 processed on-device"}
         </Text>
       )}
 
-      {/* ── Receipt frame overlay ── */}
-      {!detected && (
-        <View className="border-brass" style={[styles.receiptFrame]}>
-          {/* Animated scan-line — static in scaffold */}
-          <View className="bg-brass" style={[styles.scanLine]} />
+      {/* ── Receipt frame overlay (only when idle) ── */}
+      {!result && !error && !isProcessing && (
+        <View style={[styles.receiptFrame, { borderColor: colors.brass }]}>
+          <View style={[styles.scanLine, { backgroundColor: colors.brass }]} />
+        </View>
+      )}
+
+      {/* ── Error display ── */}
+      {error && !isProcessing && (
+        <View
+          className="absolute bottom-44 left-5 right-5 z-10 rounded-2xl border px-4 py-4"
+          style={{
+            backgroundColor: c.surfaceCard,
+            borderColor: colors.rust,
+          }}
+        >
+          <View className="flex-row items-center gap-2">
+            <Lucide name="triangle-alert" size={16} color={colors.rust} />
+            <Text
+              className="text-sm font-manrope-semibold"
+              style={{ color: colors.rust }}
+            >
+              {error}
+            </Text>
+          </View>
+          <Pressable onPress={handleRetake} className="mt-3 active:opacity-60">
+            <Text
+              className="text-center text-xs font-manrope-semibold"
+              style={{ color: colors.brass }}
+            >
+              Try again
+            </Text>
+          </Pressable>
         </View>
       )}
 
       {/* ── Detected card ── */}
-      {detected && (
+      {result && !isProcessing && (
         <View
-          className="bg-surface-card border border-hairline"
-          style={[styles.detectedCard]}
+          className="absolute bottom-44 left-5 right-5 z-10 rounded-2xl border px-4 py-4"
+          style={{
+            backgroundColor: c.surfaceCard,
+            borderColor: c.hairline,
+          }}
         >
-          <View className="flex-row items-center gap-1.5">
-            <Lucide name="circle-dot" size={14} color={colors.sage} />
-            <Text className="text-sage" style={[styles.detectedTag]}>
+          {/* Detected tag */}
+          <View className="mb-3 flex-row items-center gap-1.5">
+            <Lucide name="circle-dot" size={12} color={colors.sage} />
+            <Text
+              className="text-[11px] font-mono"
+              style={{ color: colors.sage }}
+            >
               Detected on-device
             </Text>
           </View>
 
-          <View style={styles.detectedRow}>
+          {/* Merchant */}
+          <View className="mb-2.5 flex-row justify-between">
             <Text
-              className="text-text-secondary"
-              style={[styles.detectedLabel]}
+              className="text-xs font-manrope"
+              style={{ color: c.textSecondary }}
             >
               Merchant
             </Text>
-            <Text className="text-text-primary" style={[styles.detectedValue]}>
-              {detected.merchant ?? "—"}
+            <Text
+              className="text-sm font-manrope-semibold"
+              style={{ color: c.textPrimary }}
+            >
+              {result.merchant ?? "\u2014"}
             </Text>
           </View>
-          <View style={styles.detectedRow}>
+
+          {/* Amount */}
+          <View className="mb-2.5 flex-row justify-between">
             <Text
-              className="text-text-secondary"
-              style={[styles.detectedLabel]}
+              className="text-xs font-manrope"
+              style={{ color: c.textSecondary }}
             >
               Amount
             </Text>
-            <Text className="text-text-primary" style={[styles.detectedValue]}>
-              {detected.formattedAmount}
+            <Text
+              className="text-sm font-manrope-semibold"
+              style={{ color: c.textPrimary }}
+            >
+              {result.amountCents != null
+                ? formatPhilippineCurrency(result.amountCents)
+                : "\u2014"}
             </Text>
           </View>
-          <View style={styles.detectedRow}>
+
+          {/* Date */}
+          <View className="mb-2.5 flex-row justify-between">
             <Text
-              className="text-text-secondary"
-              style={[styles.detectedLabel]}
+              className="text-xs font-manrope"
+              style={{ color: c.textSecondary }}
             >
               Date
             </Text>
-            <Text className="text-text-primary" style={[styles.detectedValue]}>
-              {detected.date ?? "—"}
+            <Text
+              className="text-sm font-manrope-semibold"
+              style={{ color: c.textPrimary }}
+            >
+              {formatReceiptDate(result.date)}
             </Text>
           </View>
 
+          {/* Raw text preview */}
+          <View
+            className="mb-3 border-t pt-2.5"
+            style={{ borderColor: c.hairline }}
+          >
+            <Text
+              className="mb-1 text-[10px] font-mono"
+              style={{ color: c.textSecondary }}
+            >
+              Raw OCR text
+            </Text>
+            <Text
+              className="text-[10px] font-mono leading-[1.4]"
+              style={{ color: c.textSecondary }}
+              numberOfLines={4}
+            >
+              {result.rawText.slice(0, 200)}
+              {result.rawText.length > 200 ? "\u2026" : ""}
+            </Text>
+          </View>
+
+          {/* Use these details */}
           <Pressable
             onPress={handleConfirm}
-            className="bg-brass active:opacity-80"
-            style={[styles.confirmBtn]}
+            className="rounded-2xl bg-brass py-3.5 active:opacity-80"
           >
-            <View className="flex-row items-center gap-2">
-              <Text className="text-ink" style={[styles.confirmBtnLabel]}>
+            <View className="flex-row items-center justify-center gap-1.5">
+              <Text
+                className="text-sm font-manrope-bold"
+                style={{ color: colors.ink }}
+              >
                 Use these details
               </Text>
-              <ArrowRightIcon size={16} color={colors.ink} />
+              <Lucide name="arrow-right" size={16} color={colors.ink} />
             </View>
           </Pressable>
 
+          {/* Retake */}
           <Pressable
-            onPress={() => setDetected(null)}
+            onPress={handleRetake}
             className="mt-3 active:opacity-60"
             style={{ alignItems: "center" }}
           >
             <Text
-              className="text-text-secondary"
-              style={{
-                fontFamily: "Manrope_400Regular",
-                fontSize: 13,
-              }}
+              className="text-xs font-manrope-semibold"
+              style={{ color: c.textSecondary }}
             >
               Retake photo
             </Text>
@@ -247,16 +378,17 @@ export default function ReceiptScanScreen() {
         </View>
       )}
 
-      {/* ── Shutter button ── */}
-      {!detected && (
+      {/* ── Shutter button (only when idle) ── */}
+      {!result && !error && !isProcessing && (
         <View style={styles.shutterRow}>
           <Pressable
             onPress={handleShutter}
-            disabled={isProcessing}
-            className="border-parchment active:opacity-80"
-            style={[styles.shutterRing, isProcessing && { opacity: 0.5 }]}
+            className="active:opacity-80"
+            style={[styles.shutterRing, { borderColor: colors.parchment }]}
           >
-            <View className="bg-brass" style={[styles.shutterInner]} />
+            <View
+              style={[styles.shutterInner, { backgroundColor: colors.brass }]}
+            />
           </Pressable>
         </View>
       )}
@@ -265,16 +397,14 @@ export default function ReceiptScanScreen() {
 }
 
 // ─── styles ───────────────────────────────────────────────────────────────────
-// Inline StyleSheet so the camera overlay geometry works correctly — these
-// absolute positions are intentional and cannot be expressed as Tailwind
-// utility classes without arithmetic.
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  viewport: {
+  overlay: {
     ...StyleSheet.absoluteFill,
+    zIndex: 20,
+    backgroundColor: "rgba(8,9,13,0.55)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   topBar: {
     position: "absolute",
@@ -287,19 +417,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     zIndex: 10,
   },
-  flashLabel: {
-    fontSize: 14.5,
-    fontFamily: "Manrope_400Regular",
-  },
   caption: {
     position: "absolute",
     top: 100,
     left: 0,
     right: 0,
     textAlign: "center",
-    fontFamily: "IBMPlexMono_400Regular",
-    fontSize: 12.5,
-    letterSpacing: 0.4,
     zIndex: 5,
   },
   receiptFrame: {
@@ -320,44 +443,6 @@ const styles = StyleSheet.create({
     right: "8%",
     height: 2,
     opacity: 0.7,
-    // TODO: Animate this with Reanimated (scroll from top to bottom of frame)
-  },
-  detectedCard: {
-    position: "absolute",
-    left: 20,
-    right: 20,
-    bottom: 110,
-    zIndex: 5,
-    borderRadius: 16,
-    padding: 16,
-  },
-  detectedTag: {
-    fontFamily: "IBMPlexMono_400Regular",
-    fontSize: 11.5,
-    marginBottom: 10,
-  },
-  detectedRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 6,
-  },
-  detectedLabel: {
-    fontSize: 13,
-    fontFamily: "Manrope_400Regular",
-  },
-  detectedValue: {
-    fontSize: 14.5,
-    fontFamily: "Manrope_600SemiBold",
-  },
-  confirmBtn: {
-    marginTop: 12,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  confirmBtnLabel: {
-    fontFamily: "Manrope_700Bold",
-    fontSize: 15,
   },
   shutterRow: {
     position: "absolute",

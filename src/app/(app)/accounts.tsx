@@ -42,7 +42,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
   const logoSrc = resolveLogoSrc(account.logoKey);
 
   const handleEdit = () => {
-    router.push("/add-account?editId=" + account.id);
+    router.push("/edit-account?id=" + account.id);
   };
 
   return (

@@ -7,6 +7,8 @@ import type {
   UpdateAccountInput,
 } from "@/types";
 
+export type { AccountType };
+
 interface AccountRow {
   id: string;
   name: string;
@@ -14,6 +16,15 @@ interface AccountRow {
   color_hex: string;
   logo_key: string | null;
   balance_cents: number | string;
+}
+
+interface AccountBaseRow {
+  id: string;
+  name: string;
+  type: AccountType;
+  starting_balance: number;
+  color_hex: string;
+  logo_key: string | null;
 }
 
 /**
@@ -73,6 +84,40 @@ export async function insertAccount(
   );
 
   return id;
+}
+
+/**
+ * Fetches a single account by id (non-archived only).
+ * Returns the raw account fields including starting_balance —
+ * does NOT compute the running balance (use listAccountsWithBalances for that).
+ */
+export async function getAccountById(id: string): Promise<{
+  id: string;
+  name: string;
+  type: AccountType;
+  colorHex: string;
+  logoKey: string | null;
+} | null> {
+  const db = await getDb();
+
+  const { rows } = await db.execute(
+    `SELECT id, name, type, starting_balance, color_hex, logo_key
+     FROM accounts
+     WHERE id = ? AND archived_at IS NULL
+     LIMIT 1;`,
+    [id],
+  );
+
+  const row = (rows as unknown as AccountBaseRow[])[0];
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    colorHex: row.color_hex,
+    logoKey: row.logo_key ?? null,
+  };
 }
 
 export async function updateAccount(input: UpdateAccountInput): Promise<void> {
