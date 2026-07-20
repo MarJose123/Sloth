@@ -92,11 +92,16 @@
     "android": "expo start -c --android",
     "ios": "expo start -c --ios",
     "lint": "prettier --write . && expo lint . --fix",
-    "test": "jest --watchAll",
+    "test": "jest",
     "eas:build:dev": "bunx eas-cli build --platform=android --profile=development"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "setupFiles": ["./src/__tests__/setup.ts"],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "testPathIgnorePatterns": ["/node_modules/", "/src/__tests__/setup\\.ts$", "/src/__tests__/testUtils\\.ts$"]
   },
   "private": true,
   "overrides": {
