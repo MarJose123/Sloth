@@ -2,6 +2,7 @@
   "expo": {
     "name": "Sloth",
     "slug": "sloth",
+    "version": "1.0.0",
     "icon": "./assets/icons/icon.png",
     "scheme": "sloth",
     "userInterfaceStyle": "automatic",
