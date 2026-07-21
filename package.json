@@ -97,11 +97,17 @@
   },
   "jest": {
     "preset": "jest-expo",
-    "setupFiles": ["./src/__tests__/setup.ts"],
+    "setupFiles": [
+      "./src/__tests__/setup.ts"
+    ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
     },
-    "testPathIgnorePatterns": ["/node_modules/", "/src/__tests__/setup\\.ts$", "/src/__tests__/testUtils\\.ts$"]
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/src/__tests__/setup\\.ts$",
+      "/src/__tests__/testUtils\\.ts$"
+    ]
   },
   "private": true,
   "overrides": {

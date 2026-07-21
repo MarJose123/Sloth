@@ -5,7 +5,7 @@
  * and displays a fallback UI with a "Try Again" button.
  */
 
-import { View, Text } from "react-native";
+import { Text } from "react-native";
 import { act, create } from "react-test-renderer";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
@@ -35,7 +35,9 @@ jest.mock("@/theme/ThemeContext", () => {
 jest.mock("@/components/SlothAppIcon", () => {
   const RN = require("react-native");
   return {
-    SlothAppIcon: ({ size }: { size?: number }) => <RN.View testID="sloth-icon" />,
+    SlothAppIcon: ({ size }: { size?: number }) => (
+      <RN.View testID="sloth-icon" />
+    ),
   };
 });
 

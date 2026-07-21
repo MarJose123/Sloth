@@ -3,7 +3,6 @@
  * EmptyAccountsCard, CategoryRingCard.
  */
 
-import { View } from "react-native";
 import { act, create } from "react-test-renderer";
 import { TransactionRow } from "@/components/dashboard/TransactionRow";
 import { AccountSwitcher } from "@/components/dashboard/AccountSwitcher";
@@ -107,7 +106,11 @@ describe("TransactionRow", () => {
   });
 
   it("renders positive income with sage coloring (amount > 0)", () => {
-    const income = { ...baseTx, amountCents: 500000, categoryKind: "income" as const };
+    const income = {
+      ...baseTx,
+      amountCents: 500000,
+      categoryKind: "income" as const,
+    };
     const renderer = render(<TransactionRow transaction={income} />);
     const json = JSON.stringify(renderer.toJSON());
     expect(json).toContain("5,000");
@@ -118,8 +121,22 @@ describe("TransactionRow", () => {
 
 describe("AccountSwitcher", () => {
   const accounts = [
-    { id: "acc-1", name: "BPI", type: "savings" as const, colorHex: "#C87B54", logoKey: null, balanceCents: 100000 },
-    { id: "acc-2", name: "Metro", type: "checking" as const, colorHex: "#7FA06B", logoKey: null, balanceCents: 50000 },
+    {
+      id: "acc-1",
+      name: "BPI",
+      type: "savings" as const,
+      colorHex: "#C87B54",
+      logoKey: null,
+      balanceCents: 100000,
+    },
+    {
+      id: "acc-2",
+      name: "Metro",
+      type: "checking" as const,
+      colorHex: "#7FA06B",
+      logoKey: null,
+      balanceCents: 50000,
+    },
   ];
 
   it("renders all accounts plus 'All accounts' chip", () => {

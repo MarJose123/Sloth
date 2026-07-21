@@ -1,0 +1,95 @@
+name: Android Release Build
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version override (e.g., 1.2.3). Uses latest release tag if empty."
+        required: false
+        type: string
+
+env:
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+  NODE_OPTIONS: --openssl-legacy-provider
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: 🔖 Resolve version
+        id: version
+        run: |
+          if [[ -n "${{ inputs.version }}" ]]; then
+            VERSION="${{ inputs.version }}"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+            VERSION="${TAG#v}"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: ${VERSION}"
+
+      - name: 📝 Update app.json version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          jq --arg v "$VERSION" '.expo.version = $v' app.json > app.json.tmp
+          mv app.json.tmp app.json
+          echo "app.json version updated to: $(jq -r '.expo.version' app.json)"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 📦 Get bun cache directory path
+        id: bun-cache-dir-path
+        run: echo "dir=$(bun pm cache)" >> $GITHUB_OUTPUT
+
+      - name: 📦 Setup bun cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.bun-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: 📦 Install dependencies & EAS CLI
+        run: |
+          bun install
+          bun add --global eas-cli
+
+      - name: 🔄 Verify EAS CLI installation
+        run: eas --version
+
+      - name: 📱 Build Release APK
+        run: |
+          export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
+          eas build --platform android --profile production --local \
+            --non-interactive --clear-cache \
+            --output=./app-release.apk
+        env:
+          NODE_ENV: production
+
+      - name: 📦 Upload APK as release asset
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./app-release.apk
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Upload APK as workflow artifact
+        if: github.event_name != 'release'
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-release-${{ steps.version.outputs.version }}
+          path: ./app-release.apk
+          retention-days: 30

@@ -5,7 +5,6 @@
  * Uses jest.spyOn for useWindowDimensions instead of mocking the entire react-native module.
  */
 
-import { useWindowDimensions } from "react-native";
 import { act, create } from "react-test-renderer";
 import { Keypad } from "@/components/Keypad";
 
@@ -19,10 +18,9 @@ function render(component: React.ReactElement) {
 
 describe("Keypad", () => {
   beforeEach(() => {
-    jest.spyOn(
-      require("react-native"),
-      "useWindowDimensions",
-    ).mockReturnValue({ width: 375, height: 812, scale: 1, fontScale: 1 });
+    jest
+      .spyOn(require("react-native"), "useWindowDimensions")
+      .mockReturnValue({ width: 375, height: 812, scale: 1, fontScale: 1 });
   });
 
   afterEach(() => {

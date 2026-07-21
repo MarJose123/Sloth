@@ -44,7 +44,9 @@ jest.mock("color", () => ({
 jest.mock("@react-native-vector-icons/lucide", () => {
   const RN = require("react-native");
   return {
-    Lucide: ({ name }: { name: string }) => <RN.View testID={`lucide-${name}`} />,
+    Lucide: ({ name }: { name: string }) => (
+      <RN.View testID={`lucide-${name}`} />
+    ),
   };
 });
 
@@ -139,9 +141,7 @@ describe("DonateQRModal", () => {
 
   it("calls onClose when close button is pressed", () => {
     const onClose = jest.fn();
-    const { root } = render(
-      <DonateQRModal visible={true} onClose={onClose} />,
-    );
+    const { root } = render(<DonateQRModal visible={true} onClose={onClose} />);
     // Find the close button Pressable
     const pressables = root.findAllByProps({ onPress: onClose });
     expect(pressables.length).toBeGreaterThanOrEqual(1);

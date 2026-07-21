@@ -5,7 +5,6 @@
  * so that `useColors()` and `useTheme()` return predictable values.
  */
 
-import type { ReactNode } from "react";
 import { darkColors } from "@/theme/colors";
 import type { ColorPalette, ThemeContextValue } from "@/types";
 

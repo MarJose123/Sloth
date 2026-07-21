@@ -29,8 +29,20 @@ describe("listAllCategories", () => {
   it("returns mapped category rows", async () => {
     mockDbInstance.execute.mockResolvedValue({
       rows: [
-        { id: "cat-1", name: "Groceries", icon: "🛒", color_hex: "#C87B54", kind: "expense" },
-        { id: "cat-2", name: "Salary", icon: "💰", color_hex: "#7FA06B", kind: "income" },
+        {
+          id: "cat-1",
+          name: "Groceries",
+          icon: "🛒",
+          color_hex: "#C87B54",
+          kind: "expense",
+        },
+        {
+          id: "cat-2",
+          name: "Salary",
+          icon: "💰",
+          color_hex: "#7FA06B",
+          kind: "income",
+        },
       ],
     });
 
@@ -51,7 +63,13 @@ describe("getCategoryById", () => {
   it("returns a single category", async () => {
     mockDbInstance.execute.mockResolvedValue({
       rows: [
-        { id: "cat-1", name: "Groceries", icon: "🛒", color_hex: "#C87B54", kind: "expense" },
+        {
+          id: "cat-1",
+          name: "Groceries",
+          icon: "🛒",
+          color_hex: "#C87B54",
+          kind: "expense",
+        },
       ],
     });
 
@@ -98,7 +116,13 @@ describe("updateCategory", () => {
 
     expect(mockDbInstance.execute).toHaveBeenCalledWith(
       expect.stringContaining("UPDATE categories"),
-      expect.arrayContaining(["Groceries Updated", "🛒", "#A96B42", "expense", "cat-1"]),
+      expect.arrayContaining([
+        "Groceries Updated",
+        "🛒",
+        "#A96B42",
+        "expense",
+        "cat-1",
+      ]),
     );
   });
 });
@@ -132,9 +156,13 @@ describe("listTopExpenseCategories", () => {
     mockDbInstance.execute.mockResolvedValue({
       rows: [
         {
-          id: "cat-1", name: "Groceries", icon: "🛒",
-          color_hex: "#C87B54", kind: "expense",
-          spend_cents: 50000, transaction_count: 3,
+          id: "cat-1",
+          name: "Groceries",
+          icon: "🛒",
+          color_hex: "#C87B54",
+          kind: "expense",
+          spend_cents: 50000,
+          transaction_count: 3,
         },
       ],
     });

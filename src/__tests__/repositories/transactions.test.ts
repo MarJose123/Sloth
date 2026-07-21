@@ -149,11 +149,17 @@ describe("listAllTransactions", () => {
     mockDbInstance.execute.mockResolvedValue({
       rows: [
         {
-          id: "tx-1", merchant: "Test", amount_cents: 100,
-          occurred_at: 1700000000000, account_id: "acc-1",
-          account_name: "Test", category_name: null,
-          category_icon: null, category_kind: null,
-          note: "My note", source: "manual",
+          id: "tx-1",
+          merchant: "Test",
+          amount_cents: 100,
+          occurred_at: 1700000000000,
+          account_id: "acc-1",
+          account_name: "Test",
+          category_name: null,
+          category_icon: null,
+          category_kind: null,
+          note: "My note",
+          source: "manual",
         },
       ],
     });
