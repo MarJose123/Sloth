@@ -10,7 +10,7 @@ import * as Application from "expo-application";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import type { LucideIconName } from "@react-native-vector-icons/lucide";
 import { ChevronRightIcon } from "@/components/navigation/icons";
-import type { ThemePreference } from "@/lib/storage";
+import type { ThemePreference } from "@/types";
 import { useTheme, useColors } from "@/theme/ThemeContext";
 import { colors } from "@/theme/colors";
 import { useToast } from "@/hooks/useToast";
@@ -298,7 +298,7 @@ export default function SettingsScreen() {
               router.push("/pin-setup");
             } else {
               router.push("/pin-setup");
-              toast("Remove backup PIN?", {
+              toast.show("Remove backup PIN?", {
                 description:
                   "You won't be able to disable biometrics without a backup PIN.",
                 action: {

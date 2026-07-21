@@ -637,7 +637,7 @@ export default function AddAccountScreen() {
                 <TextInput
                   value={value}
                   onChangeText={onChange}
-                  onBlur={() => onChange(formatAmountOnBlur(value))}
+                  onBlur={() => onChange(formatAmountOnBlur(value ?? "0"))}
                   placeholder="0.00"
                   placeholderTextColor={c.textSecondary}
                   keyboardType="decimal-pad"

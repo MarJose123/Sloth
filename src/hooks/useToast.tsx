@@ -40,6 +40,10 @@ interface ToastOptions {
   description?: string;
   duration?: number;
   id?: string | number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 // ─── hook ──────────────────────────────────────────────────────────────────
@@ -55,6 +59,7 @@ export function useToast() {
         description: options?.description,
         duration: options?.duration ?? 3000,
         id: options?.id,
+        action: options?.action,
         icon: <InfoIcon color={theme.info.text} />,
         style: {
           backgroundColor: theme.info.bg,
@@ -73,6 +78,7 @@ export function useToast() {
         description: options?.description,
         duration: options?.duration ?? 3000,
         id: options?.id,
+        action: options?.action,
         icon: <CheckIcon color={theme.success.text} />,
         style: {
           backgroundColor: theme.success.bg,
@@ -91,6 +97,7 @@ export function useToast() {
         description: options?.description,
         duration: options?.duration ?? 4000,
         id: options?.id,
+        action: options?.action,
         icon: <XIcon color={theme.error.text} />,
         style: {
           backgroundColor: theme.error.bg,
@@ -109,6 +116,7 @@ export function useToast() {
         description: options?.description,
         duration: options?.duration ?? 3500,
         id: options?.id,
+        action: options?.action,
         icon: <TriangleAlertIcon color={theme.warning.text} />,
         style: {
           backgroundColor: theme.warning.bg,

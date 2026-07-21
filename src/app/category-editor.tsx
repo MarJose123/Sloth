@@ -15,8 +15,8 @@ import {
   getCategoryById,
   insertCategory,
   updateCategory,
-  type CategoryKind,
 } from "@/lib/db/repositories/categories";
+import type { CategoryKind } from "@/types";
 import { useColors } from "@/theme/ThemeContext";
 import { useToast } from "@/hooks/useToast";
 import { useForm, Controller, useWatch } from "react-hook-form";
@@ -105,6 +105,7 @@ export default function CategoryEditorScreen() {
     handleSubmit,
     setValue,
     reset,
+    control,
     formState: { errors },
   } = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),

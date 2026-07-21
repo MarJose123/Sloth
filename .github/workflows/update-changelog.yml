@@ -2,7 +2,7 @@ name: "Update Changelog"
 
 on:
   workflow_run:
-    workflows: ["Auto Release on Tag"]
+    workflows: ["Android Release Build"]
     types: [completed]
 
 jobs:

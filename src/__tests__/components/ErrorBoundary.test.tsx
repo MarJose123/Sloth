@@ -35,7 +35,7 @@ jest.mock("@/theme/ThemeContext", () => {
 jest.mock("@/components/SlothAppIcon", () => {
   const RN = require("react-native");
   return {
-    SlothAppIcon: ({ size }: { size?: number }) => (
+    SlothAppIcon: (_props: { size?: number }) => (
       <RN.View testID="sloth-icon" />
     ),
   };
@@ -104,10 +104,13 @@ describe("ErrorBoundary", () => {
     const pressables = renderer!.root.findAllByProps({
       onPress: expect.any(Function),
     });
-    // Find the "Try Again" button
+    // Find the "Try Again" button by checking children
     for (const p of pressables) {
-      const json2 = JSON.stringify(p.toJSON());
-      if (json2.includes("Try Again")) {
+      const textContent =
+        typeof p.props.children === "string"
+          ? p.props.children
+          : JSON.stringify(p.props);
+      if (textContent.includes("Try Again")) {
         act(() => p.props.onPress());
         break;
       }

@@ -1,6 +1,6 @@
 import { Pressable, View, type PressableProps } from "react-native";
 import { useColors } from "@/theme/ThemeContext";
-import type { TabIconProps } from "./icons";
+import type { TabIconProps } from "@/types";
 
 interface TabBarButtonProps extends PressableProps {
   Icon: React.ComponentType<TabIconProps>;

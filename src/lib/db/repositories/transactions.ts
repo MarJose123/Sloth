@@ -4,6 +4,7 @@ import type {
   RecentTransaction,
   TransactionLedgerItem,
   InsertTransactionInput,
+  CategoryKind,
 } from "@/types";
 
 // ─── types ────────────────────────────────────────────────────────────────────

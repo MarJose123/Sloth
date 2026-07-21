@@ -41,12 +41,17 @@ SQLCipher. There is no cloud sync, no analytics endpoint, no third-party login.
 | Auth | `expo-local-authentication` ~57.0.0, `expo-secure-store` ~57.0.0 | |
 | Screen capture | `expo-screen-capture` ~57.0.0 | `usePreventScreenCapture` hook in settings |
 | Camera / OCR | `expo-camera@~57.0.1` | **Not** `expo-vision-camera` (does not exist) |
-| Package manager | Bun 1.3.14 (pinned in `eas.json`) | Use `bun install`, `bun add`, `bun remove` — **never `npm install`**. Lock file: `bun.lock`. `bun lint` runs `prettier --write . && expo lint` |
+| Form validation | `react-hook-form` ^7.82.0 + `@hookform/resolvers` ^5.4.0 + `zod` ^4.4.3 | `useForm` + `Controller` + `useWatch` pattern; `zodResolver` |
+| Toast / notifications | `sonner-native` ^0.26.4 | Wrapped by `useToast()` hook in `src/hooks/useToast.tsx` |
+| Color utilities | `color` ^5.0.3 | Hex manipulation in badge and logo components |
+| Testing | Jest via `jest-expo` ~57.0.2 | `bun test` runs `jest`; 135+ tests across 15 suites |
+| Lint | ESLint flat config + Prettier | `eslint-config-expo` + `eslint-plugin-prettier` + `eslint-plugin-unused-imports` |
+| Package manager | Bun 1.3.14 (pinned in `eas.json`) | Use `bun install`, `bun add`, `bun remove` — **never `npm install`**. Lock file: `bun.lock`. `bun lint` runs `prettier --write . && expo lint`; `bun test` runs `jest` |
 | Build | EAS CLI ≥ 20.5.1, `eas build --local` | GH Actions ubuntu-latest |
 | Java | JDK 17 (hard requirement for AGP + RN 0.86) | |
 | Android SDK | Compile/target 36, minSdk 31, buildTools 36.0.0 (via `expo-build-properties` in `app.json`) | |
-| Additional Expo plugins | `expo-router`, `expo-secure-store`, `expo-font`, `expo-local-authentication`, `expo-splash-screen`, `expo-camera`, `expo-build-properties`, `expo-image`, `expo-status-bar`, `expo-web-browser`, `@react-native-vector-icons/lucide` | All configured in `app.json` plugins array |
-| Runtime helpers | `react-native-reanimated` 4.5.0, `react-native-gesture-handler` ~2.32.0, `react-native-worklets` 0.10.0, `react-native-safe-area-context` 5.7.0 | |
+| Additional Expo plugins | `expo-router`, `expo-secure-store`, `expo-font`, `expo-local-authentication`, `expo-splash-screen`, `expo-camera`, `expo-build-properties`, `expo-image`, `expo-status-bar`, `expo-web-browser`, `expo-dev-client`, `expo-device`, `expo-updates`, `expo-constants`, `expo-system-ui`, `expo-document-picker`, `expo-image-manipulator`, `expo-image-picker`, `expo-media-library`, `expo-linking`, `expo-file-system`, `@react-native-vector-icons/lucide` | All configured in `app.json` plugins array |
+| Runtime helpers | `react-native-reanimated` 4.5.0, `react-native-gesture-handler` ~2.32.0, `react-native-worklets` 0.10.0, `react-native-safe-area-context` 5.7.0, `react-native-css` ^3.0.7, `react-native-screens` 4.25.2 | |
 | Dev client | `expo-dev-client` ~57.0.7 | Used in development profile |
 
 ### Registered font names (must match exactly in code)
@@ -144,15 +149,19 @@ Root Layout (src/app/_layout.tsx):
     ├── (app)           → Tab group (src/app/(app)/_layout.tsx)
     ├── onboarding      → Stack group (src/app/onboarding/_layout.tsx)
     ├── add-account     → Screen 09 (flat route)
+    ├── edit-account    → Screen (flat route, push from accounts list)
     ├── category-editor → Screen 10 (flat route)
-    ├── transaction/new → Screen 05
+    ├── edit-category   → Screen (flat route, push from categories list)
+    ├── add-transaction → Screen 05 (push form, flat route)
+    ├── transaction/create → Screen 05 (legacy compat, redirects to /add-transaction)
     ├── about           → Screen 18
     ├── receipt-scan    → Screen 13
     ├── import          → Screen 14
     ├── lock            → Screens 11 + 15
     ├── pin-setup       → Screen 19 (backup PIN, theme-aware)
-    ├── donate          → Screen 16
-    └── fab-sheet       → Screen 12 (modal)
+    ├── fab-sheet       → Screen 12 (modal)
+    ├── select-account  → Screen (transparentModal picker)
+    └── select-category → Screen (transparentModal picker)
 
 Onboarding Layout (src/app/onboarding/_layout.tsx):
   Stack (gesture disabled, animation managed by carousel):
@@ -177,12 +186,15 @@ Root-level push screens (no tab bar):
   Lock / PIN           → src/app/lock.tsx          (Screens 11, 15)
   Backup PIN Setup     → src/app/pin-setup.tsx     (Screen 19, theme-aware)
   Add Account          → src/app/add-account.tsx   (Screen 09)
+  Edit Account         → src/app/edit-account.tsx
   Category Editor      → src/app/category-editor.tsx (Screen 10)
-  Add Transaction      → src/app/transaction/new.tsx (Screen 05)
+  Edit Category        → src/app/edit-category.tsx
+  Add Transaction      → src/app/add-transaction.tsx (Screen 05)
   Receipt Scan         → src/app/receipt-scan.tsx  (Screen 13)
   CSV/OFX Import       → src/app/import.tsx        (Screen 14)
   FAB Action Sheet     → src/app/fab-sheet.tsx     (Screen 12)
-  Donate QR Modal      → src/app/donate.tsx        (Screen 16)
+  Select Account       → src/app/select-account.tsx (transparentModal)
+  Select Category      → src/app/select-category.tsx (transparentModal)
   About                → src/app/about.tsx         (Screen 18)
 ```
 
@@ -250,7 +262,7 @@ existing `SafeAreaProvider`.
     - **No** tab bar (tabs are rendered by the custom pill bar in `(app)/_layout.tsx`)
 
 ### Screen 05 — Add Transaction (push route)
-- **File:** `src/app/transaction/new.tsx` (push form); action sheet at `src/app/fab-sheet.tsx`
+- **File:** `src/app/add-transaction.tsx` (push form); action sheet at `src/app/fab-sheet.tsx`
 - **Elements:** Cancel / "New expense" / Save header, amount display (Fraunces 450 46px,
   cursor `--brass`), method pills (Manual/Scan receipt/Import; active:
   `rgba(200,123,84,0.14)` bg brass border), four field blocks (`--surface-card`, 14px radius),
@@ -347,13 +359,8 @@ existing `SafeAreaProvider`.
   (Fraunces 450 22px), "Unlock to see your accounts" (13px dim), "Unlock with Face ID"
   brass button, "Use PIN instead" dim underlined fallback
 
-### Screen 16 — Donate QR Modal
-- **File:** `src/app/donate.tsx`
-- **Elements:** scrim, modal card (82% width, `--surface-card`, 22px radius), ✕ close,
-  "Support Sloth" (Fraunces 450 19px), descriptor paragraph (12px dim lh:1.5), QR box
-  (168×168 `--parchment` bg 14px radius 12px padding), address (IBM Plex Mono 10.5px
-  `--surface-elevated` bg), "⬇ Save to Photos" brass button, sage toast "✓ Saved to gallery"
-- **Hook/helper:** `src/lib/export.ts` (download/save QR)
+### Screen 16 — Donate QR Modal 🔲 Not yet implemented
+- **Planned file:** `src/app/donate.tsx`
 
 ### Screen 18 — About
 - **File:** `src/app/about.tsx`
@@ -463,6 +470,7 @@ PRAGMA user_version = 1;  -- increment on each migration
 | `useDashboardData` | `src/hooks/useDashboardData.ts` | Aggregated dashboard data (balance + rings + recent txs) |
 | `useAddTransactionData` | `src/hooks/useAddTransactionData.ts` | Accounts + categories for Add Transaction pickers |
 | `useAppFonts` | `src/hooks/useAppFonts.ts` | Font loading (runs in root layout) |
+| `useToast` | `src/hooks/useToast.tsx` | Themed toast/snackbar (wraps sonner-native) |
 
 - `useFocusEffect` for list/dashboard hooks that must refresh on screen return.
 - Plain `useEffect` for in-progress form screens (Add Transaction, Add Account) to avoid
@@ -720,18 +728,14 @@ Key notes:
 
 ### 9.2 GitHub Actions (CI)
 
-**Workflow file:** `.github/workflows/dev-build-android.yml`
+Three workflow files exist in `.github/workflows/`:
 
+**Workflow:** `dev-build-android.yml` — Debug APK on push to main
 ```yaml
-timeout-minutes: 50
 triggers:
   - push on main
   - workflow_dispatch
-  - (pull_request triggers a check-skip job, but build-and-deploy runs only on push)
-
-env:
-  EXPO_TOKEN: [redacted]   # from secrets
-  NODE_OPTIONS: --openssl-legacy-provider
+  - (pull_request triggers a check-skip job, build runs only on push)
 
 Steps:
   1. Checkout repo (actions/checkout@v7)
@@ -742,6 +746,37 @@ Steps:
      --non-interactive --clear-cache --output=./app-dev.apk
   6. Upload APK artifact (actions/upload-artifact@v7, retention: 1 day)
 ```
+
+**Workflow:** `release-build-android.yml` — Release APK on publish
+```yaml
+triggers:
+  - release: [published]
+  - workflow_dispatch (with version override)
+
+Steps:
+  1. Checkout (fetch-depth: 0)
+  2. Resolve version from tag or input
+  3. Update app.json version
+  4. Setup Bun + cache + install deps
+  5. Build: eas build --platform android --profile production --local
+  6. Upload APK as release asset (gh-release@v2) or workflow artifact
+```
+
+**Workflow:** `update-changelog.yml` — Changelog generation
+```yaml
+triggers:
+  - release: [published]
+  - workflow_run: ["Android Release Build"] (on completion)
+
+Steps:
+  1. Resolve reference (tag or HEAD SHA)
+  2. Checkout (fetch-depth: 0)
+  3. Generate changelog via orhun/git-cliff-action@v3 (prepend to CHANGELOG.md)
+  4. Commit and push CHANGELOG.md
+  5. Update release body with body_path
+```
+
+**Config:** `cliff.toml` at repo root — git-cliff configuration with conventional commit parsing (feat, fix, docs, refactor, test, chore, perf, style, ci, build, ui groups). Tags match `v[0-9]*` pattern. No CHANGELOG.md exists yet — first run will create it.
 
 **Constraints:**
 - Run on `ubuntu-latest`.
@@ -820,7 +855,7 @@ Each phase requires explicit approval before implementation begins.
 - [x] Screen 12: FAB Action Sheet (`fab-sheet.tsx`)
 - [x] Screen 13: Receipt Scan scaffold (`receipt-scan.tsx`, expo-camera, frame overlay)
 - [x] Screen 14: CSV/OFX Import scaffold (`import.tsx`, `src/lib/csvParser.ts`)
-- [x] Screen 16: Donate QR Modal (`donate.tsx`, `src/lib/export.ts`)
+- [ ] Screen 16: Donate QR Modal 🔲 (`donate.tsx` not yet created)
 - [x] Screen 18: About (`about.tsx`)
 - [x] Screen 00 Splash component: `SplashScreen.tsx`
 - [x] Screen 19: Backup PIN Setup (`pin-setup.tsx`, theme-aware)
@@ -850,13 +885,14 @@ Each phase requires explicit approval before implementation begins.
 - [ ] Accessibility (a11y labels, 44px min touch targets)
 - [ ] FlashList virtualisation for transaction lists
 
-### Phase 9 — CI & Distribution 🔲 Pending
+### Phase 9 — CI & Distribution ✅ In Progress
+- [x] Changelog workflow (`.github/workflows/update-changelog.yml` + `cliff.toml`)
 - [ ] ccache for CMake/SQLCipher (withAppBuildGradle config plugin)
 - [ ] GH Actions timeout tuning post-ccache
 - [ ] GitHub Release APK upload action
 - [ ] Play Store Internal Testing (EAS submit)
 
-### Phase 9 — iOS Port 🔲 Deferred
+### Phase 10 — iOS Port 🔲 Deferred
 - [ ] After Android is stable
 - [ ] Face ID entitlements, Keychain / SecureStore iOS variant
 - [ ] expo prebuild for iOS target
@@ -879,8 +915,9 @@ sloth/
 ├── babel.config.js                 ← babel-preset-expo only
 ├── postcss.config.mjs              ← @tailwindcss/postcss plugin
 ├── metro.config.js                 ← NativeWind metro wrapper
-├── eslint.config.js                ← flat config + Prettier plugin
+├── eslint.config.js                ← flat config + Prettier plugin + unused-imports
 ├── nativewind-env.d.ts             ← generated NativeWind types
+├── cliff.toml                      ← git-cliff changelog generator config
 ├── bun.lock                        ← Bun lockfile
 │
 ├── assets/
@@ -890,7 +927,9 @@ sloth/
 ├── .github/
 │   ├── FUNDING.yml
 │   └── workflows/
-│       └── dev-build-android.yml   ← CI: bun install + eas build --local APK
+│       ├── dev-build-android.yml   ← CI: bun install + eas build --local APK (debug)
+│       ├── release-build-android.yml ← CI: release build on publish
+│       └── update-changelog.yml    ← CI: git-cliff changelog generation
 │
 └── src/
     ├── global.css                  ← Tailwind CSS v4 @theme tokens + safe-area utilities
@@ -918,13 +957,17 @@ sloth/
     │   ├── lock.tsx                ← Screens 11 + 15: PIN entry / biometric unlock
     │   ├── pin-setup.tsx           ← Screen 19: backup PIN setup (theme-aware)
     │   ├── add-account.tsx         ← Screen 09 (flat route)
+    │   ├── edit-account.tsx        ← Edit account (flat route)
     │   ├── category-editor.tsx     ← Screen 10 (flat route)
+    │   ├── edit-category.tsx       ← Edit category (flat route)
+    │   ├── add-transaction.tsx     ← Screen 05 (push form)
     │   ├── transaction/
-    │   │   └── new.tsx             ← Screen 05 (push variant)
+    │   │   └── create.tsx          ← Screen 05 (legacy compat → redirects)
     │   ├── fab-sheet.tsx           ← Screen 12
     │   ├── receipt-scan.tsx        ← Screen 13
+    │   ├── select-account.tsx      ← Account picker (transparentModal)
+    │   ├── select-category.tsx     ← Category picker (transparentModal)
     │   ├── import.tsx              ← Screen 14
-    │   ├── donate.tsx              ← Screen 16
     │   └── about.tsx               ← Screen 18
     │
     ├── components/
@@ -946,6 +989,7 @@ sloth/
     │       ├── BrassButton.tsx     ← Brass CTA button
     │       ├── ErrorBoundary.tsx   ← React error boundary
     │       ├── FingerprintIcon.tsx ← Lucide fingerprint icon (theme brass)
+    │       ├── FormField.tsx       ← Label + child wrapper for form fields
     │       ├── PinDots.tsx         ← 6-dot PIN display
     │       ├── TextLink.tsx        ← Styled link text
     │       └── Toggle.tsx          ← Settings toggle switch
@@ -956,7 +1000,8 @@ sloth/
     │   ├── useCategoriesData.ts
     │   ├── useDashboardData.ts
     │   ├── useAddTransactionData.ts
-    │   └── useAppFonts.ts
+    │   ├── useAppFonts.ts
+    │   └── useToast.tsx             ← Themed toast wrapper (sonner-native)
     │
     ├── lib/
     │   ├── db/
@@ -977,13 +1022,56 @@ sloth/
     │   ├── logoResolver.ts          ← Resolves logoKey → bundled require() or filesystem URI
     │   ├── ocr.ts                  ← OCR shim/scaffold
     │   ├── pin.ts                  ← PIN hashing/verification
+    │   ├── selectionBus.ts         ← Cross-component selection event bus
     │   └── storage.ts              ← SecureStore/AsyncStorage wrapper
     │
     ├── screens/
     │   └── SplashScreen.tsx        ← Screen 00 visual component
     │
+    ├── config/
+    │   └── toastTheme.ts           ← Toast colour scheme per theme mode
+    │
     ├── theme/
-    │   └── colors.ts               ← JS color values matching global.css
+    │   ├── ThemeContext.tsx         ← ThemeProvider + useColors + useTheme hooks
+    │   ├── darkColors.ts           ← Dark palette (default)
+    │   ├── lightColors.ts          ← Light palette
+    │   └── colors.ts               ← Re-exports darkColors as default + both palettes
+    │
+    ├── types/
+    │   ├── index.ts                ← Barrel re-export of all types
+    │   ├── account.ts
+    │   ├── biometrics.ts
+    │   ├── category.ts
+    │   ├── components.ts
+    │   ├── csv.ts
+    │   ├── hooks.ts
+    │   ├── logo.ts
+    │   ├── ocr.ts
+    │   ├── settings.ts
+    │   ├── theme.ts
+    │   ├── toast.ts
+    │   └── transaction.ts
+    │
+    ├── __tests__/
+    │   ├── setup.ts                ← Jest setup (mocks, polyfills)
+    │   ├── testUtils.ts            ← Shared test helpers
+    │   ├── components/
+    │   │   ├── DashboardComponents.test.tsx
+    │   │   ├── DonateQRModal.test.tsx
+    │   │   ├── ErrorBoundary.test.tsx
+    │   │   ├── Keypad.test.tsx
+    │   │   ├── NavigationAndIcons.test.tsx
+    │   │   └── UIComponents.test.tsx
+    │   ├── repositories/
+    │   │   ├── accounts.test.ts
+    │   │   ├── categories.test.ts
+    │   │   ├── settings.test.ts
+    │   │   └── transactions.test.ts
+    │   ├── csvParser.test.ts
+    │   ├── format.test.ts
+    │   ├── ocr.test.ts
+    │   ├── pin.test.ts
+    │   └── selectionBus.test.ts
     │
     └── db/.gitkeep                 ← legacy placeholder (DO NOT USE — all DB code under lib/db/)
 ```

@@ -42,6 +42,13 @@ module.exports = defineConfig([
   },
 
   {
+    files: ["src/__tests__/**/*.test.ts", "src/__tests__/**/*.test.tsx"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+
+  {
     ignores: ["dist/*", ".expo/*", "node_modules/*"],
   },
 ]);

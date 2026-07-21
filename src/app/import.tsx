@@ -362,7 +362,7 @@ export default function ImportScreen() {
                             ...prev,
                             [col]: next,
                           }));
-                          toast(`"${col}" mapped to ${next}`, {
+                          toast.show(`"${col}" mapped to ${next}`, {
                             duration: 1500,
                           });
                         }}

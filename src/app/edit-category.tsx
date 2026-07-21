@@ -98,7 +98,6 @@ function PreviewRing({ icon }: { icon: string }) {
 // ─── screen ───────────────────────────────────────────────────────────────────
 
 export default function EditCategoryScreen() {
-  const c = useColors();
   const toast = useToast();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [isLoading, setIsLoading] = useState(true);

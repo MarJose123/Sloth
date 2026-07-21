@@ -7,6 +7,7 @@ import {
   listTopExpenseCategories,
 } from "@/lib/db/repositories/categories";
 import { listRecentTransactions } from "@/lib/db/repositories/transactions";
+import type { DashboardData, DashboardState } from "@/types";
 
 const RECENT_TRANSACTIONS_LIMIT = 5;
 const TOP_CATEGORIES_LIMIT = 3;

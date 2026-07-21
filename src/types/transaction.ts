@@ -41,6 +41,6 @@ export interface InsertTransactionInput {
    */
   amountCents: number;
   occurredAt: number;
-  note?: string;
+  note?: string | null;
   source?: "manual" | "scan" | "import";
 }
