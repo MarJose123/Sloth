@@ -1,5 +1,6 @@
-import { useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
+  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -7,10 +8,44 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import { Lucide } from "@react-native-vector-icons/lucide";
 import { useTransactionsData } from "@/hooks/useTransactionsData";
-import type { TransactionLedgerItem } from "@/types";
-import { formatRelativeDate, formatSignedCurrency } from "@/lib/format";
+import { useAccountsData } from "@/hooks/useAccountsData";
+import { deleteTransaction } from "@/lib/db/repositories/transactions";
+import { AccountSwitcher } from "@/components/dashboard/AccountSwitcher";
+import type { MonthRange, TransactionLedgerItem } from "@/types";
+import {
+  formatMonthLabel,
+  formatRelativeDate,
+  formatSignedCurrency,
+} from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+/** Builds a MonthRange for the month containing `date`. */
+function monthRange(date: Date): MonthRange {
+  const start = new Date(date.getFullYear(), date.getMonth(), 1).getTime();
+  const end = new Date(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    1,
+  ).getTime();
+  return { start, end };
+}
+
+/** Moves a Date forward or backward by `delta` months. */
+function shiftMonth(reference: Date, delta: number): Date {
+  const d = new Date(reference);
+  d.setMonth(d.getMonth() + delta);
+  return d;
+}
 
 // ─── transaction row ──────────────────────────────────────────────────────────
 
@@ -57,6 +92,7 @@ function TransactionLedgerRow({
           style={{ color: colors.textSecondary }}
         >
           {transaction.categoryName ?? "Uncategorized"} ·{" "}
+          {transaction.accountName} ·{" "}
           {formatRelativeDate(transaction.occurredAt)}
           {transaction.source !== "manual" && (
             <Text style={{ color: colors.textSecondary }}>
@@ -80,10 +116,130 @@ function TransactionLedgerRow({
   );
 }
 
+/** True when two epoch-ms timestamps fall on the same calendar day (local tz). */
+function isSameDay(a: number, b: number): boolean {
+  const da = new Date(a);
+  const db = new Date(b);
+  return (
+    da.getFullYear() === db.getFullYear() &&
+    da.getMonth() === db.getMonth() &&
+    da.getDate() === db.getDate()
+  );
+}
+
+/** Width reserved for the swipe-revealed action area. */
+const DELETE_ACTION_WIDTH = 60;
+
+// ─── swipeable transaction row ───────────────────────────────────────────────
+
+function SwipeableTransactionRow({
+  transaction,
+  onDelete,
+}: {
+  transaction: TransactionLedgerItem;
+  onDelete: () => void;
+}) {
+  const colors = useColors();
+  const swipeableRef = useRef<any>(null);
+
+  // Only allow deletion if the transaction was created today
+  const deletable = isSameDay(transaction.createdAt, Date.now());
+
+  const iconOpacity = useSharedValue(1);
+
+  const iconStyle = useAnimatedStyle(() => ({
+    opacity: iconOpacity.value,
+  }));
+
+  const handleDelete = useCallback(() => {
+    // Fade the icon out in 5ms before the Alert appears
+    iconOpacity.value = withTiming(0, { duration: 4 });
+    Alert.alert(
+      "Delete transaction",
+      `Remove "${transaction.merchant}" (${formatSignedCurrency(transaction.amountCents)})? This cannot be undone.`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+          onPress: () => {
+            iconOpacity.value = withTiming(1, { duration: 4 });
+          },
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: onDelete,
+        },
+      ],
+    );
+  }, [transaction, onDelete]);
+
+  // Render the trash icon — the Swipeable handles the slide-in/slide-out
+  // animation natively, with a 4ms opacity fade on the icon.
+  const renderRightActions = useCallback(
+    () => (
+      <View
+        className="ml-2 h-full items-center justify-center"
+        style={{ width: DELETE_ACTION_WIDTH }}
+      >
+        <Animated.View style={iconStyle}>
+          <Lucide name="trash-2" size={20} color={colors.rust} />
+        </Animated.View>
+      </View>
+    ),
+    [colors.rust, iconStyle],
+  );
+
+  // Close the swipeable and show confirmation immediately when the user
+  // swipes far enough — prevents the action area from ever fully opening
+  // and avoids layout overlap when the Alert dialog appears.
+  const onSwipeableWillOpen = useCallback(
+    (direction: string) => {
+      if (direction === "left") {
+        swipeableRef.current?.close();
+        handleDelete();
+      }
+    },
+    [handleDelete],
+  );
+
+  // When not deletable (older than today), render the plain row
+  if (!deletable) {
+    return <TransactionLedgerRow transaction={transaction} />;
+  }
+
+  return (
+    <ReanimatedSwipeable
+      ref={swipeableRef}
+      renderRightActions={renderRightActions}
+      onSwipeableWillOpen={onSwipeableWillOpen}
+      overshootRight={false}
+      rightThreshold={40}
+    >
+      <TransactionLedgerRow transaction={transaction} />
+    </ReanimatedSwipeable>
+  );
+}
+
 // ─── screen ───────────────────────────────────────────────────────────────────
 
 export default function TransactionsScreen() {
-  const { state, refresh } = useTransactionsData();
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
+    null,
+  );
+  const [selectedRange, setSelectedRange] = useState<MonthRange | null>(
+    monthRange(new Date()),
+  );
+
+  const anchorDate = selectedRange
+    ? new Date(selectedRange.start)
+    : new Date();
+
+  const { state, refresh } = useTransactionsData(
+    selectedAccountId ?? undefined,
+    selectedRange ?? undefined,
+  );
+  const { state: accountsState } = useAccountsData();
   const colors = useColors();
 
   const onRefresh = useCallback(() => {
@@ -143,6 +299,90 @@ export default function TransactionsScreen() {
               + Add
             </Text>
           </Pressable>
+        </View>
+
+        {/* ── Account filter ── */}
+        {accountsState.status === "ready" && (
+          <AccountSwitcher
+            accounts={accountsState.accounts}
+            selectedAccountId={selectedAccountId}
+            onSelect={setSelectedAccountId}
+          />
+        )}
+
+        {/* ── Date range filter ── */}
+        <View className="mb-4 mt-0.5 flex-row items-center justify-between">
+          <View className="flex-row items-center gap-0.5">
+            <Pressable
+              onPress={() =>
+                setSelectedRange(monthRange(shiftMonth(anchorDate, -1)))
+              }
+              className="h-8 w-8 items-center justify-center rounded-full active:opacity-60"
+              style={{ backgroundColor: colors.surfaceElevated }}
+            >
+              <Text
+                className="text-base leading-none "
+                style={{ color: colors.textSecondary }}
+              >
+                {"\u2039"}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setSelectedRange(monthRange(new Date()))}
+              className="active:opacity-60"
+            >
+              <Text
+                className="min-w-[100px] text-center font-fraunces-medium text-[16px] "
+                style={{ color: colors.textPrimary }}
+              >
+                {selectedRange ? formatMonthLabel(anchorDate) : "All time"}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() =>
+                setSelectedRange(monthRange(shiftMonth(anchorDate, 1)))
+              }
+              className="h-8 w-8 items-center justify-center rounded-full active:opacity-60"
+              style={{ backgroundColor: colors.surfaceElevated }}
+            >
+              <Text
+                className="text-base leading-none "
+                style={{ color: colors.textSecondary }}
+              >
+                {"\u203A"}
+              </Text>
+            </Pressable>
+          </View>
+
+          {selectedRange ? (
+            <Pressable
+              onPress={() => setSelectedRange(null)}
+              className="rounded-full px-3 py-1 active:opacity-60"
+              style={{ backgroundColor: colors.surfaceElevated }}
+            >
+              <Text
+                className="font-mono text-[11px] "
+                style={{ color: colors.textSecondary }}
+              >
+                All time
+              </Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={() => setSelectedRange(monthRange(new Date()))}
+              className="rounded-full px-3 py-1 active:opacity-60"
+              style={{ backgroundColor: colors.surfaceElevated }}
+            >
+              <Text
+                className="font-mono text-[11px] "
+                style={{ color: colors.brass }}
+              >
+                This month
+              </Text>
+            </Pressable>
+          )}
         </View>
 
         {/* ── Loading ── */}
@@ -205,7 +445,14 @@ export default function TransactionsScreen() {
         {/* ── Ledger list ── */}
         {!isLoading &&
           transactions.map((tx) => (
-            <TransactionLedgerRow key={tx.id} transaction={tx} />
+            <SwipeableTransactionRow
+              key={tx.id}
+              transaction={tx}
+              onDelete={async () => {
+                await deleteTransaction(tx.id);
+                refresh();
+              }}
+            />
           ))}
 
         {/* ── End of list note ── */}

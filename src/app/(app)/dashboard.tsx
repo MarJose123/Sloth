@@ -6,7 +6,7 @@ import { AccountSwitcher } from "@/components/dashboard/AccountSwitcher";
 import { CategoryRingCard } from "@/components/dashboard/CategoryRingCard";
 import { TransactionRow } from "@/components/dashboard/TransactionRow";
 import { EmptyAccountsCard } from "@/components/dashboard/EmptyAccountsCard";
-import { formatCurrency, getGreeting } from "@/lib/format";
+import { formatCurrency, formatMonthLabel, getGreeting } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
 import Color from "color";
 
@@ -32,7 +32,9 @@ export default function DashboardScreen() {
     accounts.find((a) => a.id === selectedAccountId) ?? null;
   const totalBalanceCents = selectedAccount
     ? selectedAccount.balanceCents
-    : accounts.reduce((sum, a) => sum + a.balanceCents, 0);
+    : accounts
+        .filter((a) => a.balanceCents > 0)
+        .reduce((sum, a) => sum + a.balanceCents, 0);
 
   return (
     <View
@@ -105,7 +107,12 @@ export default function DashboardScreen() {
             </Text>
 
             {categories.length > 0 && (
-              <View className="mb-[26px] flex-row gap-3.5">
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                className="mb-[26px]"
+                contentContainerClassName="flex-row gap-3.5"
+              >
                 {categories.map((category) => (
                   <CategoryRingCard
                     key={category.id}
@@ -113,7 +120,7 @@ export default function DashboardScreen() {
                     totalExpenseCents={totalExpenseCents}
                   />
                 ))}
-              </View>
+              </ScrollView>
             )}
 
             <View className="mb-3 flex-row items-center justify-between">
@@ -124,6 +131,12 @@ export default function DashboardScreen() {
                 }}
               >
                 Recent
+              </Text>
+              <Text
+                className="font-mono text-[11px] "
+                style={{ color: colors.textSecondary }}
+              >
+                {formatMonthLabel()}
               </Text>
             </View>
 

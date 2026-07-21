@@ -2,8 +2,10 @@
  * Tests for src/lib/db/repositories/transactions.ts
  */
 
+import type { MonthRange } from "@/types";
 import { mockDbInstance } from "@/__tests__/setup";
 import {
+  deleteTransaction,
   insertTransaction,
   listRecentTransactions,
   listAllTransactions,
@@ -76,6 +78,19 @@ describe("insertTransaction", () => {
   });
 });
 
+describe("deleteTransaction", () => {
+  it("executes DELETE with correct id", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    await deleteTransaction("tx-to-delete");
+
+    expect(mockDbInstance.execute).toHaveBeenCalledWith(
+      "DELETE FROM transactions WHERE id = ?;",
+      ["tx-to-delete"],
+    );
+  });
+});
+
 describe("listRecentTransactions", () => {
   it("returns recent transactions", async () => {
     mockDbInstance.execute.mockResolvedValue({
@@ -117,6 +132,39 @@ describe("listRecentTransactions", () => {
     const sql = mockDbInstance.execute.mock.calls[0][0] as string;
     expect(sql).not.toContain("WHERE");
   });
+
+  it("adds occurred_at conditions when range is provided", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    const range: MonthRange = { start: 1000, end: 2000 };
+    await listRecentTransactions(5, undefined, range);
+    const sql = mockDbInstance.execute.mock.calls[0][0] as string;
+    const params = mockDbInstance.execute.mock.calls[0][1] as (string | number)[];
+
+    expect(sql).toContain("WHERE");
+    expect(sql).toContain("t.occurred_at >= ?");
+    expect(sql).toContain("t.occurred_at < ?");
+    expect(params).toContain(1000);
+    expect(params).toContain(2000);
+  });
+
+  it("combines accountId and range in WHERE clause", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    const range: MonthRange = { start: 1000, end: 2000 };
+    await listRecentTransactions(5, "acc-1", range);
+    const sql = mockDbInstance.execute.mock.calls[0][0] as string;
+    const params = mockDbInstance.execute.mock.calls[0][1] as (string | number)[];
+
+    expect(sql).toContain("WHERE");
+    expect(sql).toContain("t.account_id = ?");
+    expect(sql).toContain("t.occurred_at >= ?");
+    expect(sql).toContain("t.occurred_at < ?");
+    expect(sql).toContain("AND");
+    expect(params).toContain("acc-1");
+    expect(params).toContain(1000);
+    expect(params).toContain(2000);
+  });
 });
 
 describe("listAllTransactions", () => {
@@ -128,6 +176,7 @@ describe("listAllTransactions", () => {
           merchant: "Starbucks",
           amount_cents: -15000,
           occurred_at: 1700000000000,
+          created_at: 1700000000000,
           account_id: "acc-1",
           account_name: "BPI Savings",
           category_name: "Dining",
@@ -153,6 +202,7 @@ describe("listAllTransactions", () => {
           merchant: "Test",
           amount_cents: 100,
           occurred_at: 1700000000000,
+          created_at: 1700000000000,
           account_id: "acc-1",
           account_name: "Test",
           category_name: null,

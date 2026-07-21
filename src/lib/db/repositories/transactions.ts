@@ -5,6 +5,7 @@ import type {
   TransactionLedgerItem,
   InsertTransactionInput,
   CategoryKind,
+  MonthRange,
 } from "@/types";
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -27,6 +28,7 @@ interface TransactionLedgerRow {
   merchant: string;
   amount_cents: number | string;
   occurred_at: number | string;
+  created_at: number | string;
   account_id: string;
   account_name: string;
   category_name: string | null;
@@ -41,11 +43,24 @@ interface TransactionLedgerRow {
 export async function listRecentTransactions(
   limit = 5,
   accountId?: string,
+  range?: MonthRange,
 ): Promise<RecentTransaction[]> {
   const db = await getDb();
   const params: (string | number)[] = [];
-  const whereClause = accountId ? "WHERE t.account_id = ?" : "";
-  if (accountId) params.push(accountId);
+
+  const conditions: string[] = [];
+  if (accountId) {
+    conditions.push("t.account_id = ?");
+    params.push(accountId);
+  }
+  if (range) {
+    conditions.push("t.occurred_at >= ?");
+    conditions.push("t.occurred_at < ?");
+    params.push(range.start, range.end);
+  }
+
+  const whereClause =
+    conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
   params.push(limit);
 
   const { rows } = await db.execute(
@@ -54,7 +69,7 @@ export async function listRecentTransactions(
      FROM transactions t
      LEFT JOIN categories c ON c.id = t.category_id
      ${whereClause}
-     ORDER BY t.occurred_at DESC
+     ORDER BY t.created_at DESC
      LIMIT ?;`,
     params,
   );
@@ -80,15 +95,28 @@ export async function listRecentTransactions(
 export async function listAllTransactions(
   limit = 500,
   accountId?: string,
+  range?: MonthRange,
 ): Promise<TransactionLedgerItem[]> {
   const db = await getDb();
   const params: (string | number)[] = [];
-  const whereClause = accountId ? "WHERE t.account_id = ?" : "";
-  if (accountId) params.push(accountId);
+
+  const conditions: string[] = [];
+  if (accountId) {
+    conditions.push("t.account_id = ?");
+    params.push(accountId);
+  }
+  if (range) {
+    conditions.push("t.occurred_at >= ?");
+    conditions.push("t.occurred_at < ?");
+    params.push(range.start, range.end);
+  }
+
+  const whereClause =
+    conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
   params.push(limit);
 
   const { rows } = await db.execute(
-    `SELECT t.id, t.merchant, t.amount_cents, t.occurred_at, t.account_id,
+    `SELECT t.id, t.merchant, t.amount_cents, t.occurred_at, t.created_at, t.account_id,
             a.name  AS account_name,
             c.name  AS category_name,
             c.icon  AS category_icon,
@@ -109,6 +137,7 @@ export async function listAllTransactions(
     merchant: row.merchant,
     amountCents: Number(row.amount_cents),
     occurredAt: Number(row.occurred_at),
+    createdAt: Number(row.created_at),
     accountId: row.account_id,
     accountName: row.account_name,
     categoryName: row.category_name ?? null,
@@ -149,4 +178,12 @@ export async function insertTransaction(
   );
 
   return id;
+}
+
+/**
+ * Deletes a single transaction by id. No-op if the id does not exist.
+ */
+export async function deleteTransaction(id: string): Promise<void> {
+  const db = await getDb();
+  await db.execute("DELETE FROM transactions WHERE id = ?;", [id]);
 }

@@ -22,6 +22,7 @@ export interface TransactionLedgerItem {
   merchant: string;
   amountCents: number;
   occurredAt: number;
+  createdAt: number;
   accountId: string;
   accountName: string;
   categoryName: string | null;

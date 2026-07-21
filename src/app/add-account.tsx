@@ -181,7 +181,7 @@ function LogoGridItem({
 // ─── screen ───────────────────────────────────────────────────────────────────
 
 export default function AddAccountScreen() {
-  const c = useColors();
+  const colors = useColors();
   const toast = useToast();
   const [selectedType, setSelectedType] = useState<AccountType>("checking");
   const [selectedColorIdx, setSelectedColorIdx] = useState(0);
@@ -303,8 +303,6 @@ export default function AddAccountScreen() {
 
   /** Crop the uploaded image to a square (center-crop) at 400×400. */
   const handleCropToSquare = useCallback(async () => {
-    const colors = useColors();
-
     if (!customLogoUri) return;
     setIsProcessing(true);
     try {
@@ -336,7 +334,7 @@ export default function AddAccountScreen() {
   };
 
   return (
-    <View className="flex-1 pt-safe " style={{ backgroundColor: c.surfaceBg }}>
+    <View className="flex-1 pt-safe " style={{ backgroundColor: colors.surfaceBg }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -421,20 +419,20 @@ export default function AddAccountScreen() {
                   style={{
                     borderColor: active
                       ? Color(colors.brass).alpha(0.5).toString()
-                      : c.hairline,
+                      : colors.hairline,
                     backgroundColor: active
                       ? Color(colors.brass).alpha(0.1).toString()
-                      : c.surfaceCard,
+                      : colors.surfaceCard,
                   }}
                 >
                   <Lucide
                     name={icon}
                     size={20}
-                    color={active ? colors.brass : c.textSecondary}
+                    color={active ? colors.brass : colors.textSecondary}
                   />
                   <Text
                     className="text-[12.5px] font-manrope-semibold"
-                    style={{ color: active ? c.textPrimary : c.textSecondary }}
+                    style={{ color: active ? colors.textPrimary : colors.textSecondary }}
                   >
                     {label}
                   </Text>
@@ -484,7 +482,7 @@ export default function AddAccountScreen() {
           {/* ── Mode pills ── */}
           <View
             className="mb-4 flex-row rounded-[10px] p-0.5"
-            style={{ backgroundColor: c.surfaceElevated }}
+            style={{ backgroundColor: colors.surfaceElevated }}
           >
             {BADGE_MODES.map((mode) => {
               const active = badgeMode === mode.key;
@@ -498,11 +496,11 @@ export default function AddAccountScreen() {
                   <Lucide
                     name={mode.icon}
                     size={14}
-                    color={active ? colors.ink : c.textSecondary}
+                    color={active ? colors.ink : colors.textSecondary}
                   />
                   <Text
                     className="text-[11px] font-manrope-bold"
-                    style={{ color: active ? colors.ink : c.textSecondary }}
+                    style={{ color: active ? colors.ink : colors.textSecondary }}
                   >
                     {mode.label}
                   </Text>
@@ -564,7 +562,7 @@ export default function AddAccountScreen() {
                 <View className="items-center gap-3 py-8">
                   <Text
                     className="text-[13px] font-manrope-semibold"
-                    style={{ color: c.textSecondary }}
+                    style={{ color: colors.textSecondary }}
                   >
                     Processing image\u2026
                   </Text>
@@ -610,18 +608,18 @@ export default function AddAccountScreen() {
                 <Pressable
                   onPress={handlePickImage}
                   className="w-full items-center gap-2 rounded-2xl border-2 border-dashed py-8 active:opacity-70"
-                  style={{ borderColor: c.hairline }}
+                  style={{ borderColor: colors.hairline }}
                 >
-                  <Lucide name="image-plus" size={32} color={c.textSecondary} />
+                  <Lucide name="image-plus" size={32} color={colors.textSecondary} />
                   <Text
                     className="text-[13px] font-manrope-semibold"
-                    style={{ color: c.textSecondary }}
+                    style={{ color: colors.textSecondary }}
                   >
                     Tap to upload an image
                   </Text>
                   <Text
                     className="text-[11px] font-manrope"
-                    style={{ color: c.textSecondary }}
+                    style={{ color: colors.textSecondary }}
                   >
                     PNG, JPG, WEBP
                   </Text>
@@ -641,11 +639,11 @@ export default function AddAccountScreen() {
                   onChangeText={onChange}
                   onBlur={() => onChange(formatAmountOnBlur(value ?? "0"))}
                   placeholder="0.00"
-                  placeholderTextColor={c.textSecondary}
+                  placeholderTextColor={colors.textSecondary}
                   keyboardType="decimal-pad"
                   className="font-fraunces-medium text-[20px]"
                   returnKeyType="done"
-                  style={{ color: c.textPrimary }}
+                  style={{ color: colors.textPrimary }}
                 />
               )}
             />

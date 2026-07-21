@@ -10,7 +10,6 @@ import { listRecentTransactions } from "@/lib/db/repositories/transactions";
 import type { DashboardData, DashboardState } from "@/types";
 
 const RECENT_TRANSACTIONS_LIMIT = 5;
-const TOP_CATEGORIES_LIMIT = 3;
 
 async function fetchDashboardData(
   selectedAccountId: string | null,
@@ -21,9 +20,9 @@ async function fetchDashboardData(
   const [accounts, categories, totalExpenseCents, recentTransactions] =
     await Promise.all([
       listAccountsWithBalances(),
-      listTopExpenseCategories(range, TOP_CATEGORIES_LIMIT, accountId),
+      listTopExpenseCategories(range, 0, accountId),
       getTotalExpenseCents(range, accountId),
-      listRecentTransactions(RECENT_TRANSACTIONS_LIMIT, accountId),
+      listRecentTransactions(RECENT_TRANSACTIONS_LIMIT, accountId, range),
     ]);
 
   return { accounts, categories, totalExpenseCents, recentTransactions };
@@ -40,6 +39,10 @@ async function fetchDashboardData(
  */
 export function useDashboardData(selectedAccountId: string | null) {
   const [state, setState] = useState<DashboardState>({ status: "loading" });
+
+  // Tracks the latest generation of load() so stale async results from
+  // earlier account-switches are discarded instead of overwriting newer data.
+  const generationRef = useRef(0);
 
   // Mirrors `state` for reads inside `load` without making `load` (and thus
   // the focus-effect callback) depend on `state` itself, which would
@@ -61,6 +64,7 @@ export function useDashboardData(selectedAccountId: string | null) {
   );
 
   const load = useCallback(async () => {
+    const generation = ++generationRef.current;
     const previous = stateRef.current;
     setState(
       previous.status === "ready"
@@ -70,11 +74,11 @@ export function useDashboardData(selectedAccountId: string | null) {
 
     try {
       const data = await fetchDashboardData(selectedAccountId);
-      if (mountedRef.current) {
+      if (mountedRef.current && generation === generationRef.current) {
         setState({ status: "ready", data, isRefreshing: false });
       }
     } catch (err) {
-      if (mountedRef.current) {
+      if (mountedRef.current && generation === generationRef.current) {
         setState({
           status: "error",
           message:

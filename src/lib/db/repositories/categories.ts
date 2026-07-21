@@ -149,7 +149,9 @@ export async function listTopExpenseCategories(
   const params: (string | number)[] = [range.start, range.end];
   const accountClause = accountId ? "AND t.account_id = ?" : "";
   if (accountId) params.push(accountId);
-  params.push(limit);
+
+  const limitClause = limit > 0 ? "LIMIT ?" : "";
+  if (limit > 0) params.push(limit);
 
   const { rows } = await db.execute(
     `SELECT c.id, c.name, c.icon, c.color_hex, c.kind,
@@ -162,7 +164,7 @@ export async function listTopExpenseCategories(
            ${accountClause}
          GROUP BY c.id
          ORDER BY spend_cents DESC
-         LIMIT ?;`,
+         ${limitClause};`,
     params,
   );
 

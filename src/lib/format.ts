@@ -18,6 +18,16 @@ export function formatSignedCurrency(cents: number): string {
 }
 
 /**
+ * Returns a human-readable month label like "July 2025" for the given date.
+ */
+export function formatMonthLabel(date: Date = new Date()): string {
+  return date.toLocaleDateString("en-PH", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+/**
  * Formats a timestamp as MM/dd/YYYY.
  * `occurredAt` is epoch ms in the device's local timezone.
  */
