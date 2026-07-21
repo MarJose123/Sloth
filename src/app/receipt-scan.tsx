@@ -186,7 +186,7 @@ export default function ReceiptScanScreen() {
               className="mt-1 text-xs font-manrope"
               style={{ color: c.textSecondary }}
             >
-              {"Recognising text on-device"}
+              {"Recognizing text on-device"}
             </Text>
           </View>
         </View>
@@ -419,18 +419,20 @@ const styles = StyleSheet.create({
   },
   caption: {
     position: "absolute",
-    top: 100,
+    top: 75,
     left: 0,
     right: 0,
     textAlign: "center",
     zIndex: 5,
+    color: colors.textSecondary,
   },
   receiptFrame: {
     position: "absolute",
-    top: 130,
-    left: 38,
-    right: 38,
+    top: 100,
+    left: 25,
+    right: 25,
     bottom: 240,
+    height: "76%",
     borderWidth: 1.5,
     borderStyle: "dashed",
     borderRadius: 10,
@@ -438,7 +440,7 @@ const styles = StyleSheet.create({
   },
   scanLine: {
     position: "absolute",
-    top: "12%",
+    top: "10%",
     left: "8%",
     right: "8%",
     height: 2,
@@ -446,7 +448,7 @@ const styles = StyleSheet.create({
   },
   shutterRow: {
     position: "absolute",
-    bottom: 40,
+    bottom: 35,
     left: 0,
     right: 0,
     alignItems: "center",
