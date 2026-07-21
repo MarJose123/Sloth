@@ -206,7 +206,7 @@ export default function AddTransactionScreen() {
           note: (data.note ?? "").trim() || undefined,
           source: method,
         });
-        router.back();
+        router.push("/transactions");
       } catch (err) {
         toast.error("Could not save", {
           description:
@@ -240,7 +240,7 @@ export default function AddTransactionScreen() {
         style={{ backgroundColor: colors.surfaceBg }}
       >
         <Text className="text-sm " style={{ color: colors.textSecondary }}>
-          Loading\u2026
+          {"Loading\u2026"}
         </Text>
       </View>
     );
@@ -348,7 +348,7 @@ export default function AddTransactionScreen() {
                 className="mt-1 font-mono text-[11px] "
                 style={{ color: colors.textSecondary }}
               >
-                {selectedAccount.name} \u00B7 Balance{" "}
+                {selectedAccount.name} {"\u00B7 Balance "}
                 {formatCurrency(selectedAccount.balanceCents)}
               </Text>
             )}
