@@ -67,7 +67,6 @@ function PreviewRing({ icon }: { icon: string }) {
   const SIZE = 58;
   const RADIUS = 26;
   const CENTER = SIZE / 2;
-  const ringColor = colors.brass;
   return (
     <View style={styles.previewContainer}>
       <Svg width={SIZE} height={SIZE} style={StyleSheet.absoluteFill}>
@@ -76,11 +75,11 @@ function PreviewRing({ icon }: { icon: string }) {
           cy={CENTER}
           r={RADIUS}
           fill="none"
-          stroke={ringColor}
-          strokeWidth={3}
+          stroke={colors.hairline}
+          strokeWidth={2}
         />
       </Svg>
-      <View style={[styles.previewInner, { backgroundColor: ringColor }]}>
+      <View style={styles.previewInner}>
         <Text style={styles.previewIcon}>{icon}</Text>
       </View>
     </View>
