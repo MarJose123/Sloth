@@ -184,7 +184,7 @@ export default function CategoriesScreen() {
             Categories
           </Text>
           <Pressable
-            onPress={() => router.push("/category-editor")}
+            onPress={() => router.push("/add-category")}
             className="active:opacity-60"
           >
             <Text
@@ -246,7 +246,7 @@ export default function CategoriesScreen() {
               Create expense and income types to organize your transactions.
             </Text>
             <Pressable
-              onPress={() => router.push("/category-editor")}
+              onPress={() => router.push("/add-category")}
               className="rounded-2xl  px-6 py-3.5 active:opacity-80"
               style={{
                 backgroundColor: colors.brass,
@@ -283,7 +283,7 @@ export default function CategoriesScreen() {
         {/* ── Add-more dashed row ── */}
         {!isLoading && categories.length > 0 && (
           <Pressable
-            onPress={() => router.push("/category-editor")}
+            onPress={() => router.push("/add-category")}
             className="mt-3.5 items-center rounded-2xl border border-dashed py-4 active:opacity-60"
             style={{
               opacity: 0.5,

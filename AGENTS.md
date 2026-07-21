@@ -150,7 +150,7 @@ Root Layout (src/app/_layout.tsx):
     ├── onboarding      → Stack group (src/app/onboarding/_layout.tsx)
     ├── add-account     → Screen 09 (flat route)
     ├── edit-account    → Screen (flat route, push from accounts list)
-    ├── category-editor → Screen 10 (flat route)
+    ├── add-category → Screen 10 (flat route)
     ├── edit-category   → Screen (flat route, push from categories list)
     ├── add-transaction → Screen 05 (push form, flat route)
     ├── transaction/create → Screen 05 (legacy compat, redirects to /add-transaction)
@@ -187,7 +187,7 @@ Root-level push screens (no tab bar):
   Backup PIN Setup     → src/app/pin-setup.tsx     (Screen 19, theme-aware)
   Add Account          → src/app/add-account.tsx   (Screen 09)
   Edit Account         → src/app/edit-account.tsx
-  Category Editor      → src/app/category-editor.tsx (Screen 10)
+  Add Category         → src/app/add-category.tsx (Screen 10)
   Edit Category        → src/app/edit-category.tsx
   Add Transaction      → src/app/add-transaction.tsx (Screen 05)
   Receipt Scan         → src/app/receipt-scan.tsx  (Screen 13)
@@ -308,7 +308,7 @@ existing `SafeAreaProvider`.
 - **Active type tile:** `rgba(200,123,84,0.1)` bg, brass border, `--parchment` text
 
 ### Screen 10 — Category Editor + Icon Picker
-- **File:** `src/app/category-editor.tsx` (flat route)
+- **File:** `src/app/add-category.tsx` (flat route)
 - **Elements:** Cancel / "New category" / Save header, category preview row (58×58 brass
   circle + inline name field), icon grid (6 cols, 12 icons + "···" overflow), colour dot
   row (5 dots; active: double ring `--ink` inner then `--brass` outer), type tiles
@@ -849,7 +849,7 @@ Each phase requires explicit approval before implementation begins.
 ### Phase 3 — Category & Account Management ✅ Complete
 - [x] Screen 08: Categories list (`categories.tsx`, conic ring, EXPENSE/INCOME badge)
 - [x] Screen 09: Add Account (`add-account.tsx`, type grid, logo grid)
-- [x] Screen 10: Category editor + icon picker (`category-editor.tsx`)
+- [x] Screen 10: Category editor + icon picker (`add-category.tsx`)
 
 ### Phase 4 — Utility Screens ✅ Complete
 - [x] Screen 12: FAB Action Sheet (`fab-sheet.tsx`)
@@ -958,7 +958,7 @@ sloth/
     │   ├── pin-setup.tsx           ← Screen 19: backup PIN setup (theme-aware)
     │   ├── add-account.tsx         ← Screen 09 (flat route)
     │   ├── edit-account.tsx        ← Edit account (flat route)
-    │   ├── category-editor.tsx     ← Screen 10 (flat route)
+    │   ├── add-category.tsx     ← Screen 10 (flat route)
     │   ├── edit-category.tsx       ← Edit category (flat route)
     │   ├── add-transaction.tsx     ← Screen 05 (push form)
     │   ├── transaction/

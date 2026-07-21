@@ -7,6 +7,7 @@
 
 import type { ReactNode } from "react";
 import { Text, View } from "react-native";
+import { useColors } from "@/theme/ThemeContext";
 
 interface FormFieldProps {
   label: string;
@@ -15,14 +16,29 @@ interface FormFieldProps {
 }
 
 export function FormField({ label, error, children }: FormFieldProps) {
+  const colors = useColors();
   return (
-    <View className="rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
-      <Text className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
+    <View
+      className="rounded-2xl border   px-4 py-3.5"
+      style={{
+        borderColor: colors.hairline,
+        backgroundColor: colors.surfaceCard,
+      }}
+    >
+      <Text
+        className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.06em] "
+        style={{ color: colors.textSecondary }}
+      >
         {label}
       </Text>
       {children}
       {error ? (
-        <Text className="mt-1 font-mono text-[10px] text-rust">{error}</Text>
+        <Text
+          className="mt-1 font-mono text-[10px] "
+          style={{ color: colors.rust }}
+        >
+          {error}
+        </Text>
       ) : null}
     </View>
   );

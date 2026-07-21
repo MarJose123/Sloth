@@ -30,6 +30,7 @@ import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { CategoryKind } from "@/types";
+import Color from "color";
 
 // ─── schema ────────────────────────────────────────────────────────────────
 
@@ -194,16 +195,27 @@ export default function EditCategoryScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center pt-safe bg-surface-bg">
-        <Text className="text-sm text-text-secondary font-manrope">
-          Loading\u2026
+      <View
+        className="flex-1 items-center justify-center pt-safe "
+        style={{ backgroundColor: colors.surfaceBg }}
+      >
+        <Text
+          className="text-sm  font-manrope"
+          style={{ color: colors.textSecondary }}
+        >
+          {"Loading\u2026"}
         </Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 pt-safe bg-surface-bg">
+    <View
+      className="flex-1 pt-safe "
+      style={{
+        backgroundColor: colors.surfaceBg,
+      }}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -220,9 +232,19 @@ export default function EditCategoryScreen() {
               onPress={() => router.back()}
               className="active:opacity-60"
             >
-              <Text className="text-[14.5px] text-text-secondary">Cancel</Text>
+              <Text
+                className="text-[14.5px] "
+                style={{
+                  color: colors.textSecondary,
+                }}
+              >
+                Cancel
+              </Text>
             </Pressable>
-            <Text className="font-fraunces-medium text-[20px] text-text-primary">
+            <Text
+              className="font-fraunces-medium text-[20px] "
+              style={{ color: colors.textPrimary }}
+            >
               Edit category
             </Text>
             <Pressable
@@ -231,8 +253,8 @@ export default function EditCategoryScreen() {
               className="active:opacity-60"
             >
               <Text
-                className="font-manrope-bold text-[13px] text-brass"
-                style={{ opacity: isSaving ? 0.4 : 1 }}
+                className="font-manrope-bold text-[13px] "
+                style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
               >
                 Save
               </Text>
@@ -242,8 +264,19 @@ export default function EditCategoryScreen() {
           {/* ── Preview + name ── */}
           <View className="mb-6 flex-row items-center gap-3.5">
             <PreviewRing icon={selectedIcon} />
-            <View className="flex-1 rounded-2xl border border-hairline bg-surface-card px-4 py-3.5">
-              <Text className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-text-secondary">
+            <View
+              className="flex-1 rounded-2xl border  px-4 py-3.5"
+              style={{
+                borderColor: colors.hairline,
+                backgroundColor: colors.surfaceCard,
+              }}
+            >
+              <Text
+                className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] "
+                style={{
+                  color: colors.textSecondary,
+                }}
+              >
                 Name
               </Text>
               <Controller
@@ -256,14 +289,22 @@ export default function EditCategoryScreen() {
                     onBlur={onBlur}
                     placeholder="e.g. Groceries"
                     placeholderTextColor={colors.textSecondary}
-                    className="text-[14px] text-text-primary"
+                    className="text-[14px] "
                     autoCapitalize="words"
                     returnKeyType="done"
+                    style={{
+                      color: colors.textPrimary,
+                    }}
                   />
                 )}
               />
               {errors.name && (
-                <Text className="mt-1 font-mono text-[10px] text-rust">
+                <Text
+                  className="mt-1 font-mono text-[10px] "
+                  style={{
+                    color: colors.rust,
+                  }}
+                >
                   {errors.name.message}
                 </Text>
               )}
@@ -271,7 +312,12 @@ export default function EditCategoryScreen() {
           </View>
 
           {/* ── Icon picker ── */}
-          <Text className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.08em] text-brass">
+          <Text
+            className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.08em] "
+            style={{
+              color: colors.brass,
+            }}
+          >
             Icon
           </Text>
           <View className="mb-6 flex-row flex-wrap gap-2">
@@ -283,11 +329,15 @@ export default function EditCategoryScreen() {
                   onPress={() =>
                     setValue("icon", icon, { shouldValidate: true })
                   }
-                  className={`h-11 w-11 items-center justify-center rounded-[11px] border active:opacity-70 ${
-                    active
-                      ? "border-brass/60 bg-brass/10"
-                      : "border-hairline bg-surface-card"
-                  }`}
+                  className="h-11 w-11 items-center justify-center rounded-[11px] border active:opacity-70"
+                  style={{
+                    backgroundColor: active
+                      ? Color(colors.brass).alpha(0.1).toString()
+                      : colors.surfaceCard,
+                    borderColor: active
+                      ? Color(colors.brass).alpha(0.6).toString()
+                      : colors.hairline,
+                  }}
                 >
                   <Text style={{ fontSize: 20 }}>{icon}</Text>
                 </Pressable>
@@ -296,7 +346,12 @@ export default function EditCategoryScreen() {
           </View>
 
           {/* ── Type selector ── */}
-          <Text className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.08em] text-brass">
+          <Text
+            className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.08em] "
+            style={{
+              color: colors.brass,
+            }}
+          >
             Type
           </Text>
           <View className="mb-8 flex-row gap-2">
@@ -308,23 +363,29 @@ export default function EditCategoryScreen() {
                   onPress={() =>
                     setValue("kind", kindOpt, { shouldValidate: true })
                   }
-                  className={`flex-1 flex-row items-center gap-2 rounded-2xl border p-3.5 active:opacity-80 ${
-                    active
-                      ? "border-brass/50 bg-brass/10"
-                      : "border-hairline bg-surface-card"
-                  }`}
+                  className="flex-1 flex-row items-center gap-2 rounded-2xl border p-3.5 active:opacity-80"
+                  style={{
+                    backgroundColor: active
+                      ? Color(colors.brass).alpha(0.1).toString()
+                      : colors.surfaceCard,
+                    borderColor: active
+                      ? Color(colors.brass).alpha(0.5).toString()
+                      : colors.hairline,
+                  }}
                 >
                   <Text
-                    className={`text-base font-manrope-bold ${
-                      active ? "text-brass" : "text-text-secondary"
-                    }`}
+                    className="text-base font-manrope-bold"
+                    style={{
+                      color: active ? colors.brass : colors.textSecondary,
+                    }}
                   >
                     {kindOpt === "expense" ? "\u2212" : "+"}
                   </Text>
                   <Text
-                    className={`text-[12.5px] font-manrope-semibold capitalize ${
-                      active ? "text-text-primary" : "text-text-secondary"
-                    }`}
+                    className="text-[12.5px] font-manrope-semibold capitalize"
+                    style={{
+                      color: active ? colors.textPrimary : colors.textSecondary,
+                    }}
                   >
                     {kindOpt}
                   </Text>
@@ -337,10 +398,16 @@ export default function EditCategoryScreen() {
           <Pressable
             onPress={handleSave}
             disabled={isSaving}
-            className="rounded-2xl bg-brass py-4 active:opacity-80"
-            style={{ opacity: isSaving ? 0.6 : 1 }}
+            className="rounded-2xl  py-4 active:opacity-80"
+            style={{
+              opacity: isSaving ? 0.6 : 1,
+              backgroundColor: colors.brass,
+            }}
           >
-            <Text className="text-center font-manrope-bold text-sm text-ink">
+            <Text
+              className="text-center font-manrope-bold text-sm "
+              style={{ color: colors.ink }}
+            >
               {isSaving ? "Saving\u2026" : "Save changes"}
             </Text>
           </Pressable>

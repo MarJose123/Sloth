@@ -67,7 +67,7 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
-              name="category-editor"
+              name="add-category"
               options={{
                 animation: "slide_from_right",
                 animationDuration: 300,

@@ -25,14 +25,29 @@ function AboutRow({
 }) {
   const colors = useColors();
   const content = (
-    <View className="flex-row items-center justify-between border-t border-hairline py-[13px]">
+    <View
+      className="flex-row items-center justify-between border-t  py-[13px]"
+      style={{
+        borderColor: colors.hairline,
+      }}
+    >
       <View className="flex-1 pr-4">
-        <Text className="text-[14.5px] font-manrope-semibold text-text-primary">
+        <Text
+          className="text-[14.5px] font-manrope-semibold "
+          style={{
+            color: colors.textPrimary,
+          }}
+        >
           {title}
         </Text>
       </View>
       {value !== undefined ? (
-        <Text className="font-mono text-[13px] text-text-secondary">
+        <Text
+          className="font-mono text-[13px] "
+          style={{
+            color: colors.textSecondary,
+          }}
+        >
           {value}
         </Text>
       ) : (
@@ -63,7 +78,12 @@ export default function AboutScreen() {
   };
 
   return (
-    <View className="flex-1 pt-safe bg-surface-bg">
+    <View
+      className="flex-1 pt-safe "
+      style={{
+        backgroundColor: colors.surfaceBg,
+      }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
@@ -78,7 +98,12 @@ export default function AboutScreen() {
           >
             <ArrowLeftIcon size={28} color={colors.textSecondary} />
           </Pressable>
-          <Text className="font-fraunces-medium text-[20px] text-text-primary">
+          <Text
+            className="font-fraunces-medium text-[20px] "
+            style={{
+              color: colors.textPrimary,
+            }}
+          >
             About
           </Text>
         </View>
@@ -86,16 +111,31 @@ export default function AboutScreen() {
         {/* ── Brand section ── */}
         <View className="mb-7 items-center">
           <SlothAppIcon size={64} />
-          <Text className="mt-3 font-fraunces-medium text-[22px] text-text-primary">
+          <Text
+            className="mt-3 font-fraunces-medium text-[22px] "
+            style={{
+              color: colors.textPrimary,
+            }}
+          >
             Sloth
           </Text>
-          <Text className="mt-1 font-mono text-[12px] text-text-secondary">
+          <Text
+            className="mt-1 font-mono text-[12px] "
+            style={{
+              color: colors.textSecondary,
+            }}
+          >
             Version {APP_VERSION} ({APP_BUILD_NUMBER})
           </Text>
         </View>
 
         {/* ── Description ── */}
-        <Text className="mb-7 text-center text-sm leading-[19px] text-text-secondary">
+        <Text
+          className="mb-7 text-center text-sm leading-[19px] "
+          style={{
+            color: colors.textSecondary,
+          }}
+        >
           A private, fully offline finance tracker. No cloud, no sync, no
           accounts to create anywhere but here.
         </Text>
@@ -113,7 +153,12 @@ export default function AboutScreen() {
         />
 
         {/* ── Footer ── */}
-        <Text className="mt-8 text-center font-mono text-[12px] text-text-secondary">
+        <Text
+          className="mt-8 text-center font-mono text-[12px] "
+          style={{
+            color: colors.textSecondary,
+          }}
+        >
           Made slowly, on purpose.
         </Text>
       </ScrollView>

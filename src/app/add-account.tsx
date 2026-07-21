@@ -303,6 +303,8 @@ export default function AddAccountScreen() {
 
   /** Crop the uploaded image to a square (center-crop) at 400×400. */
   const handleCropToSquare = useCallback(async () => {
+    const colors = useColors();
+
     if (!customLogoUri) return;
     setIsProcessing(true);
     try {
@@ -353,14 +355,14 @@ export default function AddAccountScreen() {
             >
               <Text
                 className="text-[14.5px]"
-                style={{ color: c.textSecondary }}
+                style={{ color: colors.textSecondary }}
               >
                 Cancel
               </Text>
             </Pressable>
             <Text
               className="font-fraunces-medium text-[20px]"
-              style={{ color: c.textPrimary }}
+              style={{ color: colors.textPrimary }}
             >
               New account
             </Text>
@@ -389,11 +391,11 @@ export default function AddAccountScreen() {
                   onChangeText={onChange}
                   onBlur={onBlur}
                   placeholder="e.g. BPI Savings"
-                  placeholderTextColor={c.textSecondary}
+                  placeholderTextColor={colors.textSecondary}
                   className="text-sm"
                   autoCapitalize="words"
                   returnKeyType="next"
-                  style={{ color: c.textPrimary }}
+                  style={{ color: colors.textPrimary }}
                 />
               )}
             />
