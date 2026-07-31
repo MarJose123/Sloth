@@ -17,14 +17,14 @@ env:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - name: 🏗 Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 🔖 Resolve version
+      - name: 🔖 Resolve version & build
         id: version
         run: |
           if [[ -n "${{ inputs.version }}" ]]; then
@@ -33,18 +33,29 @@ jobs:
             TAG="${{ github.event.release.tag_name }}"
             VERSION="${TAG#v}"
           fi
+
+          # Get total commit count as build number
+          BUILD_NUMBER=$(git rev-list --count HEAD)
           BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "build=${BUILD_NUMBER}" >> "$GITHUB_OUTPUT"
           echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
           echo "Resolved version: ${VERSION}"
-          echo "Build date: ${BUILD_DATE}"
+          echo "Build number: ${BUILD_NUMBER}"
 
       - name: 📝 Update app.json version
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          jq --arg v "$VERSION" '.expo.version = $v' app.json > app.json.tmp
+          BUILD="${{ steps.version.outputs.build }}"
+
+          jq --arg v "$VERSION" --arg b "$BUILD" \
+            '.expo.version = $v | .expo.androidBuildNumber = ($b | tonumber)' \
+            app.json > app.json.tmp
           mv app.json.tmp app.json
-          echo "app.json version updated to: $(jq -r '.expo.version' app.json)"
+
+          echo "Updated app.json:"
+          jq '.expo | {version, androidBuildNumber}' app.json
 
       - name: 🔍 Resolve previous tag
         id: previous-tag
@@ -58,13 +69,13 @@ jobs:
             echo "No previous tag found — this is the first release"
           fi
 
-      - name: 📝 Commit version bump to main
-        uses: stefanzweifel/git-auto-commit-action@v7.2.0
+      - name: 📝 Commit version & build update to main
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: bump version to ${{ steps.version.outputs.version }} [skip ci]"
+          commit_message: "chore: bump version to ${{ steps.version.outputs.version }} (build ${{ steps.version.outputs.build }}) [skip ci]"
           file_pattern: app.json
           commit_user_name: github-actions[bot]
-          commit_user_email: github-actions[bot]@users.noreply.github.com
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
           branch: main
 
       - name: Setup Bun
@@ -77,7 +88,7 @@ jobs:
         run: echo "dir=$(bun pm cache)" >> $GITHUB_OUTPUT
 
       - name: 📦 Setup bun cache
-        uses: actions/cache@v6
+        uses: actions/cache@v4
         with:
           path: ${{ steps.bun-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
@@ -87,27 +98,56 @@ jobs:
       - name: 📦 Install dependencies & EAS CLI
         run: |
           bun install
-          bun add --global eas-cli
+          bun add -g eas-cli
 
       - name: 🔄 Verify EAS CLI installation
         run: eas --version
 
-      - name: 📱 Build Release APK
+      - name: 📱 Build Release APK (eas build --local)
         run: |
           export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
-          eas build --platform android --profile production --local \
-            --non-interactive --clear-cache \
+          eas build \
+            --platform android \
+            --profile production \
+            --local \
+            --non-interactive \
+            --clear-cache \
             --output=./app-release.apk
         env:
           NODE_ENV: production
 
+      - name: ✅ Verify APK was created
+        run: |
+          if [ -f "./app-release.apk" ]; then
+            ls -lh ./app-release.apk
+            echo "APK file size: $(du -h ./app-release.apk | cut -f1)"
+          else
+            echo "ERROR: APK file not found!"
+            exit 1
+          fi
+
       - name: 📦 Upload APK as release asset
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2
         with:
           files: ./app-release.apk
           tag_name: ${{ github.event.release.tag_name }}
-          name: Release ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }} (Build ${{ steps.version.outputs.build }})
+          body: |
+            **Version:** ${{ steps.version.outputs.version }}
+            **Build:** ${{ steps.version.outputs.build }}
+            **Date:** ${{ steps.version.outputs.build_date }}
+
+            Built with `eas build --local` profile: production
+
+            ## Installation
+
+            1. Download the APK file below
+            2. Transfer to your Android device
+            3. Open file manager and tap the APK to install
+            4. Or use `adb install app-release.apk` from Android SDK
+
+            **Note:** You may need to enable "Install from Unknown Sources" in Settings > Security on your device.
           generate_release_notes: true
           previous_tag: ${{ steps.previous-tag.outputs.previous_tag }}
         env:
@@ -115,8 +155,18 @@ jobs:
 
       - name: 📦 Upload APK as workflow artifact
         if: github.event_name != 'release'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
-          name: app-release-${{ steps.version.outputs.version }}
+          name: sloth-release-v${{ steps.version.outputs.version }}-build${{ steps.version.outputs.build }}
           path: ./app-release.apk
           retention-days: 30
+
+      - name: 📊 Build Summary
+        if: always()
+        run: |
+          echo "=== Sloth Release Build Summary ==="
+          echo "Version: ${{ steps.version.outputs.version }}"
+          echo "Build: ${{ steps.version.outputs.build }}"
+          echo "Date: ${{ steps.version.outputs.build_date }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "====================================="

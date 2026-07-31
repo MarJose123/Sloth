@@ -345,7 +345,10 @@ export default function AddAccountScreen() {
   };
 
   return (
-    <View className="flex-1 pt-safe " style={{ backgroundColor: colors.surfaceBg }}>
+    <View
+      className="flex-1 pt-safe "
+      style={{ backgroundColor: colors.surfaceBg }}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -443,7 +446,9 @@ export default function AddAccountScreen() {
                   />
                   <Text
                     className="text-[12.5px] font-manrope-semibold"
-                    style={{ color: active ? colors.textPrimary : colors.textSecondary }}
+                    style={{
+                      color: active ? colors.textPrimary : colors.textSecondary,
+                    }}
                   >
                     {label}
                   </Text>
@@ -511,7 +516,9 @@ export default function AddAccountScreen() {
                   />
                   <Text
                     className="text-[11px] font-manrope-bold"
-                    style={{ color: active ? colors.ink : colors.textSecondary }}
+                    style={{
+                      color: active ? colors.ink : colors.textSecondary,
+                    }}
                   >
                     {mode.label}
                   </Text>
@@ -621,7 +628,11 @@ export default function AddAccountScreen() {
                   className="w-full items-center gap-2 rounded-2xl border-2 border-dashed py-8 active:opacity-70"
                   style={{ borderColor: colors.hairline }}
                 >
-                  <Lucide name="image-plus" size={32} color={colors.textSecondary} />
+                  <Lucide
+                    name="image-plus"
+                    size={32}
+                    color={colors.textSecondary}
+                  />
                   <Text
                     className="text-[13px] font-manrope-semibold"
                     style={{ color: colors.textSecondary }}

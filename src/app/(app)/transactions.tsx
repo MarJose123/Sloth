@@ -43,11 +43,7 @@ import { useColors } from "@/theme/ThemeContext";
 /** Builds a MonthRange for the month containing `date`. */
 function monthRange(date: Date): MonthRange {
   const start = new Date(date.getFullYear(), date.getMonth(), 1).getTime();
-  const end = new Date(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    1,
-  ).getTime();
+  const end = new Date(date.getFullYear(), date.getMonth() + 1, 1).getTime();
   return { start, end };
 }
 
@@ -242,9 +238,7 @@ export default function TransactionsScreen() {
     monthRange(new Date()),
   );
 
-  const anchorDate = selectedRange
-    ? new Date(selectedRange.start)
-    : new Date();
+  const anchorDate = selectedRange ? new Date(selectedRange.start) : new Date();
 
   const { state, refresh } = useTransactionsData(
     selectedAccountId ?? undefined,

@@ -150,7 +150,9 @@ describe("listRecentTransactions", () => {
     const range: MonthRange = { start: 1000, end: 2000 };
     await listRecentTransactions(5, undefined, range);
     const sql = mockDbInstance.execute.mock.calls[0][0] as string;
-    const params = mockDbInstance.execute.mock.calls[0][1] as (string | number)[];
+    const params = mockDbInstance.execute.mock.calls[0][1] as (
+      string | number
+    )[];
 
     expect(sql).toContain("WHERE");
     expect(sql).toContain("t.occurred_at >= ?");
@@ -165,7 +167,9 @@ describe("listRecentTransactions", () => {
     const range: MonthRange = { start: 1000, end: 2000 };
     await listRecentTransactions(5, "acc-1", range);
     const sql = mockDbInstance.execute.mock.calls[0][0] as string;
-    const params = mockDbInstance.execute.mock.calls[0][1] as (string | number)[];
+    const params = mockDbInstance.execute.mock.calls[0][1] as (
+      string | number
+    )[];
 
     expect(sql).toContain("WHERE");
     expect(sql).toContain("t.account_id = ?");
