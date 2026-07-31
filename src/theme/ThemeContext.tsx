@@ -50,12 +50,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [stored, scheme] = await Promise.all([
-        storage.getThemePreference(),
-        Appearance.getColorScheme(),
-      ]);
+      const stored = await storage.getThemePreference();
       if (cancelled) return;
       setPreferenceState(stored);
+
+      // "auto" must not inherit a scheme forced by a previous session
+      // (AppCompatDelegate.setDefaultNightMode persists across app restarts
+      // on Android). Reset to follow-the-system first, then read the real
+      // system scheme; the change listener below re-reports it if this read
+      // is momentarily stale.
+      if (stored === "auto") {
+        Appearance.setColorScheme("unspecified");
+      }
+      const scheme = Appearance.getColorScheme();
       setSystemScheme(scheme === "dark" ? "dark" : "light");
       setLoaded(true);
     })();
@@ -80,15 +87,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     await storage.setThemePreference(newPreference);
   }, []);
 
-  // Sync Appearance API so that:
-  //  - The CSS @media (prefers-color-scheme) query in global.css uses the
-  //    resolved theme, updating all Tailwind utility classes automatically.
-  //  - System chrome (status bar, etc.) follows the app theme.
+  // Sync the native appearance so that:
+  //  - An explicit "light"/"dark" preference is forced at the native layer,
+  //    updating the CSS @media (prefers-color-scheme) query in global.css and
+  //    the system chrome to the chosen theme.
+  //  - "auto" clears the override ("unspecified" = follow the system) instead
+  //    of pinning the app to the resolved scheme. Pinning was the bug: once
+  //    forced via AppCompatDelegate, Android stops emitting appearanceChanged
+  //    when the device theme changes, so "auto" froze on the scheme captured
+  //    at mount time and never followed the device.
   //  - Only runs after the stored preference is loaded to avoid a flash.
   useEffect(() => {
     if (!loaded) return;
-    Appearance.setColorScheme(resolved);
-  }, [resolved, loaded]);
+    Appearance.setColorScheme(
+      preference === "auto" ? "unspecified" : preference,
+    );
+  }, [preference, loaded]);
 
   // ── render ──────────────────────────────────────────────────────────────────
 
