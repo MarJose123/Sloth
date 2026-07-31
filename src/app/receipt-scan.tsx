@@ -25,10 +25,12 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { router } from "expo-router";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { BlurView } from "expo-blur";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import { useColors } from "@/theme/ThemeContext";
 import { colors } from "@/theme/colors";
@@ -46,11 +48,21 @@ import type { OcrResult } from "@/types";
 export default function ReceiptScanScreen() {
   const c = useColors();
   const toast = useToast();
+  const { height: screenHeight } = useWindowDimensions();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<OcrResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Single source of truth for the scan frame + scrim geometry so the
+  // frosted area always lines up with the dashed frame.
+  const frame = {
+    top: 100,
+    left: 25,
+    right: 25,
+    height: Math.round(screenHeight * 0.76),
+  };
 
   // Request camera permission on mount
   useEffect(() => {
@@ -230,9 +242,67 @@ export default function ReceiptScanScreen() {
         </Text>
       )}
 
+      {/* ── Frosted blur around the scan box (only when idle) ── */}
+      {!result && !error && !isProcessing && (
+        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+          {/* Top strip */}
+          <BlurView
+            intensity={60}
+            tint="dark"
+            style={[
+              styles.scrim,
+              { top: 0, left: 0, right: 0, height: frame.top },
+            ]}
+          />
+          {/* Left strip */}
+          <BlurView
+            intensity={60}
+            tint="dark"
+            style={[
+              styles.scrim,
+              { top: frame.top, left: 0, width: frame.left, bottom: 0 },
+            ]}
+          />
+          {/* Right strip */}
+          <BlurView
+            intensity={60}
+            tint="dark"
+            style={[
+              styles.scrim,
+              { top: frame.top, right: 0, width: frame.right, bottom: 0 },
+            ]}
+          />
+          {/* Bottom strip */}
+          <BlurView
+            intensity={60}
+            tint="dark"
+            style={[
+              styles.scrim,
+              {
+                top: frame.top + frame.height,
+                left: frame.left,
+                right: frame.right,
+                bottom: 0,
+              },
+            ]}
+          />
+        </View>
+      )}
+
       {/* ── Receipt frame overlay (only when idle) ── */}
       {!result && !error && !isProcessing && (
-        <View style={[styles.receiptFrame, { borderColor: colors.brass }]}>
+        <View
+          style={[
+            styles.receiptFrame,
+            {
+              top: frame.top,
+              left: frame.left,
+              right: frame.right,
+              height: frame.height,
+              borderColor: colors.brass,
+            },
+          ]}
+        >
           <View style={[styles.scanLine, { backgroundColor: colors.brass }]} />
         </View>
       )}
@@ -434,20 +504,22 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     textAlign: "center",
-    zIndex: 5,
+    // Draw above the frosted scrim around the scan box
+    zIndex: 6,
     color: colors.textSecondary,
   },
   receiptFrame: {
     position: "absolute",
-    top: 100,
-    left: 25,
-    right: 25,
-    bottom: 240,
-    height: "76%",
     borderWidth: 1.5,
     borderStyle: "dashed",
     borderRadius: 10,
     overflow: "hidden",
+  },
+  scrim: {
+    position: "absolute",
+    // Light translucent base — BlurView's `tint="dark"` adds the rest so the
+    // frost stays consistent across platforms.
+    backgroundColor: "rgba(8,9,13,0.35)",
   },
   scanLine: {
     position: "absolute",
