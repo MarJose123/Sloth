@@ -21,10 +21,26 @@ import {
 } from "@/components/navigation/icons";
 import { useColors } from "@/theme/ThemeContext";
 
+// Routes that render inside the (app) group and show the pill tab bar.
+// Root-level push screens (about, add-account, …) and the Settings screen
+// must NOT show it, or it flashes underneath while their transitions run.
+const TAB_BAR_SCREENS = new Set([
+  "/",
+  "/(app)",
+  "/(app)/dashboard",
+  "/dashboard",
+  "/(app)/accounts",
+  "/accounts",
+  "/(app)/transactions",
+  "/transactions",
+  "/(app)/categories",
+  "/categories",
+]);
+
 export default function AppLayout() {
   const pathname = usePathname();
   const colors = useColors();
-  const showTabBar = !pathname.includes("settings");
+  const showTabBar = TAB_BAR_SCREENS.has(pathname);
 
   return (
     <View style={{ flex: 1 }}>
