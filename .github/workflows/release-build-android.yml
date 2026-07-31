@@ -4,6 +4,13 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 1.2.3). Leave empty to use the version in app.config.ts. Re-releasing an already-tagged version updates the existing release."
+        required: false
+        default: ""
+        type: string
 
 env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -13,6 +20,8 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    permissions:
+      contents: write
     steps:
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
@@ -22,36 +31,88 @@ jobs:
       - name: 🔖 Resolve version & build
         id: version
         run: |
-          TAG="${{ github.ref_name }}"
-          VERSION="${TAG#v}"
+          if [ -n "${{ inputs.version }}" ]; then
+            # Manual dispatch with an explicit version input
+            VERSION="${{ inputs.version }}"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual dispatch without a version: fall back to the version
+            # configured in app.config.ts
+            VERSION=$(node -e '
+              const fs = require("fs");
+              const m = fs.readFileSync("app.config.ts", "utf8").match(/version: "(\d[\w.+-]*)"/);
+              console.log(m ? m[1] : "1.0.0");
+            ')
+          else
+            # Tag push: derive the version from the tag name
+            TAG_REF="${{ github.ref_name }}"
+            VERSION="${TAG_REF#v}"
+          fi
+          VERSION="${VERSION#v}"
 
-          # Get total commit count as build number
-          BUILD_NUMBER=$(git rev-list --count HEAD)
+          # Strip pre-release/build suffixes for the version stored in
+          # app.config.ts (e.g. "1.2.3-beta.1" -> "1.2.3")
+          CLEAN_VERSION="${VERSION%%[-+]*}"
+
+          # Tag the release is attached to (created if it does not exist yet)
+          TAG="v${VERSION}"
+
+          # Read the current build number from app.config.ts (default 0 if missing)
+          INITIAL_BUILD=$(node -e '
+            const fs = require("fs");
+            const src = fs.readFileSync("app.config.ts", "utf8");
+            const m = src.match(/androidBuildNumber:\s*(\d+)/);
+            console.log(m ? Number(m[1]) : 0);
+          ')
+
+          # Increment the build number for this release
+          BUILD_NUMBER=$(( ${INITIAL_BUILD:-0} + 1 ))
           BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "version=${CLEAN_VERSION}" >> "$GITHUB_OUTPUT"
           echo "build=${BUILD_NUMBER}" >> "$GITHUB_OUTPUT"
           echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "Resolved version: ${VERSION}"
+          echo "Config version: ${CLEAN_VERSION}"
+          echo "Release tag: ${TAG}"
+          echo "Initial build number: ${INITIAL_BUILD}"
           echo "Build number: ${BUILD_NUMBER}"
 
-      - name: 📝 Update app.json version
+      - name: 📝 Update app version & build
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           BUILD="${{ steps.version.outputs.build }}"
-
-          jq --arg v "$VERSION" --arg b "$BUILD" \
-            '.expo.version = $v | .expo.androidBuildNumber = ($b | tonumber)' \
-            app.json > app.json.tmp
-          mv app.json.tmp app.json
-
-          echo "Updated app.json:"
-          jq '.expo | {version, androidBuildNumber}' app.json
+          node - "$VERSION" "$BUILD" <<'EOF'
+          const fs = require("fs");
+          const [version, build] = process.argv.slice(2);
+          let src = fs.readFileSync("app.config.ts", "utf8");
+          if (/version: "\d[\w.+-]*"/.test(src)) {
+            // Override the existing value
+            src = src.replace(/version: "\d[\w.+-]*"/, `version: "${version}"`);
+          } else {
+            // Insert the key before the closing of the config object
+            src = src.replace(/\n}\);(\s*)$/, `\n  version: "${version}",\n});$1`);
+          }
+          if (/androidBuildNumber:\s*\d+/.test(src)) {
+            // Override the existing value
+            src = src.replace(
+              /androidBuildNumber:\s*\d+/,
+              `androidBuildNumber: ${build}`,
+            );
+          } else {
+            // Insert the key before the closing of the config object
+            src = src.replace(/\n}\);(\s*)$/, `\n  androidBuildNumber: ${build},\n});$1`);
+          }
+          fs.writeFileSync("app.config.ts", src);
+          console.log(`Updated app.config.ts: version=${version} androidBuildNumber=${build}`);
+          EOF
+          echo "---"
+          grep -nE 'version:|androidBuildNumber:' app.config.ts
 
       - name: 🔍 Resolve previous tag
         id: previous-tag
         run: |
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 ${{ github.ref_name }}^ 2>/dev/null || echo "")
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 ${{ steps.version.outputs.tag }}^ 2>/dev/null || echo "")
           if [ -n "$PREVIOUS_TAG" ]; then
             echo "previous_tag=${PREVIOUS_TAG}" >> "$GITHUB_OUTPUT"
             echo "Previous tag resolved: ${PREVIOUS_TAG}"
@@ -64,7 +125,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: bump version to ${{ steps.version.outputs.version }} (build ${{ steps.version.outputs.build }}) [skip ci]"
-          file_pattern: app.json
+          file_pattern: app.config.ts
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
           branch: main
@@ -122,13 +183,15 @@ jobs:
         uses: actions/github-script@v9
         env:
           PREVIOUS_TAG: ${{ steps.previous-tag.outputs.previous_tag }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
         with:
           script: |
             const previousTag = process.env.PREVIOUS_TAG || undefined;
+            const releaseTag = process.env.RELEASE_TAG;
             const { data } = await github.rest.repos.generateReleaseNotes({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: context.ref.replace("refs/tags/", ""),
+              tag_name: releaseTag,
               ...(previousTag ? { previous_tag_name: previousTag } : {}),
             });
             core.setOutput("body", data.body);
@@ -137,15 +200,15 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: ./app-release.apk
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ steps.version.outputs.tag }}
           name: Release ${{ steps.version.outputs.version }} (Build ${{ steps.version.outputs.build }})
           body: |
-            
+
             **Version:** ${{ steps.version.outputs.version }}
             **Build:** ${{ steps.version.outputs.build }}
             **Date:** ${{ steps.version.outputs.build_date }}
-            
-            
+
+
             ${{ steps.release-notes.outputs.body }}
 
             ---

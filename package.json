@@ -12,6 +12,7 @@
     "color": "^5.0.3",
     "expo": "~57.0.9",
     "expo-application": "~57.0.2",
+    "expo-blur": "~57.0.2",
     "expo-build-properties": "~57.0.8",
     "expo-camera": "~57.0.3",
     "expo-constants": "~57.0.8",
@@ -89,7 +90,7 @@
     }
   },
   "scripts": {
-    "start": "expo start -c",
+    "dev": "APP_VARIANT=development bun expo start -c",
     "android": "expo start -c --android",
     "ios": "expo start -c --ios",
     "lint": "prettier --write . && expo lint . --fix",

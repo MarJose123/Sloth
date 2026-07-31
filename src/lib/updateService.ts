@@ -191,7 +191,7 @@ export async function downloadAPK(
       if (file.exists) {
         file.delete();
       }
-    } catch (_error) {
+    } catch {
       // Ignore cleanup errors
     }
 
