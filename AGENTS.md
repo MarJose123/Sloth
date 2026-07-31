@@ -50,7 +50,7 @@ SQLCipher. There is no cloud sync, no analytics endpoint, no third-party login.
 | Build | EAS CLI ≥ 20.5.1, `eas build --local` | GH Actions ubuntu-latest |
 | Java | JDK 17 (hard requirement for AGP + RN 0.86) | |
 | Android SDK | Compile/target 36, minSdk 31, buildTools 36.0.0 (via `expo-build-properties` in `app.json`) | |
-| Additional Expo plugins | `expo-router`, `expo-secure-store`, `expo-font`, `expo-local-authentication`, `expo-splash-screen`, `expo-camera`, `expo-build-properties`, `expo-image`, `expo-status-bar`, `expo-web-browser`, `expo-dev-client`, `expo-device`, `expo-updates`, `expo-constants`, `expo-system-ui`, `expo-document-picker`, `expo-image-manipulator`, `expo-image-picker`, `expo-media-library`, `expo-linking`, `expo-file-system`, `@react-native-vector-icons/lucide` | All configured in `app.json` plugins array |
+| Additional Expo plugins | `expo-router`, `expo-secure-store`, `expo-font`, `expo-local-authentication`, `expo-splash-screen`, `expo-camera`, `expo-build-properties`, `expo-image`, `expo-status-bar`, `expo-web-browser`, `expo-dev-client`, `expo-device`, `expo-constants`, `expo-system-ui`, `expo-document-picker`, `expo-image-manipulator`, `expo-image-picker`, `expo-media-library`, `expo-linking`, `expo-file-system`, `@react-native-vector-icons/lucide` | All configured in `app.json` plugins array |
 | Runtime helpers | `react-native-reanimated` 4.5.0, `react-native-gesture-handler` ~2.32.0, `react-native-worklets` 0.10.0, `react-native-safe-area-context` 5.7.0, `react-native-css` ^3.0.7, `react-native-screens` 4.25.2 | |
 | Dev client | `expo-dev-client` ~57.0.7 | Used in development profile |
 
