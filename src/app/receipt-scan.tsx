@@ -32,15 +32,11 @@ import { router } from "expo-router";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { BlurView } from "expo-blur";
 import { Lucide } from "@react-native-vector-icons/lucide";
+import { ReceiptScanResult } from "@/components/ReceiptScanResult";
 import { useColors } from "@/theme/ThemeContext";
 import { colors } from "@/theme/colors";
 import { useToast } from "@/hooks/useToast";
-import {
-  extractReceiptData,
-  isOcrAvailable,
-  formatPhilippineCurrency,
-  formatReceiptDate,
-} from "@/lib/ocr";
+import { extractReceiptData, isOcrAvailable } from "@/lib/ocr";
 import type { OcrResult } from "@/types";
 
 // ─── screen ───────────────────────────────────────────────────────────────────
@@ -135,6 +131,19 @@ export default function ReceiptScanScreen() {
     setResult(null);
     setError(null);
   }, []);
+
+  // ── Result view (replaces the camera) ────────────────────────────────────
+
+  if (result && !isProcessing) {
+    return (
+      <ReceiptScanResult
+        result={result}
+        onClose={() => router.back()}
+        onConfirm={handleConfirm}
+        onRetake={handleRetake}
+      />
+    );
+  }
 
   // ── Permission loading ───────────────────────────────────────────────────
 
@@ -331,129 +340,6 @@ export default function ReceiptScanScreen() {
               style={{ color: colors.brass }}
             >
               Try again
-            </Text>
-          </Pressable>
-        </View>
-      )}
-
-      {/* ── Detected card ── */}
-      {result && !isProcessing && (
-        <View
-          className="absolute bottom-44 left-5 right-5 z-10 rounded-2xl border px-4 py-4"
-          style={{
-            backgroundColor: c.surfaceCard,
-            borderColor: c.hairline,
-          }}
-        >
-          {/* Detected tag */}
-          <View className="mb-3 flex-row items-center gap-1.5">
-            <Lucide name="circle-dot" size={12} color={colors.sage} />
-            <Text
-              className="text-[11px] font-mono"
-              style={{ color: colors.sage }}
-            >
-              Detected on-device
-            </Text>
-          </View>
-
-          {/* Merchant */}
-          <View className="mb-2.5 flex-row justify-between">
-            <Text
-              className="text-xs font-manrope"
-              style={{ color: c.textSecondary }}
-            >
-              Merchant
-            </Text>
-            <Text
-              className="text-sm font-manrope-semibold"
-              style={{ color: c.textPrimary }}
-            >
-              {result.merchant ?? "\u2014"}
-            </Text>
-          </View>
-
-          {/* Amount */}
-          <View className="mb-2.5 flex-row justify-between">
-            <Text
-              className="text-xs font-manrope"
-              style={{ color: c.textSecondary }}
-            >
-              Amount
-            </Text>
-            <Text
-              className="text-sm font-manrope-semibold"
-              style={{ color: c.textPrimary }}
-            >
-              {result.amountCents != null
-                ? formatPhilippineCurrency(result.amountCents)
-                : "\u2014"}
-            </Text>
-          </View>
-
-          {/* Date */}
-          <View className="mb-2.5 flex-row justify-between">
-            <Text
-              className="text-xs font-manrope"
-              style={{ color: c.textSecondary }}
-            >
-              Date
-            </Text>
-            <Text
-              className="text-sm font-manrope-semibold"
-              style={{ color: c.textPrimary }}
-            >
-              {formatReceiptDate(result.date)}
-            </Text>
-          </View>
-
-          {/* Raw text preview */}
-          <View
-            className="mb-3 border-t pt-2.5"
-            style={{ borderColor: c.hairline }}
-          >
-            <Text
-              className="mb-1 text-[10px] font-mono"
-              style={{ color: c.textSecondary }}
-            >
-              Raw OCR text
-            </Text>
-            <Text
-              className="text-[10px] font-mono leading-[1.4]"
-              style={{ color: c.textSecondary }}
-              numberOfLines={4}
-            >
-              {result.rawText.slice(0, 200)}
-              {result.rawText.length > 200 ? "\u2026" : ""}
-            </Text>
-          </View>
-
-          {/* Use these details */}
-          <Pressable
-            onPress={handleConfirm}
-            className="rounded-2xl bg-brass py-3.5 active:opacity-80"
-          >
-            <View className="flex-row items-center justify-center gap-1.5">
-              <Text
-                className="text-sm font-manrope-bold"
-                style={{ color: colors.ink }}
-              >
-                Use these details
-              </Text>
-              <Lucide name="arrow-right" size={16} color={colors.ink} />
-            </View>
-          </Pressable>
-
-          {/* Retake */}
-          <Pressable
-            onPress={handleRetake}
-            className="mt-3 active:opacity-60"
-            style={{ alignItems: "center" }}
-          >
-            <Text
-              className="text-xs font-manrope-semibold"
-              style={{ color: c.textSecondary }}
-            >
-              Retake photo
             </Text>
           </Pressable>
         </View>
