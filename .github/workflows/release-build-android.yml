@@ -1,14 +1,9 @@
 name: "Android Release Build"
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version override (e.g., 1.2.3). Uses latest release tag if empty."
-        required: false
-        type: string
+  push:
+    tags:
+      - "v*"
 
 env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -27,12 +22,8 @@ jobs:
       - name: 🔖 Resolve version & build
         id: version
         run: |
-          if [[ -n "${{ inputs.version }}" ]]; then
-            VERSION="${{ inputs.version }}"
-          else
-            TAG="${{ github.event.release.tag_name }}"
-            VERSION="${TAG#v}"
-          fi
+          TAG="${{ github.ref_name }}"
+          VERSION="${TAG#v}"
 
           # Get total commit count as build number
           BUILD_NUMBER=$(git rev-list --count HEAD)
@@ -126,19 +117,38 @@ jobs:
             exit 1
           fi
 
+      - name: 📝 Generate GitHub release notes
+        id: release-notes
+        uses: actions/github-script@v9
+        env:
+          PREVIOUS_TAG: ${{ steps.previous-tag.outputs.previous_tag }}
+        with:
+          script: |
+            const previousTag = process.env.PREVIOUS_TAG || undefined;
+            const { data } = await github.rest.repos.generateReleaseNotes({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: context.ref.replace("refs/tags/", ""),
+              ...(previousTag ? { previous_tag_name: previousTag } : {}),
+            });
+            core.setOutput("body", data.body);
+
       - name: 📦 Upload APK as release asset
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: ./app-release.apk
-          tag_name: ${{ github.event.release.tag_name }}
+          tag_name: ${{ github.ref_name }}
           name: Release ${{ steps.version.outputs.version }} (Build ${{ steps.version.outputs.build }})
           body: |
+            
             **Version:** ${{ steps.version.outputs.version }}
             **Build:** ${{ steps.version.outputs.build }}
             **Date:** ${{ steps.version.outputs.build_date }}
+            
+            
+            ${{ steps.release-notes.outputs.body }}
 
-            Built with `eas build --local` profile: production
+            ---
 
             ## Installation
 
@@ -148,13 +158,10 @@ jobs:
             4. Or use `adb install app-release.apk` from Android SDK
 
             **Note:** You may need to enable "Install from Unknown Sources" in Settings > Security on your device.
-          generate_release_notes: true
-          previous_tag: ${{ steps.previous-tag.outputs.previous_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 📦 Upload APK as workflow artifact
-        if: github.event_name != 'release'
         uses: actions/upload-artifact@v4
         with:
           name: sloth-release-v${{ steps.version.outputs.version }}-build${{ steps.version.outputs.build }}
