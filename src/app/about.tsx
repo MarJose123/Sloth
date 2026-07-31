@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
+import type { ReactNode } from "react";
 import * as Application from "expo-application";
 import { SlothAppIcon } from "@/components/SlothAppIcon";
 import { ArrowLeftIcon, ChevronRightIcon } from "@/components/navigation/icons";
@@ -38,11 +39,18 @@ const GITHUB_BASE = "https://github.com/MarJose123/sloth";
 interface AboutRowProps {
   title: string;
   value?: string;
+  right?: ReactNode;
   onPress?: () => void;
   isLoading?: boolean;
 }
 
-function AboutRow({ title, value, onPress, isLoading = false }: AboutRowProps) {
+function AboutRow({
+  title,
+  value,
+  right,
+  onPress,
+  isLoading = false,
+}: AboutRowProps) {
   const colors = useColors();
 
   const content = (
@@ -63,6 +71,8 @@ function AboutRow({ title, value, onPress, isLoading = false }: AboutRowProps) {
 
       {isLoading ? (
         <ActivityIndicator size="small" color={colors.brass} />
+      ) : right !== undefined ? (
+        right
       ) : value !== undefined ? (
         <Text
           className="font-mono text-[13px]"
@@ -109,6 +119,14 @@ export default function AboutScreen() {
   const handleCheckForUpdates = async () => {
     await updateChecker.checkForUpdates();
   };
+
+  // Latest-version badge — shown inline on the "Check for updates" row
+  // whenever there is no error, no pending download and no newer release.
+  const isUpToDate =
+    !updateChecker.isChecking &&
+    !updateChecker.isAvailable &&
+    !updateChecker.error &&
+    !updateChecker.isDownloading;
 
   // Show modal when update is available
   useFocusEffect(
@@ -197,28 +215,29 @@ export default function AboutScreen() {
           </View>
         )}
 
-        {!updateChecker.isAvailable &&
-          !updateChecker.isChecking &&
-          !updateChecker.error &&
-          !updateChecker.isDownloading && (
-            <View
-              className="mb-5 rounded-lg border p-3"
-              style={{
-                borderColor: colors.sage,
-                backgroundColor: `${colors.sage}15`,
-              }}
-            >
-              <Text className="text-xs" style={{ color: colors.sage }}>
-                ✓ You&#39;re running the latest version
-              </Text>
-            </View>
-          )}
-
         {/* ── About Rows ── */}
         <AboutRow
           title="Check for updates"
           onPress={handleCheckForUpdates}
           isLoading={updateChecker.isChecking}
+          right={
+            isUpToDate ? (
+              <View
+                className="rounded-full border px-2.5 py-[3px]"
+                style={{
+                  borderColor: colors.sage,
+                  backgroundColor: `${colors.sage}15`,
+                }}
+              >
+                <Text
+                  className="font-mono text-[11px]"
+                  style={{ color: colors.sage }}
+                >
+                  {"✓ Up to date"}
+                </Text>
+              </View>
+            ) : undefined
+          }
         />
         <AboutRow title="License" value="GPLv3" />
         <AboutRow title="Source code" onPress={() => openUrl(GITHUB_BASE)} />
