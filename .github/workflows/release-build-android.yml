@@ -35,18 +35,21 @@ jobs:
           echo "Resolved version: ${VERSION}"
           echo "Build number: ${BUILD_NUMBER}"
 
-      - name: 📝 Update app.json version
+      - name: 📝 Update app version & build
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           BUILD="${{ steps.version.outputs.build }}"
-
-          jq --arg v "$VERSION" --arg b "$BUILD" \
-            '.expo.version = $v | .expo.androidBuildNumber = ($b | tonumber)' \
-            app.json > app.json.tmp
-          mv app.json.tmp app.json
-
-          echo "Updated app.json:"
-          jq '.expo | {version, androidBuildNumber}' app.json
+          node - "$VERSION" "$BUILD" <<'EOF'
+          const fs = require("fs");
+          const [version, build] = process.argv.slice(2);
+          let src = fs.readFileSync("app.config.ts", "utf8");
+          src = src.replace(/version: "[\d.]+"/, `version: "${version}"`);
+          src = src.replace(/androidBuildNumber: \d+/, `androidBuildNumber: ${build}`);
+          fs.writeFileSync("app.config.ts", src);
+          console.log(`Updated app.config.ts: version=${version} androidBuildNumber=${build}`);
+          EOF
+          echo "---"
+          grep -nE 'version:|androidBuildNumber:' app.config.ts
 
       - name: 🔍 Resolve previous tag
         id: previous-tag
@@ -64,7 +67,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: bump version to ${{ steps.version.outputs.version }} (build ${{ steps.version.outputs.build }}) [skip ci]"
-          file_pattern: app.json
+          file_pattern: app.config.ts
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
           branch: main
@@ -140,12 +143,12 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ steps.version.outputs.version }} (Build ${{ steps.version.outputs.build }})
           body: |
-            
+
             **Version:** ${{ steps.version.outputs.version }}
             **Build:** ${{ steps.version.outputs.build }}
             **Date:** ${{ steps.version.outputs.build_date }}
-            
-            
+
+
             ${{ steps.release-notes.outputs.body }}
 
             ---

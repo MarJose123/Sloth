@@ -20,8 +20,8 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import Animated, {
+  makeMutable,
   useAnimatedStyle,
-  useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
@@ -137,6 +137,12 @@ function isSameDay(a: number, b: number): boolean {
 /** Width reserved for the swipe-revealed action area. */
 const DELETE_ACTION_WIDTH = 60;
 
+/**
+ * Shared opacity for the swipe-revealed trash icon. Declared at module scope
+ * (AGENTS.md §6) so the React Compiler permits mutating `.value` from handlers.
+ */
+const DELETE_ICON_OPACITY = makeMutable(1);
+
 // ─── swipeable transaction row ───────────────────────────────────────────────
 
 function SwipeableTransactionRow({
@@ -149,18 +155,19 @@ function SwipeableTransactionRow({
   const colors = useColors();
   const swipeableRef = useRef<any>(null);
 
-  // Only allow deletion if the transaction was created today
-  const deletable = isSameDay(transaction.createdAt, Date.now());
-
-  const iconOpacity = useSharedValue(1);
+  // Only allow deletion if the transaction was created today. Evaluated once
+  // at mount because Date.now() is impure and cannot run during render.
+  const [deletable] = useState(() =>
+    isSameDay(transaction.createdAt, Date.now()),
+  );
 
   const iconStyle = useAnimatedStyle(() => ({
-    opacity: iconOpacity.value,
+    opacity: DELETE_ICON_OPACITY.value,
   }));
 
   const handleDelete = useCallback(() => {
     // Fade the icon out in 5ms before the Alert appears
-    iconOpacity.value = withTiming(0, { duration: 4 });
+    DELETE_ICON_OPACITY.value = withTiming(0, { duration: 4 });
     Alert.alert(
       "Delete transaction",
       `Remove "${transaction.merchant}" (${formatSignedCurrency(transaction.amountCents)})? This cannot be undone.`,
@@ -169,13 +176,18 @@ function SwipeableTransactionRow({
           text: "Cancel",
           style: "cancel",
           onPress: () => {
-            iconOpacity.value = withTiming(1, { duration: 4 });
+            DELETE_ICON_OPACITY.value = withTiming(1, { duration: 4 });
           },
         },
         {
           text: "Delete",
           style: "destructive",
-          onPress: onDelete,
+          onPress: () => {
+            // Reset the shared opacity so other rows (which share the
+            // module-scope mutable) keep a visible trash icon.
+            DELETE_ICON_OPACITY.value = 1;
+            onDelete();
+          },
         },
       ],
     );
