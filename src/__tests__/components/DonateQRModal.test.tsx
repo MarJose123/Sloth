@@ -66,18 +66,30 @@ jest.mock("expo-image", () => ({
   Image: "ExpoImage",
 }));
 
+// Mock expo-asset
+jest.mock("expo-asset", () => ({
+  Asset: {
+    fromModule: jest.fn(() => ({
+      downloadAsync: jest.fn().mockResolvedValue({
+        localUri: "file:///source.jpg",
+      }),
+    })),
+  },
+}));
+
 // Mock expo-file-system
 jest.mock("expo-file-system", () => ({
   File: jest.fn().mockImplementation(() => ({
+    uri: "/cache/sloth-donation-qr.jpg",
     copy: jest.fn().mockResolvedValue(undefined),
   })),
   Paths: { cache: "/cache" },
 }));
 
-// Mock expo-media-library
+// Mock expo-media-library (new class-based API)
 jest.mock("expo-media-library", () => ({
+  Asset: { create: jest.fn().mockResolvedValue({ id: "asset-1" }) },
   requestPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
-  saveToLibraryAsync: jest.fn().mockResolvedValue(undefined),
 }));
 
 // Mock sonner-native toast
@@ -156,5 +168,45 @@ describe("DonateQRModal", () => {
     // Find the close button Pressable
     const pressables = root.findAllByProps({ onPress: onClose });
     expect(pressables.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("copies the resolved file:// asset and saves it to the photo library", async () => {
+    jest.useFakeTimers();
+    const onClose = jest.fn();
+    const { root } = render(<DonateQRModal visible={true} onClose={onClose} />);
+
+    // Find the "Save to Photos" pressable (the one whose onPress is not onClose)
+    const savePressable = root.findAll(
+      (node) =>
+        typeof node.props.onPress === "function" &&
+        node.props.onPress !== onClose,
+    )[0];
+    expect(savePressable).toBeDefined();
+
+    await act(async () => {
+      await savePressable.props.onPress();
+    });
+
+    // Source must be resolved to a file:// path before copying (regression:
+    // resolveAssetSource URIs use non-file schemes that File.copy() rejects)
+    const FileMock = jest.requireMock("expo-file-system").File;
+    expect(FileMock).toHaveBeenNthCalledWith(1, "file:///source.jpg");
+    expect(FileMock).toHaveBeenNthCalledWith(
+      2,
+      "/cache",
+      "sloth-donation-qr.jpg",
+    );
+
+    // Dest file copy then gallery save
+    const mediaLibrary = jest.requireMock("expo-media-library");
+    expect(mediaLibrary.Asset.create).toHaveBeenCalledWith(
+      "/cache/sloth-donation-qr.jpg",
+    );
+
+    // Flush the success-toast reset timer
+    act(() => {
+      jest.runAllTimers();
+    });
+    jest.useRealTimers();
   });
 });

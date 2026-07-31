@@ -10,11 +10,15 @@
  */
 
 import { useCallback, useRef, useState } from "react";
-import { Image as RNImage, Modal, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, Text, View } from "react-native";
 import { Lucide } from "@react-native-vector-icons/lucide";
+import { Asset } from "expo-asset";
 import { Image } from "expo-image";
 import { File, Paths } from "expo-file-system";
-import * as MediaLibrary from "expo-media-library";
+import {
+  Asset as MediaAsset,
+  requestPermissionsAsync,
+} from "expo-media-library";
 import { useColors } from "@/theme/ThemeContext";
 import { toast } from "@/hooks/useToast";
 import Color from "color";
@@ -37,8 +41,8 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
 
   const handleSave = useCallback(async () => {
     try {
-      // Request photo library permission
-      const { status } = await MediaLibrary.requestPermissionsAsync();
+      // Request photo library permission (write-only is enough to save)
+      const { status } = await requestPermissionsAsync(true);
       if (status !== "granted") {
         toast.error("Permission Required", {
           description:
@@ -47,14 +51,16 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
         return;
       }
 
-      // Resolve the bundled asset URI and copy to a writable location
-      const assetSource = RNImage.resolveAssetSource(QR_ASSET);
-      const sourceFile = new File(assetSource.uri);
+      // Resolve the bundled asset to a real file:// path, then copy to a
+      // writable location (resolveAssetSource URIs use non-file schemes that
+      // File.copy() rejects).
+      const asset = await Asset.fromModule(QR_ASSET).downloadAsync();
+      const sourceFile = new File(asset.localUri ?? asset.uri);
       const destFile = new File(Paths.cache, "sloth-donation-qr.jpg");
       await sourceFile.copy(destFile, { overwrite: true });
 
-      // Save to device gallery
-      await MediaLibrary.saveToLibraryAsync(destFile.uri);
+      // Save to device gallery via the class-based API
+      await MediaAsset.create(destFile.uri);
 
       // Show success toast
       setSaved(true);
@@ -64,6 +70,7 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
       const message =
         err instanceof Error ? err.message : "An unexpected error occurred.";
       toast.error("Save Failed", { description: message });
+      console.error("Error saving QR code:", err);
     }
   }, []);
 
