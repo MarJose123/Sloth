@@ -109,8 +109,8 @@ function createStyles(c: ColorPalette) {
     welcomeHeadline: {
       fontFamily: "Fraunces_450",
       fontSize: 42,
-      lineHeight: 42,
-      letterSpacing: -0.3,
+      lineHeight: 50,
+      letterSpacing: -0.5,
       color: c.textPrimary,
       textAlign: "center" as const,
       marginBottom: 14,
@@ -122,6 +122,7 @@ function createStyles(c: ColorPalette) {
       color: c.textSecondary,
       textAlign: "center" as const,
       paddingHorizontal: 8,
+      paddingTop: 10,
     },
 
     // ── Slide 2: Privacy ──
