@@ -16,6 +16,7 @@ import { PinDots } from "@/components/ui/PinDots";
 import { Keypad } from "@/components/Keypad";
 import { hashPin, isValidPinFormat } from "@/lib/pin";
 import { storage } from "@/lib/storage";
+import { markSessionUnlocked } from "@/lib/sessionLock";
 import { toast } from "@/hooks/useToast";
 import { lightColors } from "@/theme/lightColors";
 
@@ -64,6 +65,7 @@ export default function PinSetupScreen() {
       const hash = await hashPin(next);
       await storage.setPinHash(hash);
       await storage.setOnboardingComplete(true);
+      markSessionUnlocked(); // freshly onboarded — treat this session as unlocked
       router.replace("/(app)/dashboard");
     },
     [currentInput, stage, firstPin],

@@ -33,10 +33,11 @@ export async function checkBiometricAvailability(): Promise<BiometricAvailabilit
 
 export async function authenticateWithBiometrics(
   promptMessage = "Unlock Sloth",
+  cancelLabel = "Use PIN instead",
 ): Promise<boolean> {
   const result = await LocalAuthentication.authenticateAsync({
     promptMessage,
-    cancelLabel: "Use PIN instead",
+    cancelLabel, // PIN fallback is handled by our own lock screen
     disableDeviceFallback: true, // we handle PIN fallback with our own screen
   });
   return result.success;

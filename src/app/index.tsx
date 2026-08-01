@@ -14,11 +14,13 @@ import { Redirect } from "expo-router";
 import { SplashScreen as CustomSplash } from "@/screens/SplashScreen";
 import { storage } from "@/lib/storage";
 import { getDb } from "@/lib/db/client";
+import { isSessionUnlocked } from "@/lib/sessionLock";
 
 type BootState =
   | { status: "checking" }
   | { status: "error"; message: string }
   | { status: "needs_onboarding" }
+  | { status: "locked" }
   | { status: "ready" };
 
 export default function Index() {
@@ -32,10 +34,19 @@ export default function Index() {
         await getDb(); // opens (or creates) the encrypted DB and runs migrations
         const onboardingComplete = await storage.getOnboardingComplete();
         if (cancelled) return;
+        if (!onboardingComplete) {
+          setBoot({ status: "needs_onboarding" });
+          return;
+        }
+        // Returning user: if they set up a PIN and/or biometrics during
+        // onboarding, gate the app behind the lock screen on cold start.
+        // (Skip the gate when already unlocked this session.)
+        const hasUnlockMethod = await storage.hasUnlockMethod();
+        if (cancelled) return;
         setBoot(
-          onboardingComplete
-            ? { status: "ready" }
-            : { status: "needs_onboarding" },
+          hasUnlockMethod && !isSessionUnlocked()
+            ? { status: "locked" }
+            : { status: "ready" },
         );
       } catch (err) {
         if (cancelled) return;
@@ -61,5 +72,6 @@ export default function Index() {
   }
   if (boot.status === "needs_onboarding")
     return <Redirect href="/onboarding/welcome" />;
+  if (boot.status === "locked") return <Redirect href="/lock" />;
   return <Redirect href="/(app)/dashboard" />;
 }

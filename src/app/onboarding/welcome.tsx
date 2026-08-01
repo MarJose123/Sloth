@@ -36,6 +36,7 @@ import {
   authenticateWithBiometrics,
 } from "@/lib/biometrics";
 import { storage } from "@/lib/storage";
+import { markSessionUnlocked } from "@/lib/sessionLock";
 import { ColorPalette } from "@/theme/colors";
 import { useColors } from "@/theme/ThemeContext";
 
@@ -436,6 +437,7 @@ function SlideBiometric({
       if (!success) return;
       await storage.setBiometricEnabled(true);
       await storage.setOnboardingComplete(true);
+      markSessionUnlocked(); // freshly onboarded — treat this session as unlocked
       onComplete();
     } finally {
       setIsAuthenticating(false);

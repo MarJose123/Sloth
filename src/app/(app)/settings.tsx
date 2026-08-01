@@ -10,9 +10,9 @@
  */
 
 import type { ReactNode } from "react";
-import { useState, useEffect } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { router } from "expo-router";
+import { useState, useCallback } from "react";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { router, useFocusEffect } from "expo-router";
 import * as ScreenCapture from "expo-screen-capture";
 import { storage } from "@/lib/storage";
 import { Toggle } from "@/components/ui/Toggle";
@@ -171,23 +171,28 @@ export default function SettingsScreen() {
 
   const { preference, loaded, setPreference } = useTheme();
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const [bio, screenshots, storedPin] = await Promise.all([
-        storage.getBiometricEnabled(),
-        storage.getScreenshotsEnabled(),
-        storage.getPinHash(),
-      ]);
-      if (cancelled) return;
-      setBiometricEnabled(bio);
-      setScreenshotsEnabled(screenshots);
-      setPinHash(storedPin);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Reload the persisted security flags on every focus — not just mount — so
+  // the rows reflect PIN/biometric changes made on pushed screens (e.g. after
+  // creating a backup PIN in /pin-setup and coming back).
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      (async () => {
+        const [bio, screenshots, storedPin] = await Promise.all([
+          storage.getBiometricEnabled(),
+          storage.getScreenshotsEnabled(),
+          storage.getPinHash(),
+        ]);
+        if (cancelled) return;
+        setBiometricEnabled(bio);
+        setScreenshotsEnabled(screenshots);
+        setPinHash(storedPin);
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, []),
+  );
 
   // ── preference handlers ──────────────────────────────────────────────────────
 
@@ -303,26 +308,32 @@ export default function SettingsScreen() {
               ? "Change or remove your backup PIN"
               : "Not set — add a backup PIN"
           }
-          onPress={async () => {
-            const hash = await storage.getPinHash();
-            if (!hash) {
+          onPress={() => {
+            if (!pinHash) {
               router.push("/pin-setup");
-            } else {
-              router.push("/pin-setup");
-              toast.show("Remove backup PIN?", {
-                description:
-                  "You won't be able to disable biometrics without a backup PIN.",
-                action: {
-                  label: "Remove",
-                  onClick: async () => {
+              return;
+            }
+            // Ask first — only open the PIN screen if the user chooses Update.
+            Alert.alert(
+              "Backup PIN",
+              "Do you want to remove your backup PIN or set a new one?\n\nIf you remove it, biometrics can no longer be disabled unless you set a new backup PIN.",
+              [
+                {
+                  text: "Remove",
+                  style: "destructive",
+                  onPress: async () => {
                     await storage.removePinHash();
                     setPinHash(null);
                     toast.success("Backup PIN removed");
                   },
                 },
-                duration: 6000,
-              });
-            }
+                {
+                  text: "Update",
+                  onPress: () => router.push("/pin-setup"),
+                },
+                { text: "Cancel", style: "cancel" },
+              ],
+            );
           }}
           right={<Chevron />}
         />

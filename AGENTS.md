@@ -134,10 +134,11 @@ JS counterpart: `src/theme/colors.ts` exports the same values as typed `ColorPal
   static graphics.
 - **Sloth icon:** moss-green rounded-rect bg (`#7FA06B`, rx=220/1024), caramel fur, cream
   face patch, dark eye patches. Defined as `SlothAppIcon.tsx` — a **single shared SVG
-  component** reused across Splash (00), Onboarding Welcome (01), About (18). Must not
-  drift between screens.
+  component** reused across Splash (00), Onboarding Welcome (01), Lock screen (11/15),
+  About (18), ErrorBoundary. Must not drift between screens.
 - **Fingerprint icon:** Uses Lucide `fingerprint` glyph via `@react-native-vector-icons/lucide`.
   Coloured with `colors.brass` by default, theme-aware. Component: `FingerprintIcon.tsx`.
+  Used on Onboarding Welcome (03) only — the lock screen ring shows `SlothAppIcon` instead.
 
 ---
 
@@ -220,8 +221,9 @@ existing `SafeAreaProvider`.
   `--text-secondary`), three loading dots `bottom:64px` (dot 2 active `--brass`, others
   `rgba(200,123,84,0.35)`)
 - **Behaviour:** On mount → opens encrypted DB (runs migrations) → checks
-  `storage.getOnboardingComplete()` → redirects to `/onboarding/welcome` (first run)
-  or `/(app)/dashboard` (returning)
+  `storage.getOnboardingComplete()` → redirects to `/onboarding/welcome` (first run),
+  `/lock` (returning user with a PIN/biometric unlock method — cold-start lock gate),
+  or `/(app)/dashboard` (returning user with no unlock method configured)
 
 ### Screen 01 — Onboarding Welcome
 - **File:** `src/app/onboarding/welcome.tsx` (carousel slide 0)
@@ -355,9 +357,10 @@ existing `SafeAreaProvider`.
 ### Screen 15 — Returning User Launch / Lock
 - **File:** `src/app/lock.tsx` (same as Screen 11, handles both unlock flows)
 - **Elements:** "Sloth" brass mono brand-mark top, biometric ring (110×110 plain soft
-  ring `border:1px solid rgba(200,123,84,0.55)`) with fingerprint SVG, "Welcome back"
-  (Fraunces 450 22px), "Unlock to see your accounts" (13px dim), "Unlock with Face ID"
-  brass button, "Use PIN instead" dim underlined fallback
+  ring `border:1px solid rgba(200,123,84,0.55)`) with SlothAppIcon logo (80px) inside, "Welcome back"
+  (Fraunces 450 22px), "Unlock to see your accounts" (13px dim), "Unlock with Biometric"
+  brass button (no auto-prompt — biometrics fire only on tap), "Use PIN instead"
+  dim underlined fallback (shown when a PIN is set)
 
 ### Screen 16 — Donate QR Modal 🔲 Not yet implemented
 - **Planned file:** `src/app/donate.tsx`
@@ -469,6 +472,7 @@ PRAGMA user_version = 1;  -- increment on each migration
 | `useCategoriesData` | `src/hooks/useCategoriesData.ts` | Category list |
 | `useDashboardData` | `src/hooks/useDashboardData.ts` | Aggregated dashboard data (balance + rings + recent txs) |
 | `useAddTransactionData` | `src/hooks/useAddTransactionData.ts` | Accounts + categories for Add Transaction pickers |
+| `useIdleLock` | `src/hooks/useIdleLock.ts` | App-wide 15-min idle lock (locks session → /lock); `recordActivity()` fed by a root-layout touch wrapper |
 | `useAppFonts` | `src/hooks/useAppFonts.ts` | Font loading (runs in root layout) |
 | `useToast` | `src/hooks/useToast.tsx` | Themed toast/snackbar (wraps sonner-native) |
 
@@ -505,6 +509,8 @@ Layer 2: App Lock (expo-local-authentication)
   6-digit PIN fallback — hashed and stored in SecureStore
   Implementation: src/lib/biometrics.ts, src/lib/pin.ts
   Lock state managed in app root; Lock screen at /lock
+  Cold-start gate: boot routing + root layout (shouldLockGate in sessionLock.ts)
+  Idle lock: 15 min without activity → session locked → /lock (src/hooks/useIdleLock.ts)
   Settings guards: biometrics cannot be disabled without a backup PIN set
 
 Layer 3: Screenshot Prevention
@@ -1000,6 +1006,7 @@ sloth/
     │   ├── useCategoriesData.ts
     │   ├── useDashboardData.ts
     │   ├── useAddTransactionData.ts
+    │   ├── useIdleLock.ts           ← Idle-lock timer (15 min, AppState + interval)
     │   ├── useAppFonts.ts
     │   └── useToast.tsx             ← Themed toast wrapper (sonner-native)
     │
@@ -1019,10 +1026,12 @@ sloth/
     │   ├── csvParser.ts            ← CSV/OFX parser
     │   ├── export.ts               ← Data export + QR save
     │   ├── format.ts               ← Currency/date formatting
+    │   ├── idleLock.ts             ← Pure 15-min idle-timeout logic (isIdleElapsed)
     │   ├── logoResolver.ts          ← Resolves logoKey → bundled require() or filesystem URI
     │   ├── ocr.ts                  ← OCR shim/scaffold
     │   ├── pin.ts                  ← PIN hashing/verification
     │   ├── selectionBus.ts         ← Cross-component selection event bus
+    │   ├── sessionLock.ts          ← In-memory session unlock/recovery flags + shouldLockGate predicate for the cold-start lock gate
     │   └── storage.ts              ← SecureStore/AsyncStorage wrapper
     │
     ├── screens/
