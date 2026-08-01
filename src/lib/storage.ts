@@ -59,6 +59,21 @@ export const storage = {
     await SecureStore.deleteItemAsync(KEYS.pinHash);
   },
 
+  // ── unlock method ───────────────────────────────────────────────────────────
+
+  /**
+   * Whether the user has at least one unlock method configured (PIN and/or
+   * biometrics). The cold-start boot flow uses this to decide whether to gate
+   * the app behind the lock screen after onboarding is complete.
+   */
+  async hasUnlockMethod(): Promise<boolean> {
+    const [pin, biometricsEnabled] = await Promise.all([
+      this.getPinHash(),
+      this.getBiometricEnabled(),
+    ]);
+    return pin !== null || biometricsEnabled;
+  },
+
   // ── theme ───────────────────────────────────────────────────────────────────
 
   /** Returns "auto" when no preference has been stored (follow system). */
