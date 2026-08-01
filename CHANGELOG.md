@@ -4,6 +4,30 @@
 All notable changes to this project will be documented in this file.
 
 <!--- END HEADER -->
+## Release 1.2.0 (Build 144) - 2026-08-01
+
+**Version:** 1.2.0
+**Build:** 144
+**Date:** 2026-08-01T08:13:00Z
+
+### What's Changed
+
+* Implement cold start app lock and idle lock features by @MarJose123 in https://github.com/MarJose123/Sloth/pull/4
+
+**Full Changelog**: https://github.com/MarJose123/Sloth/compare/v1.0.1...v1.2.0
+
+
+---
+
+### Installation
+
+1. Download the APK file below
+2. Transfer to your Android device
+3. Open file manager and tap the APK to install
+4. Or use `adb install app-release.apk` from Android SDK
+
+**Note:** You may need to enable "Install from Unknown Sources" in Settings > Security on your device.
+
 ## Release 1.0.1 (Build 143) - 2026-07-31
 
 **Version:** 1.0.1
