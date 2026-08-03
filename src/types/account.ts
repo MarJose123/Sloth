@@ -11,7 +11,7 @@
 
 /** Account-related types. */
 
-export type AccountType = "checking" | "savings" | "credit" | "cash";
+export type AccountType = "wallet" | "savings" | "credit" | "investment";
 
 export interface AccountWithBalance {
   id: string;

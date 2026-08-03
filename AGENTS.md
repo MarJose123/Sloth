@@ -252,9 +252,23 @@ existing `SafeAreaProvider`.
 ### Screen 04 — Dashboard
 - **File:** `src/app/(app)/dashboard.tsx`
 - **Elements:**
-    - Greeting "Good morning/afternoon/evening" (12.5px `--text-secondary`)
+    - Greeting "Good morning/afternoon/evening" (12.5px `--text-secondary`) with a
+      time-of-day emoji (🌅 morning, ☀️ afternoon, 🌇 ~6pm, 🌙 night), an eye
+      toggle (hide/show amounts as "₱ ••••••" via `HIDDEN_AMOUNT`; app-wide via
+      `AmountsVisibilityProvider`/`useAmountsVisibility`, persisted in
+      SecureStore as `sloth.amounts_hidden`, starts masked until loaded) and a
+      lock button on the right; the screen sits over the shared `GlowBackdrop`
+      (glow layer anchored to the full screen, `pointerEvents="none"`)
+    - "Local Processing" pill (sage) — blocks enter with staggered `FadeInDown`
+      (reanimated) for a lively feel
+    - "This month" card: total expense + income for the current month
+      (mono labels/values; income in `sage`)
     - Account switcher chips (horizontal scroll; component: `AccountSwitcher.tsx`)
-    - "Total balance" label (12px dim), balance (Fraunces 450 44px -0.01em tracking)
+    - "Total balance" label (12px dim), balance (Fraunces 450 44px -0.01em tracking);
+      the balance counts up over ~550ms when it changes (`AnimatedBalance`)
+    - "Activity · last 7 days" card (`WeeklyActivityCard.tsx`): grouped bar chart
+      (income `sage` / expense `brass`) from `getDailyTotals()` in
+      `src/lib/db/repositories/transactions.ts`, zero-filled per local day
     - Ring row: 3 ring cards (`--surface-card`, 16px radius), rings are `border:3px solid <color>`
       circles with percentage text (IBM Plex Mono 10px) — no fill (component: `CategoryRingCard.tsx`)
     - Recent section header with inline "+ Add" brass pill button (700, 11px, 14px radius)
@@ -265,11 +279,15 @@ existing `SafeAreaProvider`.
 
 ### Screen 05 — Add Transaction (push route)
 - **File:** `src/app/add-transaction.tsx` (push form); action sheet at `src/app/fab-sheet.tsx`
-- **Elements:** Cancel / "New expense" / Save header, amount display (Fraunces 450 46px,
+- **Elements:** Cancel / "New expense" / Save header (title flips to "New income" when the
+  selected category is an income type), amount display (Fraunces 450 46px,
   cursor `--brass`), method pills (Manual/Scan receipt/Import; active:
   `rgba(200,123,84,0.14)` bg brass border), four field blocks (`--surface-card`, 14px radius),
   scan hint row (sage, "◎" prefix), **no** tab bar
-- **Hook:** `useAddTransactionData` (custom hook, plain `useEffect` — no state flash on back)
+- **Category picker:** lists expense AND income categories; the guard queries the DB live at
+  tap time (only blocks when zero categories exist). Saved amount sign follows the selected
+  category's kind: expense → negative, income → positive.
+- **Hook:** `useAddTransactionData` (refetches on focus so pickers and guards never see stale data)
 
 ### Screen 06 — Accounts List
 - **File:** `src/app/(app)/accounts.tsx`
@@ -290,6 +308,8 @@ existing `SafeAreaProvider`.
 - **Groups:** Appearance, Security, Data, Support, About
 - **Toggle:** on=`rgba(200,123,84,0.9)` thumb right; off=`--surface-elevated` + hairline border thumb
   left `--text-secondary` (component: `Toggle.tsx`)
+- **Security rows:** Face/Touch ID, Backup PIN, Lock now, Allow screenshots, and Hide amounts
+  (bound to `useAmountsVisibility` — the same persisted app-wide eye toggle as the dashboard)
 - **Segment control (Theme):** `--surface-elevated` bg, active segment `--brass` bg `--ink` text,
   10.5px 700
 
@@ -304,7 +324,7 @@ existing `SafeAreaProvider`.
 ### Screen 09 — Add Account
 - **File:** `src/app/add-account.tsx` (flat route)
 - **Elements:** Cancel / "New account" / Save header, name field, type grid (2×2:
-  Checking/Savings/Credit card/Cash), logo preview (64×64 `--surface-card` dashed), logo grid
+  Wallet/Savings/Credits/Investment), logo preview (64×64 `--surface-card` dashed), logo grid
   (4×2 tiles), upload tile (dashed brass text), starting balance field, "Add account" brass
   button
 - **Active type tile:** `rgba(200,123,84,0.1)` bg, brass border, `--parchment` text
@@ -417,7 +437,7 @@ CREATE TABLE settings (
 CREATE TABLE accounts (
   id               TEXT PRIMARY KEY NOT NULL,
   name             TEXT NOT NULL,
-  type             TEXT NOT NULL CHECK (type IN ('checking','savings','credit','cash')),
+  type             TEXT NOT NULL CHECK (type IN ('wallet','savings','credit','investment')),
   starting_balance INTEGER NOT NULL DEFAULT 0,
   logo_key         TEXT,
   color_hex        TEXT NOT NULL,
@@ -473,12 +493,15 @@ PRAGMA user_version = 1;  -- increment on each migration
 | `useDashboardData` | `src/hooks/useDashboardData.ts` | Aggregated dashboard data (balance + rings + recent txs) |
 | `useAddTransactionData` | `src/hooks/useAddTransactionData.ts` | Accounts + categories for Add Transaction pickers |
 | `useIdleLock` | `src/hooks/useIdleLock.ts` | App-wide 15-min idle lock (locks session → /lock); `recordActivity()` fed by a root-layout touch wrapper |
+| `useAmountsVisibility` | `src/hooks/useAmountsVisibility.tsx` | App-wide hide/show-amounts state (dashboard eye toggle), persisted in SecureStore; `AmountsVisibilityProvider` mounted in the root layout |
 | `useAppFonts` | `src/hooks/useAppFonts.ts` | Font loading (runs in root layout) |
 | `useToast` | `src/hooks/useToast.tsx` | Themed toast/snackbar (wraps sonner-native) |
 
 - `useFocusEffect` for list/dashboard hooks that must refresh on screen return.
-- Plain `useEffect` for in-progress form screens (Add Transaction, Add Account) to avoid
-  state flash.
+- Plain `useEffect` for in-progress form screens (Add Account) to avoid
+  state flash. Add Transaction refetches on focus (`useAddTransactionData`)
+  because the screen can stay mounted while accounts/categories change
+  elsewhere — mount-only data would leave picker guards stale.
 
 ---
 
@@ -996,7 +1019,9 @@ sloth/
     │       ├── ErrorBoundary.tsx   ← React error boundary
     │       ├── FingerprintIcon.tsx ← Lucide fingerprint icon (theme brass)
     │       ├── FormField.tsx       ← Label + child wrapper for form fields
+    │       ├── GlowBackdrop.tsx    ← Decorative brass/sage glow blobs (tab screens + lock screen)
     │       ├── PinDots.tsx         ← 6-dot PIN display
+    │       ├── Skeleton.tsx        ← Shimmer skeleton primitives (Skeleton / SkeletonCircle / SkeletonList)
     │       ├── TextLink.tsx        ← Styled link text
     │       └── Toggle.tsx          ← Settings toggle switch
     │
@@ -1007,6 +1032,7 @@ sloth/
     │   ├── useDashboardData.ts
     │   ├── useAddTransactionData.ts
     │   ├── useIdleLock.ts           ← Idle-lock timer (15 min, AppState + interval)
+    │   ├── useAmountsVisibility.tsx ← App-wide hide/show-amounts (SecureStore-backed context)
     │   ├── useAppFonts.ts
     │   └── useToast.tsx             ← Themed toast wrapper (sonner-native)
     │

@@ -29,6 +29,12 @@ export function formatSignedCurrency(cents: number): string {
 }
 
 /**
+ * Masked placeholder shown in place of amounts when the user hides
+ * balances/figures with the dashboard's eye toggle ("₱ ••••••").
+ */
+export const HIDDEN_AMOUNT = "\u20B1 \u2022\u2022\u2022\u2022\u2022\u2022";
+
+/**
  * Returns a human-readable month label like "July 2025" for the given date.
  */
 export function formatMonthLabel(date: Date = new Date()): string {
@@ -53,13 +59,19 @@ export function formatRelativeDate(
   return `${month}/${day}/${year}`;
 }
 
-/** "Good morning" / "Good afternoon" / "Good evening" based on the device's local clock. */
+/**
+ * "Good morning" / "Good afternoon" / "Good evening" based on the device's
+ * local clock, each with a time-of-day emoji:
+ *   morning (5–11) → 🌅, afternoon (12–16) → ☀️,
+ *   evening / "almost 6pm" (17–18) → 🌇, night (19–4) → 🌙.
+ */
 export function getGreeting(reference: Date = new Date()): string {
   const hour = reference.getHours();
-  if (hour < 5) return "Still up";
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+  if (hour < 5) return "Still up 🌙";
+  if (hour < 12) return "Good morning 🌅";
+  if (hour < 17) return "Good afternoon ☀️";
+  if (hour < 19) return "Good evening 🌇";
+  return "Good evening 🌙";
 }
 
 /**
@@ -100,15 +112,45 @@ export function formatRelativeTime(
 }
 
 /**
- * Auto-formats an amount string to 2 decimal places on blur.
- * "100" → "100.00", "0" → "0.00", "12.5" → "12.50"
+ * Live-formats an amount string with thousands separators as the user types.
+ * "1234" → "1,234", "1234.5" → "1,234.5", ".5" → "0.5", "0" → "0".
+ * Strips existing currency symbols/commas, keeps a single decimal point and
+ * caps the decimal part at 2 digits. Returns "" for an empty input.
+ */
+export function formatAmountInput(value: string): string {
+  let cleaned = value.replace(/[^\d.]/g, "");
+  const firstDot = cleaned.indexOf(".");
+  if (firstDot !== -1) {
+    cleaned =
+      cleaned.slice(0, firstDot + 1) +
+      cleaned.slice(firstDot + 1).replace(/\./g, "");
+  }
+  const [rawWhole, rawDec] = cleaned.split(".");
+  const whole =
+    rawWhole.replace(/^0+(?=\d)/, "") || (rawDec !== undefined ? "0" : "");
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  if (rawDec === undefined) return grouped;
+  return `${grouped}.${(rawDec ?? "").slice(0, 2)}`;
+}
+
+/**
+ * Auto-formats an amount string to 2 decimal places with thousands
+ * separators on blur.
+ * "100" → "100.00", "1234.5" → "1,234.50", "0" → "0.00", "12.5" → "12.50"
  */
 export function formatAmountOnBlur(value: string): string {
   const stripped = value.replace(/[^\d.]/g, "");
   if (!stripped || stripped === "0") return "0.00";
-  if (stripped.includes(".")) {
-    const [whole, dec] = stripped.split(".");
-    return `${whole}.${(dec ?? "").padEnd(2, "0").slice(0, 2)}`;
-  }
-  return `${stripped}.00`;
+  const firstDot = stripped.indexOf(".");
+  const hasDot = stripped.includes(".");
+  const whole =
+    (hasDot ? stripped.slice(0, firstDot) : stripped).replace(
+      /^0+(?=\d)/,
+      "",
+    ) || "0";
+  const dec = (hasDot ? stripped.slice(firstDot + 1) : "")
+    .padEnd(2, "0")
+    .slice(0, 2);
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${grouped}.${dec}`;
 }

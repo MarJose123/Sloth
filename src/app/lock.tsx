@@ -10,13 +10,15 @@
  */
 
 import { useCallback, useState } from "react";
-import { Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { PinDots } from "@/components/ui/PinDots";
 import { Keypad } from "@/components/Keypad";
 import { SlothAppIcon } from "@/components/SlothAppIcon";
 import { BrassButton } from "@/components/ui/BrassButton";
 import { TextLink } from "@/components/ui/TextLink";
+import { GlowBackdrop } from "@/components/ui/GlowBackdrop";
 import { hashPin } from "@/lib/pin";
 import { storage } from "@/lib/storage";
 import {
@@ -176,96 +178,115 @@ export default function LockScreen() {
   if (view.screen === "biometric") {
     const lockedOut = !bioUsable && !hasPin;
     return (
-      <View className="flex-1 items-center justify-center px-5 bg-surface-bg">
-        {/* Brass brand-mark */}
-        <View className="mb-2">
-          <Text className="text-center font-mono text-[12.5px] uppercase tracking-[2px] text-brass">
-            Sloth
-          </Text>
+      <View className="flex-1 bg-surface-bg">
+        {/* Glow layer anchored to the full screen — unaffected by content padding */}
+        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          <GlowBackdrop />
         </View>
-
-        {/* Biometric ring with app logo */}
-        <SlothAppIcon size={90} />
-
-        <Text className="mb-2 mt-8 text-center font-fraunces-medium text-[24px] text-text-primary">
-          Welcome back
-        </Text>
-        <Text className="mb-10 text-center text-[14.5px] text-text-secondary">
-          Unlock to see your accounts
-        </Text>
-
-        {bioUsable ? (
-          <>
-            <BrassButton
-              label="Unlock with Biometric"
-              onPress={handleBiometricFallback}
-            />
-            {view.error && (
-              <Text className="mt-4 text-center text-[12.5px] text-rust">
-                {view.error}
+        <View className="flex-1 items-center justify-center px-5">
+          <Animated.View
+            entering={FadeInDown.duration(450)}
+            className="items-center"
+          >
+            {/* Brass brand-mark */}
+            <View className="mb-2">
+              <Text className="text-center font-mono text-[12.5px] uppercase tracking-[2px] text-brass">
+                Sloth
               </Text>
-            )}
-          </>
-        ) : lockedOut ? (
-          <>
-            <Text className="mb-4 text-center text-[12.5px] text-rust">
-              {view.error ?? BIOMETRICS_LOST_MESSAGE}
-            </Text>
-            <TextLink
-              label="Set a backup PIN"
-              onPress={() => {
-                markPinRecovery();
-                router.push("/pin-setup");
-              }}
-            />
-          </>
-        ) : null}
+            </View>
 
-        {hasPin && (
-          <TextLink
-            label="Use PIN instead"
-            onPress={() => setView({ screen: "pin_verify" })}
-            className="mt-6"
-          />
-        )}
+            {/* Biometric ring with app logo */}
+            <SlothAppIcon size={90} />
+
+            <Text className="mb-2 mt-8 text-center font-fraunces-medium text-[24px] text-text-primary">
+              Welcome back
+            </Text>
+            <Text className="mb-10 text-center text-[14.5px] text-text-secondary">
+              Unlock to see your accounts
+            </Text>
+
+            {bioUsable ? (
+              <>
+                <BrassButton
+                  label="Unlock with Biometric"
+                  onPress={handleBiometricFallback}
+                />
+                {view.error && (
+                  <Text className="mt-4 text-center text-[12.5px] text-rust">
+                    {view.error}
+                  </Text>
+                )}
+              </>
+            ) : lockedOut ? (
+              <>
+                <Text className="mb-4 text-center text-[12.5px] text-rust">
+                  {view.error ?? BIOMETRICS_LOST_MESSAGE}
+                </Text>
+                <TextLink
+                  label="Set a backup PIN"
+                  onPress={() => {
+                    markPinRecovery();
+                    router.push("/pin-setup");
+                  }}
+                />
+              </>
+            ) : null}
+
+            {hasPin && (
+              <TextLink
+                label="Use PIN instead"
+                onPress={() => setView({ screen: "pin_verify" })}
+                className="mt-6"
+              />
+            )}
+          </Animated.View>
+        </View>
       </View>
     );
   }
 
   // PIN verify screen
   return (
-    <View className="flex-1 px-5 pb-5 pt-safe bg-surface-bg">
-      {/* Sloth locked eyebrow */}
-      <Text className="mb-2 mt-15 text-center font-mono text-[12.5px] uppercase tracking-[2px] text-brass">
-        Sloth locked
-      </Text>
+    <View className="flex-1 bg-surface-bg">
+      {/* Glow layer anchored to the full screen — unaffected by content padding */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <GlowBackdrop />
+      </View>
+      <View className="flex-1 px-5 pb-5 pt-safe">
+        <Animated.View entering={FadeInDown.duration(450)} className="flex-1">
+          {/* Sloth locked eyebrow */}
+          <Text className="mb-2 mt-15 text-center font-mono text-[12.5px] uppercase tracking-[2px] text-brass">
+            Sloth locked
+          </Text>
 
-      {/* Title */}
-      <Text className="mb-8 mt-2.5 text-center font-fraunces-medium text-[22px] text-text-primary">
-        {mode === "set" ? "Create a 6-digit PIN" : "Enter your PIN"}
-      </Text>
+          {/* Title */}
+          <Text className="mb-8 mt-2.5 text-center font-fraunces-medium text-[22px] text-text-primary">
+            {mode === "set" ? "Create a 6-digit PIN" : "Enter your PIN"}
+          </Text>
 
-      {/* PIN dots */}
-      <PinDots length={PIN_LENGTH} filledCount={pinInput.length} />
+          {/* PIN dots */}
+          <PinDots length={PIN_LENGTH} filledCount={pinInput.length} />
 
-      {/* Spacer pushes keypad to bottom */}
-      <View className="flex-1" />
+          {/* Spacer pushes keypad to bottom */}
+          <View className="flex-1" />
 
-      {/* Keypad */}
-      <Keypad
-        key={shakeKey}
-        onDigit={handleDigit}
-        onBackspace={handleBackspace}
-      />
+          {/* Keypad */}
+          <Keypad
+            key={shakeKey}
+            onDigit={handleDigit}
+            onBackspace={handleBackspace}
+          />
 
-      {/* Biometric fallback link */}
-      {mode === "lock" && bioUsable && (
-        <TextLink
-          label="Use Biometric instead"
-          onPress={handleBiometricFallback}
-          className="mt-5"
-        />
-      )}
+          {/* Biometric fallback link */}
+          {mode === "lock" && bioUsable && (
+            <TextLink
+              label="Use Biometric instead"
+              onPress={handleBiometricFallback}
+              className="mt-5"
+            />
+          )}
+        </Animated.View>
+      </View>
     </View>
   );
 }

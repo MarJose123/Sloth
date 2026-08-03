@@ -12,6 +12,7 @@
 import { useState, useEffect } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import { Lucide } from "@react-native-vector-icons/lucide";
@@ -256,32 +257,34 @@ export default function ImportScreen() {
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header ── */}
-        <View className="mb-6 flex-row items-center justify-between">
-          <Pressable
-            onPress={() => router.back()}
-            className="active:opacity-60"
-          >
-            <Text className="text-[14.5px] text-text-secondary">
-              {"Cancel"}
-            </Text>
-          </Pressable>
-          <Text className="font-fraunces-medium text-[22px] text-text-primary">
-            {"Import"}
-          </Text>
-          <Pressable
-            onPress={handleImport}
-            disabled={!canImport}
-            className="active:opacity-60"
-          >
-            <Text
-              className="font-manrope-bold text-[14.5px] text-brass"
-              style={{ opacity: canImport ? 1 : 0.35 }}
+        <Animated.View entering={FadeInDown.duration(450)}>
+          {/* ── Header ── */}
+          <View className="mb-6 flex-row items-center justify-between">
+            <Pressable
+              onPress={() => router.back()}
+              className="active:opacity-60"
             >
-              {isImporting ? "Working…" : "Import"}
+              <Text className="text-[14.5px] text-text-secondary">
+                {"Cancel"}
+              </Text>
+            </Pressable>
+            <Text className="font-fraunces-medium text-[22px] text-text-primary">
+              {"Import"}
             </Text>
-          </Pressable>
-        </View>
+            <Pressable
+              onPress={handleImport}
+              disabled={!canImport}
+              className="active:opacity-60"
+            >
+              <Text
+                className="font-manrope-bold text-[14.5px] text-brass"
+                style={{ opacity: canImport ? 1 : 0.35 }}
+              >
+                {isImporting ? "Working…" : "Import"}
+              </Text>
+            </Pressable>
+          </View>
+        </Animated.View>
 
         {/* ── File drop zone ── */}
         <Pressable

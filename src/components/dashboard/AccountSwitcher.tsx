@@ -9,9 +9,11 @@
  *  of this license document, but changing it is not allowed.
  */
 
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { documentDirectory } from "expo-file-system/legacy";
 import type { AccountWithBalance } from "@/types";
 import { useColors } from "@/theme/ThemeContext";
+import { resolveLogoSrc } from "@/lib/logoResolver";
 import Color from "color";
 
 interface AccountSwitcherProps {
@@ -44,6 +46,7 @@ export function AccountSwitcher({
             key={account.id}
             label={account.name}
             dotColor={account.colorHex}
+            logoKey={account.logoKey}
             active={selectedAccountId === account.id}
             onPress={() => onSelect(account.id)}
           />
@@ -56,12 +59,20 @@ export function AccountSwitcher({
 interface AccountChipProps {
   label: string;
   dotColor: string;
+  logoKey?: string | null;
   active: boolean;
   onPress: () => void;
 }
 
-function AccountChip({ label, dotColor, active, onPress }: AccountChipProps) {
+function AccountChip({
+  label,
+  dotColor,
+  logoKey,
+  active,
+  onPress,
+}: AccountChipProps) {
   const colors = useColors();
+  const logoSrc = resolveLogoSrc(logoKey ?? null);
 
   return (
     <Pressable
@@ -76,10 +87,26 @@ function AccountChip({ label, dotColor, active, onPress }: AccountChipProps) {
           : undefined,
       }}
     >
-      <View
-        className="h-[7px] w-[7px] rounded-full"
-        style={{ backgroundColor: dotColor }}
-      />
+      {logoSrc?.type === "bundled" && logoSrc.source ? (
+        <Image
+          source={logoSrc.source}
+          style={{ width: 18, height: 18 }}
+          resizeMode="cover"
+          className="rounded-full"
+        />
+      ) : logoSrc?.type === "uri" && logoSrc.uri ? (
+        <Image
+          source={{ uri: `${documentDirectory}${logoSrc.uri}` }}
+          style={{ width: 18, height: 18 }}
+          resizeMode="cover"
+          className="rounded-full"
+        />
+      ) : (
+        <View
+          className="h-[7px] w-[7px] rounded-full"
+          style={{ backgroundColor: dotColor }}
+        />
+      )}
       <Text
         className="text-[12.5px] font-manrope-semibold"
         style={{

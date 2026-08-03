@@ -9,49 +9,78 @@
  *  of this license document, but changing it is not allowed.
  */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useFocusEffect } from "expo-router";
 import { listAccountsWithBalances } from "@/lib/db/repositories/accounts";
 import { listAllCategories } from "@/lib/db/repositories/categories";
 import type { AddTransactionDataState } from "@/types";
 
 /**
  * Loads the reference data (accounts + categories) needed to populate the
- * Add Transaction form pickers. Fetched once on mount — no focus-effect
- * refetch is needed because the user cannot add accounts or categories
- * while this tab is active.
+ * Add Transaction form pickers.
+ *
+ * Refetches on focus rather than only on mount: the Add Transaction screen
+ * can stay mounted in the navigation stack (for example after saving pushes
+ * the transactions list on top of it) while the user creates or edits
+ * accounts/categories elsewhere. A mount-only fetch would leave the pickers
+ * and their guards (e.g. "No categories — create a category first.") looking
+ * at stale data. Once loaded, later refetches keep the `ready` state and
+ * only flip `isRefreshing`, so the form never blanks out mid-edit.
  */
 export function useAddTransactionData(): AddTransactionDataState {
   const [state, setState] = useState<AddTransactionDataState>({
     status: "loading",
   });
 
+  const stateRef = useRef(state);
   useEffect(() => {
-    let cancelled = false;
+    stateRef.current = state;
+  }, [state]);
 
-    (async () => {
-      try {
-        const [accounts, categories] = await Promise.all([
-          listAccountsWithBalances(),
-          listAllCategories(),
-        ]);
-        if (!cancelled) {
-          setState({ status: "ready", data: { accounts, categories } });
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setState({
-            status: "error",
-            message:
-              err instanceof Error ? err.message : "Failed to load form data",
-          });
-        }
+  const mountedRef = useRef(true);
+  useEffect(
+    () => () => {
+      mountedRef.current = false;
+    },
+    [],
+  );
+
+  const load = useCallback(async () => {
+    const previous = stateRef.current;
+    setState(
+      previous.status === "ready"
+        ? { ...previous, isRefreshing: true }
+        : { status: "loading" },
+    );
+
+    try {
+      const [accounts, categories] = await Promise.all([
+        listAccountsWithBalances(),
+        listAllCategories(),
+      ]);
+      if (mountedRef.current) {
+        setState({
+          status: "ready",
+          data: { accounts, categories },
+          isRefreshing: false,
+        });
       }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    } catch (err) {
+      if (mountedRef.current) {
+        setState({
+          status: "error",
+          message:
+            err instanceof Error ? err.message : "Failed to load form data",
+        });
+      }
+    }
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
 
   return state;
 }

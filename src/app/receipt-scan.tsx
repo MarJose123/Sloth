@@ -229,13 +229,13 @@ export default function ReceiptScanScreen() {
         <Pressable
           onPress={() => router.back()}
           hitSlop={20}
-          className="active:opacity-60"
+          className="active:opacity-0"
         >
-          <Lucide name="x" size={24} color={c.textSecondary} />
+          <Lucide name="x" size={24} color={c.textPrimary} />
         </Pressable>
         <Text
           className="text-xs font-mono tracking-[0.06em]"
-          style={{ color: c.textSecondary }}
+          style={{ color: c.textPrimary }}
         >
           Flash: Auto
         </Text>
@@ -311,9 +311,7 @@ export default function ReceiptScanScreen() {
               borderColor: colors.brass,
             },
           ]}
-        >
-          <View style={[styles.scanLine, { backgroundColor: colors.brass }]} />
-        </View>
+        />
       )}
 
       {/* ── Error display ── */}
@@ -392,7 +390,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     // Draw above the frosted scrim around the scan box
     zIndex: 6,
-    color: colors.textSecondary,
+    color: colors.textPrimary,
   },
   receiptFrame: {
     position: "absolute",

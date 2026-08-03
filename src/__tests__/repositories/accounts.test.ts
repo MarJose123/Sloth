@@ -60,8 +60,8 @@ describe("insertAccount", () => {
     mockDbInstance.execute.mockResolvedValue({ rows: [] });
 
     await insertAccount({
-      name: "Cash",
-      type: "cash",
+      name: "Wallet",
+      type: "wallet",
       colorHex: "#7FA06B",
       logoKey: null,
       startingBalanceCents: 0,
@@ -162,7 +162,7 @@ describe("updateAccount", () => {
     await updateAccount({
       id: "acc-1",
       name: "BPI Savings Updated",
-      type: "checking",
+      type: "wallet",
       colorHex: "#6B8D58",
       logoKey: "bank/metrobank.png",
     });
@@ -171,7 +171,7 @@ describe("updateAccount", () => {
       expect.stringContaining("UPDATE accounts"),
       expect.arrayContaining([
         "BPI Savings Updated",
-        "checking",
+        "wallet",
         "#6B8D58",
         "bank/metrobank.png",
         "acc-1",
@@ -184,8 +184,8 @@ describe("updateAccount", () => {
 
     await updateAccount({
       id: "acc-1",
-      name: "Cash",
-      type: "cash",
+      name: "Wallet",
+      type: "wallet",
       colorHex: "#7FA06B",
       logoKey: null,
     });

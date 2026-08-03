@@ -20,6 +20,7 @@ import {
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import type { ReactNode } from "react";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Application from "expo-application";
 import { SlothAppIcon } from "@/components/SlothAppIcon";
 import { ArrowLeftIcon, ChevronRightIcon } from "@/components/navigation/icons";
@@ -149,24 +150,26 @@ export default function AboutScreen() {
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header ── */}
-        <View className="mb-7 flex-row items-center gap-3">
-          <Pressable
-            onPress={() => router.back()}
-            hitSlop={20}
-            className="active:opacity-60"
-          >
-            <ArrowLeftIcon size={28} color={colors.textSecondary} />
-          </Pressable>
-          <Text
-            className="font-fraunces-medium text-[20px]"
-            style={{
-              color: colors.textPrimary,
-            }}
-          >
-            About
-          </Text>
-        </View>
+        <Animated.View entering={FadeInDown.duration(450)}>
+          {/* ── Header ── */}
+          <View className="mb-7 flex-row items-center gap-3">
+            <Pressable
+              onPress={() => router.back()}
+              hitSlop={20}
+              className="active:opacity-60"
+            >
+              <ArrowLeftIcon size={28} color={colors.textSecondary} />
+            </Pressable>
+            <Text
+              className="font-fraunces-medium text-[20px]"
+              style={{
+                color: colors.textPrimary,
+              }}
+            >
+              About
+            </Text>
+          </View>
+        </Animated.View>
 
         {/* ── Brand section ── */}
         <View className="mb-7 items-center">

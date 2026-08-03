@@ -215,6 +215,31 @@ export async function getTotalExpenseCents(
   return Number(total);
 }
 
+/** Total income within `range`, optionally scoped to one account. Mirrors getTotalExpenseCents. */
+export async function getTotalIncomeCents(
+  range: MonthRange,
+  accountId?: string,
+): Promise<number> {
+  const db = await getDb();
+  const params: (string | number)[] = [range.start, range.end];
+  const accountClause = accountId ? "AND t.account_id = ?" : "";
+  if (accountId) params.push(accountId);
+
+  const { rows } = await db.execute(
+    `SELECT IFNULL(SUM(ABS(t.amount_cents)), 0) AS total
+         FROM transactions t
+         JOIN categories c ON c.id = t.category_id
+         WHERE c.kind = 'income'
+           AND t.occurred_at >= ? AND t.occurred_at < ?
+           ${accountClause};`,
+    params,
+  );
+
+  const total =
+    (rows as unknown as { total: number | string }[])[0]?.total ?? 0;
+  return Number(total);
+}
+
 /**
  * Inserts a new category and returns its generated id.
  */

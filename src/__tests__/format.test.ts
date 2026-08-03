@@ -22,6 +22,7 @@ import {
   formatRelativeDate,
   getGreeting,
   formatRelativeTime,
+  formatAmountInput,
   formatAmountOnBlur,
 } from "@/lib/format";
 
@@ -73,24 +74,29 @@ describe("formatRelativeDate", () => {
 // ─── getGreeting ────────────────────────────────────────────────────────────
 
 describe("getGreeting", () => {
-  it('returns "Good morning" before 12', () => {
+  it('returns "Good morning 🌅" before noon', () => {
     const morning = new Date(2025, 0, 1, 9, 0, 0);
-    expect(getGreeting(morning)).toBe("Good morning");
+    expect(getGreeting(morning)).toBe("Good morning 🌅");
   });
 
-  it('returns "Good afternoon" between 12 and 18', () => {
+  it('returns "Good afternoon ☀️" between 12 and 17', () => {
     const afternoon = new Date(2025, 0, 1, 14, 0, 0);
-    expect(getGreeting(afternoon)).toBe("Good afternoon");
+    expect(getGreeting(afternoon)).toBe("Good afternoon ☀️");
   });
 
-  it('returns "Good evening" after 18', () => {
-    const evening = new Date(2025, 0, 1, 20, 0, 0);
-    expect(getGreeting(evening)).toBe("Good evening");
+  it('returns "Good evening 🌇" around 6pm (17–18)', () => {
+    const sunset = new Date(2025, 0, 1, 18, 0, 0);
+    expect(getGreeting(sunset)).toBe("Good evening 🌇");
   });
 
-  it('returns "Still up" for late night (before 5am)', () => {
-    const night = new Date(2025, 0, 1, 3, 0, 0);
-    expect(getGreeting(night)).toBe("Still up");
+  it('returns "Good evening 🌙" after 7pm', () => {
+    const night = new Date(2025, 0, 1, 20, 0, 0);
+    expect(getGreeting(night)).toBe("Good evening 🌙");
+  });
+
+  it('returns "Still up 🌙" for late night (before 5am)', () => {
+    const lateNight = new Date(2025, 0, 1, 3, 0, 0);
+    expect(getGreeting(lateNight)).toBe("Still up 🌙");
   });
 });
 
@@ -163,7 +169,45 @@ describe("formatAmountOnBlur", () => {
     expect(formatAmountOnBlur("12.999")).toBe("12.99");
   });
 
-  it("strips non-numeric characters", () => {
-    expect(formatAmountOnBlur("$1,234.56")).toBe("1234.56");
+  it("strips non-numeric characters and groups thousands", () => {
+    expect(formatAmountOnBlur("$1,234.56")).toBe("1,234.56");
+    expect(formatAmountOnBlur("12.5")).toBe("12.50");
+  });
+});
+
+// ─── formatAmountInput ─────────────────────────────────────────────────────
+
+describe("formatAmountInput", () => {
+  it("returns empty string for empty input", () => {
+    expect(formatAmountInput("")).toBe("");
+  });
+
+  it("keeps small amounts as-is", () => {
+    expect(formatAmountInput("0")).toBe("0");
+    expect(formatAmountInput("999")).toBe("999");
+  });
+
+  it("adds thousands separators from 1,000 upwards", () => {
+    expect(formatAmountInput("1000")).toBe("1,000");
+    expect(formatAmountInput("1234")).toBe("1,234");
+    expect(formatAmountInput("1234567")).toBe("1,234,567");
+  });
+
+  it("formats decimals while keeping at most 2 digits", () => {
+    expect(formatAmountInput("1234.5")).toBe("1,234.5");
+    expect(formatAmountInput("1234.567")).toBe("1,234.56");
+    expect(formatAmountInput("0.50")).toBe("0.50");
+  });
+
+  it("normalises a leading decimal point", () => {
+    expect(formatAmountInput(".5")).toBe("0.5");
+  });
+
+  it("strips existing currency symbols and commas", () => {
+    expect(formatAmountInput("₱1,234.56")).toBe("1,234.56");
+  });
+
+  it("strips leading zeros", () => {
+    expect(formatAmountInput("007")).toBe("7");
   });
 });

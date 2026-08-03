@@ -26,6 +26,7 @@ const KEYS = {
   pinHash: "sloth.pin_hash",
   themePreference: "sloth.theme_preference",
   screenshotsEnabled: "sloth.screenshots_enabled",
+  amountsHidden: "sloth.amounts_hidden",
 } as const;
 
 export const storage = {
@@ -101,5 +102,15 @@ export const storage = {
   },
   async setScreenshotsEnabled(value: boolean): Promise<void> {
     await SecureStore.setItemAsync(KEYS.screenshotsEnabled, String(value));
+  },
+
+  // ── amounts visibility ───────────────────────────────────────────────────────
+
+  /** Defaults to false (amounts visible) — the dashboard eye toggle. */
+  async getAmountsHidden(): Promise<boolean> {
+    return (await SecureStore.getItemAsync(KEYS.amountsHidden)) === "true";
+  },
+  async setAmountsHidden(value: boolean): Promise<void> {
+    await SecureStore.setItemAsync(KEYS.amountsHidden, String(value));
   },
 };

@@ -11,12 +11,23 @@
 
 import type { ReactNode } from "react";
 import { useState, useCallback } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { router, useFocusEffect } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import * as ScreenCapture from "expo-screen-capture";
 import { storage } from "@/lib/storage";
+import { isSessionUnlocked, lockSession } from "@/lib/sessionLock";
+import { useAmountsVisibility } from "@/hooks/useAmountsVisibility";
 import { Toggle } from "@/components/ui/Toggle";
 import { DonateQRModal } from "@/components/modals/DonateQRModal";
+import { GlowBackdrop } from "@/components/ui/GlowBackdrop";
 import * as Application from "expo-application";
 import { Lucide } from "@react-native-vector-icons/lucide";
 import type { LucideIconName } from "@react-native-vector-icons/lucide";
@@ -168,6 +179,7 @@ export default function SettingsScreen() {
   const [showDonate, setShowDonate] = useState(false);
   const colors = useColors();
   const toast = useToast();
+  const { amountsHidden, toggleAmountsHidden } = useAmountsVisibility();
 
   const { preference, loaded, setPreference } = useTheme();
 
@@ -229,6 +241,12 @@ export default function SettingsScreen() {
 
   // ── navigation / action helpers ──────────────────────────────────────────────
 
+  const handleLockNow = useCallback(() => {
+    if (!isSessionUnlocked()) return; // no unlock method configured
+    lockSession();
+    router.replace("/lock");
+  }, []);
+
   const comingSoon = (feature: string) => {
     toast.warning("Coming soon", {
       description: `${feature} will be available in a future update.`,
@@ -244,26 +262,32 @@ export default function SettingsScreen() {
         backgroundColor: colors.surfaceBg,
       }}
     >
+      {/* Glow layer anchored to the full screen — unaffected by content padding */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <GlowBackdrop />
+      </View>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="mb-[22px] flex-row items-center gap-3">
-          <Pressable
-            onPress={() => router.back()}
-            hitSlop={8}
-            className="active:opacity-60"
-          >
-            <Lucide name="arrow-left" size={22} color={colors.textPrimary} />
-          </Pressable>
-          <Text
-            className="font-fraunces-medium text-[22px] "
-            style={{ color: colors.textPrimary }}
-          >
-            Settings
-          </Text>
-        </View>
+        <Animated.View entering={FadeInDown.duration(450)}>
+          <View className="mb-[22px] flex-row items-center gap-3">
+            <Pressable
+              onPress={() => router.back()}
+              hitSlop={8}
+              className="active:opacity-60"
+            >
+              <Lucide name="arrow-left" size={22} color={colors.textPrimary} />
+            </Pressable>
+            <Text
+              className="font-fraunces-medium text-[22px] "
+              style={{ color: colors.textPrimary }}
+            >
+              Settings
+            </Text>
+          </View>
+        </Animated.View>
 
         {/* ── Appearance ──────────────────────────────────────────────────── */}
         <SectionLabel label="Appearance" />
@@ -337,6 +361,14 @@ export default function SettingsScreen() {
           }}
           right={<Chevron />}
         />
+        {(pinHash !== null || biometricEnabled) && (
+          <SettingsRow
+            icon="lock"
+            title="Lock now"
+            description="Lock the app immediately"
+            onPress={handleLockNow}
+          />
+        )}
         <SettingsRow
           icon="shield"
           title="Allow screenshots"
@@ -350,6 +382,18 @@ export default function SettingsScreen() {
               value={screenshotsEnabled}
               onValueChange={handleScreenshotsToggle}
             />
+          }
+        />
+        <SettingsRow
+          icon="eye-off"
+          title="Hide amounts"
+          description={
+            amountsHidden
+              ? "On — balances and amounts are masked"
+              : "Off — balances and amounts are visible"
+          }
+          right={
+            <Toggle value={amountsHidden} onValueChange={toggleAmountsHidden} />
           }
         />
 

@@ -48,6 +48,32 @@ const MIGRATIONS: readonly Migration[] = [
       `CREATE INDEX IF NOT EXISTS idx_transactions_occurred_at ON transactions(occurred_at);`,
     ],
   },
+  {
+    version: 3,
+    statements: [
+      // Account types changed from checking/savings/credit/cash to
+      // wallet/savings/credit/investment.  SQLite cannot ALTER a CHECK
+      // constraint, so we recreate the table, mapping the old generic
+      // types (checking, cash) onto the new "wallet" type.
+      `CREATE TABLE accounts_new (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL CHECK (type IN ('wallet','savings','credit','investment')),
+        starting_balance INTEGER NOT NULL DEFAULT 0,
+        logo_key TEXT,
+        color_hex TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        archived_at INTEGER
+      ) STRICT;`,
+      `INSERT INTO accounts_new (id, name, type, starting_balance, logo_key, color_hex, created_at, archived_at)
+       SELECT id, name,
+              CASE type WHEN 'checking' THEN 'wallet' WHEN 'cash' THEN 'wallet' ELSE type END,
+              starting_balance, logo_key, color_hex, created_at, archived_at
+       FROM accounts;`,
+      `DROP TABLE accounts;`,
+      `ALTER TABLE accounts_new RENAME TO accounts;`,
+    ],
+  },
 ];
 
 export async function runMigrations(db: DB): Promise<void> {

@@ -21,6 +21,7 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import * as DocumentPicker from "expo-document-picker";
 import {
   documentDirectory,
@@ -61,10 +62,10 @@ const ACCOUNT_TYPES: {
   label: string;
   icon: LucideIconName;
 }[] = [
-  { type: "checking", label: "Checking", icon: "landmark" },
+  { type: "wallet", label: "Wallet", icon: "wallet" },
   { type: "savings", label: "Savings", icon: "piggy-bank" },
-  { type: "credit", label: "Credit card", icon: "credit-card" },
-  { type: "cash", label: "Cash", icon: "banknote" },
+  { type: "credit", label: "Credits", icon: "credit-card" },
+  { type: "investment", label: "Investment", icon: "trending-up" },
 ];
 
 const BADGE_COLORS = [
@@ -194,7 +195,7 @@ function LogoGridItem({
 export default function AddAccountScreen() {
   const colors = useColors();
   const toast = useToast();
-  const [selectedType, setSelectedType] = useState<AccountType>("checking");
+  const [selectedType, setSelectedType] = useState<AccountType>("wallet");
   const [selectedColorIdx, setSelectedColorIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -359,38 +360,40 @@ export default function AddAccountScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* ── Header ── */}
-          <View className="mb-8 flex-row items-center justify-between">
-            <Pressable
-              onPress={() => router.back()}
-              className="active:opacity-60"
-            >
-              <Text
-                className="text-[14.5px]"
-                style={{ color: colors.textSecondary }}
+          <Animated.View entering={FadeInDown.duration(450)}>
+            {/* ── Header ── */}
+            <View className="mb-8 flex-row items-center justify-between">
+              <Pressable
+                onPress={() => router.back()}
+                className="active:opacity-60"
               >
-                Cancel
-              </Text>
-            </Pressable>
-            <Text
-              className="font-fraunces-medium text-[20px]"
-              style={{ color: colors.textPrimary }}
-            >
-              New account
-            </Text>
-            <Pressable
-              onPress={handleSave}
-              disabled={isSaving}
-              className="active:opacity-60"
-            >
+                <Text
+                  className="text-[14.5px]"
+                  style={{ color: colors.textSecondary }}
+                >
+                  Cancel
+                </Text>
+              </Pressable>
               <Text
-                className="font-manrope-bold text-[13px]"
-                style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
+                className="font-fraunces-medium text-[20px]"
+                style={{ color: colors.textPrimary }}
               >
-                Save
+                New account
               </Text>
-            </Pressable>
-          </View>
+              <Pressable
+                onPress={handleSave}
+                disabled={isSaving}
+                className="active:opacity-60"
+              >
+                <Text
+                  className="font-manrope-bold text-[13px]"
+                  style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
+                >
+                  Save
+                </Text>
+              </Pressable>
+            </View>
+          </Animated.View>
 
           {/* ── Account name ── */}
           <FormField label="Account name" error={errors.name?.message}>

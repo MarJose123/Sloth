@@ -11,13 +11,20 @@
 
 import { Text, View } from "react-native";
 import type { RecentTransaction } from "@/types";
-import { formatRelativeTime, formatSignedCurrency } from "@/lib/format";
+import {
+  formatRelativeTime,
+  formatSignedCurrency,
+  HIDDEN_AMOUNT,
+} from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
 
 export function TransactionRow({
   transaction,
+  hidden = false,
 }: {
   transaction: RecentTransaction;
+  /** When true, masks the amount (privacy eye toggle on the dashboard). */
+  hidden?: boolean;
 }) {
   const colors = useColors();
   const isIncome =
@@ -56,7 +63,7 @@ export function TransactionRow({
           color: isIncome ? colors.sage : colors.textPrimary,
         }}
       >
-        {formatSignedCurrency(transaction.amountCents)}
+        {hidden ? HIDDEN_AMOUNT : formatSignedCurrency(transaction.amountCents)}
       </Text>
     </View>
   );

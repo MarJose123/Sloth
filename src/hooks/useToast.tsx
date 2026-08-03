@@ -57,6 +57,23 @@ interface ToastOptions {
   };
 }
 
+// ─── helpers ───────────────────────────────────────────────────────────────
+
+/**
+ * Resolves the toast id used for deduplication. An explicit caller-supplied
+ * `id` wins; otherwise a stable id is derived from the toast content so that
+ * sonner-native updates the already-visible toast instead of stacking a
+ * duplicate of the same notification (same variant + title + description).
+ */
+function resolveToastId(
+  variant: string,
+  message: string,
+  options?: ToastOptions,
+): string | number | undefined {
+  if (options?.id !== undefined) return options.id;
+  return `${variant}:${message}:${options?.description ?? ""}`;
+}
+
 // ─── hook ──────────────────────────────────────────────────────────────────
 
 export function useToast() {
@@ -69,7 +86,7 @@ export function useToast() {
       toast(message, {
         description: options?.description,
         duration: options?.duration ?? 3000,
-        id: options?.id,
+        id: resolveToastId("info", message, options),
         action: options?.action,
         icon: <InfoIcon color={theme.info.text} />,
         style: {
@@ -88,7 +105,7 @@ export function useToast() {
       toast(message, {
         description: options?.description,
         duration: options?.duration ?? 3000,
-        id: options?.id,
+        id: resolveToastId("success", message, options),
         action: options?.action,
         icon: <CheckIcon color={theme.success.text} />,
         style: {
@@ -107,7 +124,7 @@ export function useToast() {
       toast(message, {
         description: options?.description,
         duration: options?.duration ?? 4000,
-        id: options?.id,
+        id: resolveToastId("error", message, options),
         action: options?.action,
         icon: <XIcon color={theme.error.text} />,
         style: {
@@ -126,7 +143,7 @@ export function useToast() {
       toast(message, {
         description: options?.description,
         duration: options?.duration ?? 3500,
-        id: options?.id,
+        id: resolveToastId("warning", message, options),
         action: options?.action,
         icon: <TriangleAlertIcon color={theme.warning.text} />,
         style: {
