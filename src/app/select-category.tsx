@@ -9,20 +9,38 @@
  *  of this license document, but changing it is not allowed.
  */
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Text, View, Pressable } from "react-native";
-import { router } from "expo-router";
-import { useCategoriesData } from "@/hooks/useCategoriesData";
-import type { CategorySpend } from "@/types";
+import { router, useFocusEffect } from "expo-router";
+import { listAllCategories } from "@/lib/db/repositories/categories";
+import type { Category } from "@/types";
 import { useColors } from "@/theme/ThemeContext";
 import { onCategorySelected } from "@/lib/selectionBus";
+import { SkeletonList } from "@/components/ui/Skeleton";
 
 export default function SelectCategorySheet() {
   const colors = useColors();
-  const { state } = useCategoriesData();
-  const categories: CategorySpend[] =
-    state.status === "ready" ? state.data.categories : [];
-  const status = state.status;
+  const [categories, setCategories] = useState<Category[] | null>(null);
+
+  // Reads the DB directly (same query as the Add Transaction guard) so the
+  // sheet can never show a stale/empty list while categories exist. Reloads
+  // on every focus so a category created moments ago appears immediately.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      (async () => {
+        try {
+          const cats = await listAllCategories();
+          if (!cancelled) setCategories(cats);
+        } catch {
+          if (!cancelled) setCategories([]);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, []),
+  );
 
   const handleSelect = useCallback((categoryId: string) => {
     onCategorySelected.emit(categoryId);
@@ -33,9 +51,8 @@ export default function SelectCategorySheet() {
     router.back();
   }, []);
 
-  const expenseCategories = (categories ?? []).filter(
-    (c) => c.kind === "expense",
-  );
+  const loading = categories === null;
+  const pickerCategories = categories ?? [];
 
   return (
     <View
@@ -67,15 +84,12 @@ export default function SelectCategorySheet() {
         >
           Select Category
         </Text>
-        {status === "loading" && (
-          <Text
-            className="text-center  text-sm font-manrope"
-            style={{ color: colors.textSecondary }}
-          >
-            Loading…
-          </Text>
+        {loading && (
+          <View className="py-2">
+            <SkeletonList rows={4} rowHeight={58} />
+          </View>
         )}
-        {expenseCategories.map((cat) => (
+        {pickerCategories.map((cat) => (
           <Pressable
             key={cat.id}
             onPress={() => handleSelect(cat.id)}
@@ -104,7 +118,7 @@ export default function SelectCategorySheet() {
             </View>
           </Pressable>
         ))}
-        {expenseCategories.length === 0 && status !== "loading" && (
+        {!loading && pickerCategories.length === 0 && (
           <Text
             className="text-center text-text-secondary text-sm font-manrope py-8"
             style={{ color: colors.textSecondary }}

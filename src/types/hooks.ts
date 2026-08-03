@@ -13,7 +13,11 @@
 
 import type { AccountWithBalance } from "./account";
 import type { Category, CategorySpend } from "./category";
-import type { RecentTransaction, TransactionLedgerItem } from "./transaction";
+import type {
+  DailyTotals,
+  RecentTransaction,
+  TransactionLedgerItem,
+} from "./transaction";
 
 export interface AddTransactionFormData {
   accounts: AccountWithBalance[];
@@ -28,7 +32,11 @@ export type AccountsState =
 export type AddTransactionDataState =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; data: AddTransactionFormData };
+  | {
+      status: "ready";
+      data: AddTransactionFormData;
+      isRefreshing: boolean;
+    };
 
 export interface CategoriesData {
   categories: CategorySpend[];
@@ -44,6 +52,8 @@ export interface DashboardData {
   accounts: AccountWithBalance[];
   categories: CategorySpend[];
   totalExpenseCents: number;
+  totalIncomeCents: number;
+  dailyTotals: DailyTotals[];
   recentTransactions: RecentTransaction[];
 }
 

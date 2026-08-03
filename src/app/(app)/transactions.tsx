@@ -15,11 +15,13 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
+  StyleSheet,
   Text,
   View,
 } from "react-native";
 import { router } from "expo-router";
 import Animated, {
+  FadeInDown,
   makeMutable,
   useAnimatedStyle,
   withTiming,
@@ -28,6 +30,7 @@ import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeabl
 import { Lucide } from "@react-native-vector-icons/lucide";
 import { useTransactionsData } from "@/hooks/useTransactionsData";
 import { useAccountsData } from "@/hooks/useAccountsData";
+import { useAmountsVisibility } from "@/hooks/useAmountsVisibility";
 import { deleteTransaction } from "@/lib/db/repositories/transactions";
 import { AccountSwitcher } from "@/components/dashboard/AccountSwitcher";
 import type { MonthRange, TransactionLedgerItem } from "@/types";
@@ -35,8 +38,11 @@ import {
   formatMonthLabel,
   formatRelativeDate,
   formatSignedCurrency,
+  HIDDEN_AMOUNT,
 } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
+import { GlowBackdrop } from "@/components/ui/GlowBackdrop";
+import { SkeletonList } from "@/components/ui/Skeleton";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -62,6 +68,7 @@ function TransactionLedgerRow({
   transaction: TransactionLedgerItem;
 }) {
   const colors = useColors();
+  const { amountsHidden } = useAmountsVisibility();
   const isIncome =
     transaction.categoryKind === "income" || transaction.amountCents > 0;
 
@@ -117,7 +124,9 @@ function TransactionLedgerRow({
           color: isIncome ? colors.sage : colors.textPrimary,
         }}
       >
-        {formatSignedCurrency(transaction.amountCents)}
+        {amountsHidden
+          ? HIDDEN_AMOUNT
+          : formatSignedCurrency(transaction.amountCents)}
       </Text>
     </View>
   );
@@ -285,6 +294,10 @@ export default function TransactionsScreen() {
       className="flex-1 pt-safe "
       style={{ backgroundColor: colors.surfaceBg }}
     >
+      {/* Glow layer anchored to the full screen — unaffected by content padding */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <GlowBackdrop />
+      </View>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
@@ -297,26 +310,28 @@ export default function TransactionsScreen() {
           />
         }
       >
-        {/* ── Header ── */}
-        <View className="mb-5 flex-row items-center justify-between">
-          <Text
-            className="font-fraunces-medium text-[22px] "
-            style={{ color: colors.textPrimary }}
-          >
-            Transactions
-          </Text>
-          <Pressable
-            onPress={() => router.push("/add-transaction")}
-            className="active:opacity-60"
-          >
+        <Animated.View entering={FadeInDown.duration(450)}>
+          {/* ── Header ── */}
+          <View className="mb-5 flex-row items-center justify-between">
             <Text
-              className="font-manrope-bold text-[14.5px] "
-              style={{ color: colors.brass }}
+              className="font-fraunces-medium text-[22px] "
+              style={{ color: colors.textPrimary }}
             >
-              + Add
+              Transactions
             </Text>
-          </Pressable>
-        </View>
+            <Pressable
+              onPress={() => router.push("/add-transaction")}
+              className="active:opacity-60"
+            >
+              <Text
+                className="font-manrope-bold text-[14.5px] "
+                style={{ color: colors.brass }}
+              >
+                + Add
+              </Text>
+            </Pressable>
+          </View>
+        </Animated.View>
 
         {/* ── Account filter ── */}
         {accountsState.status === "ready" && (
@@ -402,17 +417,10 @@ export default function TransactionsScreen() {
           )}
         </View>
 
-        {/* ── Loading ── */}
+        {/* ── Loading skeleton ── */}
         {isLoading && (
-          <View className="items-center py-14">
-            <Text
-              className="text-sm "
-              style={{
-                color: colors.textSecondary,
-              }}
-            >
-              Loading transactions…
-            </Text>
+          <View className="py-2">
+            <SkeletonList rows={6} rowHeight={58} />
           </View>
         )}
 

@@ -18,7 +18,7 @@ export const SCHEMA_STATEMENTS = [
   `CREATE TABLE IF NOT EXISTS accounts (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('checking','savings','credit','cash')),
+    type TEXT NOT NULL CHECK (type IN ('wallet','savings','credit','investment')),
     starting_balance INTEGER NOT NULL DEFAULT 0,
     logo_key TEXT,
     color_hex TEXT NOT NULL,

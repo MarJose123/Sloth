@@ -12,6 +12,7 @@
 import * as ExpoCrypto from "expo-crypto";
 import { getDb } from "../client";
 import type {
+  DailyTotals,
   RecentTransaction,
   TransactionLedgerItem,
   InsertTransactionInput,
@@ -197,4 +198,62 @@ export async function insertTransaction(
 export async function deleteTransaction(id: string): Promise<void> {
   const db = await getDb();
   await db.execute("DELETE FROM transactions WHERE id = ?;", [id]);
+}
+
+/**
+ * Daily expense/income totals for every day in `range` (local timezone),
+ * zero-filled so days without transactions still appear. Used by the
+ * dashboard's weekly activity chart.
+ */
+export async function getDailyTotals(
+  range: MonthRange,
+  accountId?: string,
+): Promise<DailyTotals[]> {
+  const db = await getDb();
+  const params: (string | number)[] = [range.start, range.end];
+  const accountClause = accountId ? "AND t.account_id = ?" : "";
+  if (accountId) params.push(accountId);
+
+  const { rows } = await db.execute(
+    `SELECT strftime('%Y-%m-%d', t.occurred_at / 1000, 'unixepoch', 'localtime') AS day,
+            c.kind,
+            SUM(ABS(t.amount_cents)) AS total
+       FROM transactions t
+       JOIN categories c ON c.id = t.category_id
+      WHERE t.occurred_at >= ?
+        AND t.occurred_at < ?
+        ${accountClause}
+      GROUP BY day, c.kind;`,
+    params,
+  );
+
+  const byDay = new Map<
+    string,
+    { expenseCents: number; incomeCents: number }
+  >();
+  for (const row of rows as unknown as {
+    day: string;
+    kind: CategoryKind;
+    total: number | string;
+  }[]) {
+    const entry = byDay.get(row.day) ?? { expenseCents: 0, incomeCents: 0 };
+    if (row.kind === "income") entry.incomeCents += Number(row.total);
+    else entry.expenseCents += Number(row.total);
+    byDay.set(row.day, entry);
+  }
+
+  // Zero-fill each calendar day in the range so empty days still render.
+  const totals: DailyTotals[] = [];
+  const cursor = new Date(range.start);
+  while (cursor.getTime() < range.end) {
+    const key = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
+    const entry = byDay.get(key) ?? { expenseCents: 0, incomeCents: 0 };
+    totals.push({
+      dayStartEpochMs: cursor.getTime(),
+      expenseCents: entry.expenseCents,
+      incomeCents: entry.incomeCents,
+    });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return totals;
 }

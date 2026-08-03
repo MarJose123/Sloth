@@ -13,6 +13,14 @@
 
 import type { CategoryKind } from "./category";
 
+/** Aggregated expense/income totals for a single calendar day (local tz). */
+export interface DailyTotals {
+  /** Epoch ms of local midnight for that day. */
+  dayStartEpochMs: number;
+  expenseCents: number;
+  incomeCents: number;
+}
+
 export interface RecentTransaction {
   id: string;
   merchant: string;

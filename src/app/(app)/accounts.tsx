@@ -15,16 +15,21 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
+  StyleSheet,
   Text,
   View,
 } from "react-native";
 import { router } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { documentDirectory } from "expo-file-system/legacy";
 import { useAccountsData } from "@/hooks/useAccountsData";
+import { useAmountsVisibility } from "@/hooks/useAmountsVisibility";
 import type { AccountWithBalance } from "@/types";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, HIDDEN_AMOUNT } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
 import { resolveLogoSrc } from "@/lib/logoResolver";
+import { GlowBackdrop } from "@/components/ui/GlowBackdrop";
+import { SkeletonList } from "@/components/ui/Skeleton";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -38,10 +43,10 @@ function getInitials(name: string): string {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  checking: "CHECKING",
+  wallet: "WALLET",
   savings: "SAVINGS",
-  credit: "CREDIT",
-  cash: "CASH",
+  credit: "CREDITS",
+  investment: "INVESTMENT",
 };
 
 // ─── AccountCard ──────────────────────────────────────────────────────────────
@@ -50,6 +55,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
   const initials = getInitials(account.name);
   const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
   const colors = useColors();
+  const { amountsHidden } = useAmountsVisibility();
   const logoSrc = resolveLogoSrc(account.logoKey);
 
   const handleEdit = () => {
@@ -122,7 +128,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
               : colors.textPrimary,
         }}
       >
-        {formatCurrency(account.balanceCents)}
+        {amountsHidden ? HIDDEN_AMOUNT : formatCurrency(account.balanceCents)}
       </Text>
     </Pressable>
   );
@@ -133,6 +139,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
 export default function AccountsScreen() {
   const { state, refresh } = useAccountsData();
   const colors = useColors();
+  const { amountsHidden } = useAmountsVisibility();
 
   const onRefresh = useCallback(() => {
     refresh();
@@ -159,12 +166,17 @@ export default function AccountsScreen() {
   const accounts = state.status === "ready" ? state.accounts : [];
   const isRefreshing = state.status === "ready" ? state.isRefreshing : false;
   const isLoading = state.status === "loading";
+  const netWorthCents = accounts.reduce((sum, a) => sum + a.balanceCents, 0);
 
   return (
     <View
       className="flex-1 pt-safe "
       style={{ backgroundColor: colors.surfaceBg }}
     >
+      {/* Glow layer anchored to the full screen — unaffected by content padding */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <GlowBackdrop />
+      </View>
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 110 }}
@@ -177,38 +189,33 @@ export default function AccountsScreen() {
           />
         }
       >
-        {/* ── Header ── */}
-        <View className="mb-5 flex-row items-center justify-between">
-          <Text
-            className="font-fraunces-medium text-[22px] "
-            style={{ color: colors.textPrimary }}
-          >
-            Accounts
-          </Text>
-          <Pressable
-            onPress={() => router.push("/add-account")}
-            className="active:opacity-60"
-          >
+        <Animated.View entering={FadeInDown.duration(450)}>
+          {/* ── Header ── */}
+          <View className="mb-5 flex-row items-center justify-between">
             <Text
-              className="font-manrope-bold text-[14.5px]"
-              style={{ color: colors.brass }}
+              className="font-fraunces-medium text-[22px] "
+              style={{ color: colors.textPrimary }}
             >
-              + Add
+              Accounts
             </Text>
-          </Pressable>
-        </View>
+            <Pressable
+              onPress={() => router.push("/add-account")}
+              className="active:opacity-60"
+            >
+              <Text
+                className="font-manrope-bold text-[14.5px]"
+                style={{ color: colors.brass }}
+              >
+                + Add
+              </Text>
+            </Pressable>
+          </View>
+        </Animated.View>
 
         {/* ── Loading skeleton ── */}
         {isLoading && (
-          <View className="items-center py-14">
-            <Text
-              className="text-sm "
-              style={{
-                color: colors.textSecondary,
-              }}
-            >
-              Loading your accounts…
-            </Text>
+          <View className="py-2">
+            <SkeletonList rows={4} rowHeight={68} />
           </View>
         )}
 
@@ -236,7 +243,7 @@ export default function AccountsScreen() {
               }}
             >
               {
-                "Add your first account — checking, savings, credit, or cash — to start tracking your money."
+                "Add your first account — wallet, savings, credits, or investment — to start tracking your money."
               }
             </Text>
             <Pressable
@@ -256,6 +263,37 @@ export default function AccountsScreen() {
         {/* ── Account cards ── */}
         {!isLoading && accounts.length > 0 && (
           <>
+            {/* ── Net worth card ── */}
+            <View
+              className="mb-5 rounded-2xl border p-5"
+              style={{
+                backgroundColor: colors.surfaceCard,
+                borderColor: colors.hairline,
+              }}
+            >
+              <Text
+                className="font-mono text-[10.5px] uppercase tracking-[0.08em]"
+                style={{ color: colors.textSecondary }}
+              >
+                Net worth
+              </Text>
+              <Text
+                className="mt-1 font-fraunces-medium text-[34px] leading-10"
+                style={{
+                  color: netWorthCents < 0 ? colors.rust : colors.textPrimary,
+                }}
+              >
+                {amountsHidden ? HIDDEN_AMOUNT : formatCurrency(netWorthCents)}
+              </Text>
+              <Text
+                className="mt-1 font-mono text-[11px]"
+                style={{ color: colors.textSecondary }}
+              >
+                Across {accounts.length} account
+                {accounts.length === 1 ? "" : "s"}
+              </Text>
+            </View>
+
             {accounts.map((account) => (
               <AccountCard key={account.id} account={account} />
             ))}

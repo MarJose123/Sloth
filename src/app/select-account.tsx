@@ -14,11 +14,13 @@ import { Image, Text, View, Pressable } from "react-native";
 import { router } from "expo-router";
 import { documentDirectory } from "expo-file-system/legacy";
 import { useAccountsData } from "@/hooks/useAccountsData";
+import { useAmountsVisibility } from "@/hooks/useAmountsVisibility";
 import type { AccountWithBalance } from "@/types";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, HIDDEN_AMOUNT } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
 import { onAccountSelected } from "@/lib/selectionBus";
 import { resolveLogoSrc } from "@/lib/logoResolver";
+import { SkeletonList } from "@/components/ui/Skeleton";
 
 // ─── helpers ────────────────────────────────────────────────────────────
 
@@ -32,10 +34,10 @@ function getInitials(name: string): string {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  checking: "CHECKING",
+  wallet: "WALLET",
   savings: "SAVINGS",
-  credit: "CREDIT",
-  cash: "CASH",
+  credit: "CREDITS",
+  investment: "INVESTMENT",
 };
 
 // ─── Account row ─────────────────────────────────────────────────────────
@@ -48,6 +50,7 @@ function AccountRow({
   onSelect: (id: string) => void;
 }) {
   const colors = useColors();
+  const { amountsHidden } = useAmountsVisibility();
   const logoSrc = resolveLogoSrc(account.logoKey);
   const initials = getInitials(account.name);
   const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
@@ -116,7 +119,7 @@ function AccountRow({
 
       {/* ── Balance ── */}
       <Text className="font-mono text-[13.5px]" style={{ color: balanceColor }}>
-        {formatCurrency(account.balanceCents)}
+        {amountsHidden ? HIDDEN_AMOUNT : formatCurrency(account.balanceCents)}
       </Text>
     </Pressable>
   );
@@ -171,14 +174,9 @@ export default function SelectAccountSheet() {
           Select Account
         </Text>
         {status === "loading" && (
-          <Text
-            className="text-center  text-sm font-manrope"
-            style={{
-              color: colors.textSecondary,
-            }}
-          >
-            Loading…
-          </Text>
+          <View className="py-2">
+            <SkeletonList rows={4} rowHeight={58} />
+          </View>
         )}
         {accounts?.map((account) => (
           <AccountRow

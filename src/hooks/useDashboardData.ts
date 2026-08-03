@@ -15,28 +15,56 @@ import { listAccountsWithBalances } from "@/lib/db/repositories/accounts";
 import {
   currentMonthRange,
   getTotalExpenseCents,
+  getTotalIncomeCents,
   listTopExpenseCategories,
 } from "@/lib/db/repositories/categories";
-import { listRecentTransactions } from "@/lib/db/repositories/transactions";
+import {
+  getDailyTotals,
+  listRecentTransactions,
+} from "@/lib/db/repositories/transactions";
 import type { DashboardData, DashboardState } from "@/types";
 
 const RECENT_TRANSACTIONS_LIMIT = 5;
+
+/** Midnight 6 days ago → midnight after today (7 calendar days, local tz). */
+function last7DaysRange(): { start: number; end: number } {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  return { start: start.getTime(), end: end.getTime() };
+}
 
 async function fetchDashboardData(
   selectedAccountId: string | null,
 ): Promise<DashboardData> {
   const range = currentMonthRange();
+  const weekRange = last7DaysRange();
   const accountId = selectedAccountId ?? undefined;
 
-  const [accounts, categories, totalExpenseCents, recentTransactions] =
-    await Promise.all([
-      listAccountsWithBalances(),
-      listTopExpenseCategories(range, 0, accountId),
-      getTotalExpenseCents(range, accountId),
-      listRecentTransactions(RECENT_TRANSACTIONS_LIMIT, accountId, range),
-    ]);
+  const [
+    accounts,
+    categories,
+    totalExpenseCents,
+    totalIncomeCents,
+    dailyTotals,
+    recentTransactions,
+  ] = await Promise.all([
+    listAccountsWithBalances(),
+    listTopExpenseCategories(range, 0, accountId),
+    getTotalExpenseCents(range, accountId),
+    getTotalIncomeCents(range, accountId),
+    getDailyTotals(weekRange, accountId),
+    listRecentTransactions(RECENT_TRANSACTIONS_LIMIT, accountId, range),
+  ]);
 
-  return { accounts, categories, totalExpenseCents, recentTransactions };
+  return {
+    accounts,
+    categories,
+    totalExpenseCents,
+    totalIncomeCents,
+    dailyTotals,
+    recentTransactions,
+  };
 }
 
 /**

@@ -29,14 +29,15 @@ import {
   View,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import Svg, { Circle } from "react-native-svg";
 import {
   getCategoryById,
   updateCategory,
 } from "@/lib/db/repositories/categories";
 import { useColors } from "@/theme/ThemeContext";
-import { colors } from "@/theme/colors";
 import { useToast } from "@/hooks/useToast";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -62,7 +63,7 @@ const ICONS = [
   "🏠",
   "💊",
   "🎬",
-  "✈",
+  "🛫",
   "📱",
   "🐾",
   "👕",
@@ -83,11 +84,10 @@ const ICONS = [
 // ─── ring preview (full circle, 58px) ────────────────────────────────────────
 
 function PreviewRing({ icon }: { icon: string }) {
-  const c = useColors();
+  const colors = useColors();
   const SIZE = 58;
   const RADIUS = 26;
   const CENTER = SIZE / 2;
-  const ringColor = c.brass;
   return (
     <View style={styles.previewContainer}>
       <Svg width={SIZE} height={SIZE} style={StyleSheet.absoluteFill}>
@@ -96,11 +96,11 @@ function PreviewRing({ icon }: { icon: string }) {
           cy={CENTER}
           r={RADIUS}
           fill="none"
-          stroke={ringColor}
-          strokeWidth={3}
+          stroke={colors.hairline}
+          strokeWidth={2}
         />
       </Svg>
-      <View style={[styles.previewInner, { backgroundColor: ringColor }]}>
+      <View style={styles.previewInner}>
         <Text style={styles.previewIcon}>{icon}</Text>
       </View>
     </View>
@@ -111,6 +111,7 @@ function PreviewRing({ icon }: { icon: string }) {
 
 export default function EditCategoryScreen() {
   const toast = useToast();
+  const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -187,7 +188,7 @@ export default function EditCategoryScreen() {
         setIsSaving(false);
       }
     },
-    [id, toast],
+    [id, toast, colors],
   );
 
   const handleSave = handleSubmit(onSubmit, (fieldErrors) => {
@@ -207,15 +208,12 @@ export default function EditCategoryScreen() {
   if (isLoading) {
     return (
       <View
-        className="flex-1 items-center justify-center pt-safe "
+        className="flex-1 px-5 pt-safe "
         style={{ backgroundColor: colors.surfaceBg }}
       >
-        <Text
-          className="text-sm  font-manrope"
-          style={{ color: colors.textSecondary }}
-        >
-          {"Loading\u2026"}
-        </Text>
+        <View className="py-10">
+          <SkeletonList rows={4} rowHeight={68} />
+        </View>
       </View>
     );
   }
@@ -237,40 +235,42 @@ export default function EditCategoryScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* ── Header ── */}
-          <View className="mb-6 flex-row items-center justify-between">
-            <Pressable
-              onPress={() => router.back()}
-              className="active:opacity-60"
-            >
-              <Text
-                className="text-[14.5px] "
-                style={{
-                  color: colors.textSecondary,
-                }}
+          <Animated.View entering={FadeInDown.duration(450)}>
+            {/* ── Header ── */}
+            <View className="mb-6 flex-row items-center justify-between">
+              <Pressable
+                onPress={() => router.back()}
+                className="active:opacity-60"
               >
-                Cancel
-              </Text>
-            </Pressable>
-            <Text
-              className="font-fraunces-medium text-[20px] "
-              style={{ color: colors.textPrimary }}
-            >
-              Edit category
-            </Text>
-            <Pressable
-              onPress={handleSave}
-              disabled={isSaving}
-              className="active:opacity-60"
-            >
+                <Text
+                  className="text-[14.5px] "
+                  style={{
+                    color: colors.textSecondary,
+                  }}
+                >
+                  Cancel
+                </Text>
+              </Pressable>
               <Text
-                className="font-manrope-bold text-[13px] "
-                style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
+                className="font-fraunces-medium text-[20px] "
+                style={{ color: colors.textPrimary }}
               >
-                Save
+                Edit category
               </Text>
-            </Pressable>
-          </View>
+              <Pressable
+                onPress={handleSave}
+                disabled={isSaving}
+                className="active:opacity-60"
+              >
+                <Text
+                  className="font-manrope-bold text-[13px] "
+                  style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
+                >
+                  Save
+                </Text>
+              </Pressable>
+            </View>
+          </Animated.View>
 
           {/* ── Preview + name ── */}
           <View className="mb-6 flex-row items-center gap-3.5">

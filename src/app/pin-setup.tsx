@@ -12,6 +12,7 @@
 import { useState, useCallback } from "react";
 import { Text, View, Pressable } from "react-native";
 import { router } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { PinDots } from "@/components/ui/PinDots";
 import { Keypad } from "@/components/Keypad";
 import { hashPin } from "@/lib/pin";
@@ -72,37 +73,39 @@ export default function BackupPinSetupScreen() {
       className="flex-1 px-5 pb-5 pt-safe"
       style={{ backgroundColor: colors.surfaceBg }}
     >
-      {/* ── header with back arrow ── */}
-      <View className="mb-[22px] mt-2 flex-row items-center gap-3">
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={8}
-          className="active:opacity-60"
-        >
-          <Lucide name="arrow-left" size={22} color={colors.textPrimary} />
-        </Pressable>
+      <Animated.View entering={FadeInDown.duration(450)} className="flex-1">
+        {/* ── header with back arrow ── */}
+        <View className="mb-[22px] mt-2 flex-row items-center gap-3">
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={8}
+            className="active:opacity-60"
+          >
+            <Lucide name="arrow-left" size={22} color={colors.textPrimary} />
+          </Pressable>
+          <Text
+            className="font-fraunces-medium text-[22px]"
+            style={{ color: colors.textPrimary }}
+          >
+            {stage === "enter" ? "Set backup PIN" : "Confirm your PIN"}
+          </Text>
+        </View>
+
         <Text
-          className="font-fraunces-medium text-[22px]"
+          className="mb-7 mt-12 text-center font-fraunces-medium text-[24px]"
           style={{ color: colors.textPrimary }}
         >
-          {stage === "enter" ? "Set backup PIN" : "Confirm your PIN"}
+          {stage === "enter"
+            ? "Create a 6-digit backup PIN"
+            : "Re-enter the PIN to confirm"}
         </Text>
-      </View>
 
-      <Text
-        className="mb-7 mt-12 text-center font-fraunces-medium text-[24px]"
-        style={{ color: colors.textPrimary }}
-      >
-        {stage === "enter"
-          ? "Create a 6-digit backup PIN"
-          : "Re-enter the PIN to confirm"}
-      </Text>
+        <PinDots length={PIN_LENGTH} filledCount={currentInput.length} />
 
-      <PinDots length={PIN_LENGTH} filledCount={currentInput.length} />
+        <View className="flex-1" />
 
-      <View className="flex-1" />
-
-      <Keypad onDigit={handleDigit} onBackspace={handleBackspace} />
+        <Keypad onDigit={handleDigit} onBackspace={handleBackspace} />
+      </Animated.View>
     </View>
   );
 }

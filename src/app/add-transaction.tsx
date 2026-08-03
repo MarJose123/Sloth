@@ -20,16 +20,27 @@ import {
   View,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAddTransactionData } from "@/hooks/useAddTransactionData";
+import {
+  getCategoryById,
+  listAllCategories,
+} from "@/lib/db/repositories/categories";
+import { listAccountsWithBalances } from "@/lib/db/repositories/accounts";
 import { useColors } from "@/theme/ThemeContext";
-import { formatCurrency, formatAmountOnBlur } from "@/lib/format";
+import {
+  formatAmountInput,
+  formatCurrency,
+  formatAmountOnBlur,
+} from "@/lib/format";
 import { onAccountSelected, onCategorySelected } from "@/lib/selectionBus";
 import { useToast } from "@/hooks/useToast";
 import { insertTransaction } from "@/lib/db/repositories/transactions";
 import { FormField } from "@/components/ui/FormField";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import Color from "color";
 
 // ─── types ────────────────────────────────────────────────────────────────
@@ -142,7 +153,7 @@ export default function AddTransactionScreen() {
 
   const defaultAmount = (() => {
     const cents = parseInt(params.amountCents ?? "", 10);
-    return !isNaN(cents) ? (cents / 100).toFixed(2) : "0";
+    return formatAmountInput(!isNaN(cents) ? (cents / 100).toFixed(2) : "0");
   })();
 
   const defaultDate = (() => {
@@ -202,7 +213,13 @@ export default function AddTransactionScreen() {
   const onSubmit = useCallback(
     async (data: TransactionFormData) => {
       const clean = data.amount.replace(/[$,]/g, "").trim();
-      const amountCents = Math.round(Math.abs(parseFloat(clean)) * 100);
+      const magnitudeCents = Math.round(Math.abs(parseFloat(clean)) * 100);
+      // Income categories record positive amounts, expense categories
+      // negative. Looked up from the DB so the sign can never disagree
+      // with what the picker showed.
+      const category = await getCategoryById(data.categoryId);
+      const amountCents =
+        category?.kind === "income" ? magnitudeCents : -magnitudeCents;
       const occurredAt = Date.parse(data.date);
       const finalDate = isNaN(occurredAt) ? Date.now() : occurredAt;
 
@@ -212,7 +229,7 @@ export default function AddTransactionScreen() {
           accountId: data.accountId,
           categoryId: data.categoryId,
           merchant: data.merchant.trim(),
-          amountCents: -amountCents,
+          amountCents,
           occurredAt: finalDate,
           note: (data.note ?? "").trim() || undefined,
           source: method,
@@ -247,12 +264,12 @@ export default function AddTransactionScreen() {
   if (formData.status === "loading") {
     return (
       <View
-        className="flex-1 items-center justify-center pt-safe-offset-5 "
+        className="flex-1 px-5 pt-safe-offset-5 "
         style={{ backgroundColor: colors.surfaceBg }}
       >
-        <Text className="text-sm " style={{ color: colors.textSecondary }}>
-          {"Loading\u2026"}
-        </Text>
+        <View className="py-10">
+          <SkeletonList rows={5} rowHeight={62} />
+        </View>
       </View>
     );
   }
@@ -270,8 +287,6 @@ export default function AddTransactionScreen() {
     );
   }
 
-  const { accounts, categories } = formData.data;
-
   return (
     <View
       className="flex-1 pt-safe-offset-5 "
@@ -287,41 +302,45 @@ export default function AddTransactionScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* ── Header ── */}
-          <View className="mb-6 flex-row items-center justify-between">
-            <Pressable
-              onPress={() => router.back()}
-              className="active:opacity-60"
-            >
-              <Text
-                className="text-[14.5px] "
-                style={{ color: colors.textSecondary }}
+          <Animated.View entering={FadeInDown.duration(450)}>
+            {/* ── Header ── */}
+            <View className="mb-6 flex-row items-center justify-between">
+              <Pressable
+                onPress={() => router.back()}
+                className="active:opacity-60"
               >
-                Cancel
-              </Text>
-            </Pressable>
-            <Text
-              className="font-fraunces-medium text-[18px] "
-              style={{ color: colors.textPrimary }}
-            >
-              New expense
-            </Text>
-            <Pressable
-              onPress={handleSave}
-              disabled={isSaving}
-              className="active:opacity-60"
-            >
+                <Text
+                  className="text-[14.5px] "
+                  style={{ color: colors.textSecondary }}
+                >
+                  Cancel
+                </Text>
+              </Pressable>
               <Text
-                className="font-manrope-bold text-[13px] "
-                style={{
-                  opacity: isSaving ? 0.4 : 1,
-                  color: colors.textPrimary,
-                }}
+                className="font-fraunces-medium text-[18px] "
+                style={{ color: colors.textPrimary }}
               >
-                Save
+                {selectedCategory?.kind === "income"
+                  ? "New income"
+                  : "New expense"}
               </Text>
-            </Pressable>
-          </View>
+              <Pressable
+                onPress={handleSave}
+                disabled={isSaving}
+                className="active:opacity-60"
+              >
+                <Text
+                  className="font-manrope-bold text-[13px] "
+                  style={{
+                    opacity: isSaving ? 0.4 : 1,
+                    color: colors.textPrimary,
+                  }}
+                >
+                  Save
+                </Text>
+              </Pressable>
+            </View>
+          </Animated.View>
 
           {/*── Amount display ── */}
           <View className="mb-6 items-center">
@@ -331,7 +350,7 @@ export default function AddTransactionScreen() {
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   value={value}
-                  onChangeText={onChange}
+                  onChangeText={(text) => onChange(formatAmountInput(text))}
                   onBlur={() => {
                     onBlur();
                     onChange(formatAmountOnBlur(value));
@@ -391,8 +410,11 @@ export default function AddTransactionScreen() {
               <PickerRow
                 label="Account"
                 value={selectedAccount?.name ?? "Select account"}
-                onPress={() => {
-                  if (accounts.length === 0) {
+                onPress={async () => {
+                  // Live query for the same freshness guarantee as the
+                  // category guard below.
+                  const freshAccounts = await listAccountsWithBalances();
+                  if (freshAccounts.length === 0) {
                     toast.warning("No accounts", {
                       description: "Create an account first.",
                     });
@@ -417,11 +439,14 @@ export default function AddTransactionScreen() {
                     ? `${selectedCategory.icon} ${selectedCategory.name}`
                     : "Select category"
                 }
-                onPress={() => {
-                  const expenseCats = categories.filter(
-                    (c) => c.kind === "expense",
-                  );
-                  if (expenseCats.length === 0) {
+                onPress={async () => {
+                  // Query the DB at tap time so the guard can never see
+                  // stale reference data — e.g. a category created moments
+                  // ago but not yet reflected in the hook's in-memory list.
+                  // Any category (expense OR income) can be picked; the
+                  // amount sign follows the chosen category's kind on save.
+                  const allCategories = await listAllCategories();
+                  if (allCategories.length === 0) {
                     toast.warning("No categories", {
                       description: "Create a category first.",
                     });

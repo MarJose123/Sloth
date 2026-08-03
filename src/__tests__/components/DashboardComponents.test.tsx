@@ -143,7 +143,7 @@ describe("AccountSwitcher", () => {
     {
       id: "acc-2",
       name: "Metro",
-      type: "checking" as const,
+      type: "wallet" as const,
       colorHex: "#7FA06B",
       logoKey: null,
       balanceCents: 50000,

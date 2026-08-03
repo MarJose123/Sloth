@@ -19,6 +19,7 @@ import { View } from "react-native";
 import { Toaster } from "sonner-native";
 import { useAppFonts } from "@/hooks/useAppFonts";
 import { useIdleLock, recordActivity } from "@/hooks/useIdleLock";
+import { AmountsVisibilityProvider } from "@/hooks/useAmountsVisibility";
 import { ThemeProvider, useTheme } from "@/theme/ThemeContext";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { storage } from "@/lib/storage";
@@ -96,125 +97,127 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <ThemedStatusBar />
-      <ErrorBoundary>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <View style={{ flex: 1 }} onTouchStart={recordActivity}>
-            {mustLock ? (
-              <Redirect href="/lock" />
-            ) : (
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                }}
-              >
-                {/* ── Core groups ── */}
-                <Stack.Screen name="(app)" />
-                <Stack.Screen name="onboarding" />
+      <AmountsVisibilityProvider>
+        <ThemedStatusBar />
+        <ErrorBoundary>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <View style={{ flex: 1 }} onTouchStart={recordActivity}>
+              {mustLock ? (
+                <Redirect href="/lock" />
+              ) : (
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                  }}
+                >
+                  {/* ── Core groups ── */}
+                  <Stack.Screen name="(app)" />
+                  <Stack.Screen name="onboarding" />
 
-                {/* ── Root-level push screens (no tab bar) ── */}
-                <Stack.Screen
-                  name="add-account"
-                  options={{
-                    animation: "slide_from_right",
-                    animationDuration: 300,
-                  }}
-                />
-                <Stack.Screen
-                  name="edit-account"
-                  options={{
-                    animation: "slide_from_right",
-                    animationDuration: 300,
-                  }}
-                />
-                <Stack.Screen
-                  name="add-category"
-                  options={{
-                    animation: "slide_from_right",
-                    animationDuration: 300,
-                  }}
-                />
-                <Stack.Screen
-                  name="edit-category"
-                  options={{
-                    animation: "slide_from_right",
-                    animationDuration: 300,
-                  }}
-                />
-                <Stack.Screen
-                  name="about"
-                  options={{
-                    animation: "slide_from_right",
-                    animationDuration: 300,
-                  }}
-                />
-                <Stack.Screen
-                  name="add-transaction"
-                  options={{
-                    animation: "slide_from_right",
-                    animationDuration: 300,
-                  }}
-                />
-                <Stack.Screen
-                  name="receipt-scan"
-                  options={{
-                    animation: "slide_from_right",
-                    animationDuration: 300,
-                  }}
-                />
-                <Stack.Screen
-                  name="import"
-                  options={{
-                    animation: "slide_from_right",
-                    animationDuration: 300,
-                  }}
-                />
-                <Stack.Screen
-                  name="lock"
-                  options={{
-                    animation: "slide_from_right",
-                    animationDuration: 300,
-                  }}
-                />
-                <Stack.Screen
-                  name="pin-setup"
-                  options={{
-                    animation: "slide_from_right",
-                    animationDuration: 300,
-                  }}
-                />
-                <Stack.Screen
-                  name="fab-sheet"
-                  options={{
-                    presentation: "transparentModal",
-                    animation: "fade",
-                  }}
-                />
-                <Stack.Screen
-                  name="select-account"
-                  options={{
-                    presentation: "transparentModal",
-                    animation: "fade",
-                  }}
-                />
-                <Stack.Screen
-                  name="select-category"
-                  options={{
-                    presentation: "transparentModal",
-                    animation: "fade",
-                  }}
-                />
-              </Stack>
-            )}
-            <Toaster
-              position="top-center"
-              visibleToasts={3}
-              gap={8}
-              pauseWhenPageIsHidden
-            />
-          </View>
-        </GestureHandlerRootView>
-      </ErrorBoundary>
+                  {/* ── Root-level push screens (no tab bar) ── */}
+                  <Stack.Screen
+                    name="add-account"
+                    options={{
+                      animation: "slide_from_right",
+                      animationDuration: 300,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="edit-account"
+                    options={{
+                      animation: "slide_from_right",
+                      animationDuration: 300,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="add-category"
+                    options={{
+                      animation: "slide_from_right",
+                      animationDuration: 300,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="edit-category"
+                    options={{
+                      animation: "slide_from_right",
+                      animationDuration: 300,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="about"
+                    options={{
+                      animation: "slide_from_right",
+                      animationDuration: 300,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="add-transaction"
+                    options={{
+                      animation: "slide_from_right",
+                      animationDuration: 300,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="receipt-scan"
+                    options={{
+                      animation: "slide_from_right",
+                      animationDuration: 300,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="import"
+                    options={{
+                      animation: "slide_from_right",
+                      animationDuration: 300,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="lock"
+                    options={{
+                      animation: "slide_from_right",
+                      animationDuration: 300,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="pin-setup"
+                    options={{
+                      animation: "slide_from_right",
+                      animationDuration: 300,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="fab-sheet"
+                    options={{
+                      presentation: "transparentModal",
+                      animation: "fade",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="select-account"
+                    options={{
+                      presentation: "transparentModal",
+                      animation: "fade",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="select-category"
+                    options={{
+                      presentation: "transparentModal",
+                      animation: "fade",
+                    }}
+                  />
+                </Stack>
+              )}
+              <Toaster
+                position="top-center"
+                visibleToasts={3}
+                gap={8}
+                pauseWhenPageIsHidden
+              />
+            </View>
+          </GestureHandlerRootView>
+        </ErrorBoundary>
+      </AmountsVisibilityProvider>
     </ThemeProvider>
   );
 }

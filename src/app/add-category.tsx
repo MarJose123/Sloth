@@ -21,6 +21,7 @@ import {
   View,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import Svg, { Circle } from "react-native-svg";
 import {
   getCategoryById,
@@ -30,6 +31,7 @@ import {
 import type { CategoryKind } from "@/types";
 import { useColors } from "@/theme/ThemeContext";
 import { useToast } from "@/hooks/useToast";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -201,12 +203,12 @@ export default function CategoryEditorScreen() {
   if (isLoadingData) {
     return (
       <View
-        className="flex-1 items-center justify-center pt-safe "
+        className="flex-1 px-5 pt-safe "
         style={{ backgroundColor: colors.surfaceBg }}
       >
-        <Text className="text-sm" style={{ color: colors.textSecondary }}>
-          {"Loading\u2026"}
-        </Text>
+        <View className="py-10">
+          <SkeletonList rows={4} rowHeight={68} />
+        </View>
       </View>
     );
   }
@@ -226,35 +228,37 @@ export default function CategoryEditorScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* ── Header ── */}
-          <View className="mb-6 flex-row items-center justify-between">
-            <Pressable
-              onPress={() => router.back()}
-              className="active:opacity-60"
-            >
-              <Text
-                className="text-[14.5px] text-text-secondary"
-                style={{ color: colors.textSecondary }}
+          <Animated.View entering={FadeInDown.duration(450)}>
+            {/* ── Header ── */}
+            <View className="mb-6 flex-row items-center justify-between">
+              <Pressable
+                onPress={() => router.back()}
+                className="active:opacity-60"
               >
-                Cancel
+                <Text
+                  className="text-[14.5px] text-text-secondary"
+                  style={{ color: colors.textSecondary }}
+                >
+                  Cancel
+                </Text>
+              </Pressable>
+              <Text className="font-fraunces-medium text-[20px] text-text-primary">
+                {isEditing ? "Edit category" : "New category"}
               </Text>
-            </Pressable>
-            <Text className="font-fraunces-medium text-[20px] text-text-primary">
-              {isEditing ? "Edit category" : "New category"}
-            </Text>
-            <Pressable
-              onPress={handleSave}
-              disabled={isSaving}
-              className="active:opacity-60"
-            >
-              <Text
-                className="font-manrope-bold text-[13px] "
-                style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
+              <Pressable
+                onPress={handleSave}
+                disabled={isSaving}
+                className="active:opacity-60"
               >
-                Save
-              </Text>
-            </Pressable>
-          </View>
+                <Text
+                  className="font-manrope-bold text-[13px] "
+                  style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
+                >
+                  Save
+                </Text>
+              </Pressable>
+            </View>
+          </Animated.View>
 
           {/* ── Preview + name ── */}
           <View className="mb-6 flex-row items-center gap-3.5">
