@@ -27,9 +27,28 @@ export interface RecentTransaction {
   amountCents: number;
   occurredAt: number;
   accountId: string;
+  /** Account name — used for the badge initials fallback. */
+  accountName: string;
+  /** Account logo key ("bank/…" or "custom/…"), resolved via resolveLogoSrc(). */
+  accountLogoKey: string | null;
+  /** Account badge color — fallback background when there is no logo. */
+  accountColorHex: string;
   categoryName: string | null;
   categoryIcon: string | null;
   categoryKind: CategoryKind | null;
+}
+
+/**
+ * Per-account income or expense total for a date range — one row of the
+ * dashboard's weekly activity pie chart detail. `amountCents` is positive
+ * (absolute amount).
+ */
+export interface AccountAmountSlice {
+  accountId: string;
+  accountName: string;
+  accountLogoKey: string | null;
+  accountColorHex: string;
+  amountCents: number;
 }
 
 /**

@@ -19,6 +19,8 @@ import { TransactionRow } from "@/components/dashboard/TransactionRow";
 import { AccountSwitcher } from "@/components/dashboard/AccountSwitcher";
 import { EmptyAccountsCard } from "@/components/dashboard/EmptyAccountsCard";
 import { CategoryRingCard } from "@/components/dashboard/CategoryRingCard";
+import { WeeklyActivityCard } from "@/components/dashboard/WeeklyActivityCard";
+import { HIDDEN_AMOUNT } from "@/lib/format";
 
 // Mock nativewind
 jest.mock("nativewind", () => ({
@@ -95,6 +97,9 @@ describe("TransactionRow", () => {
     amountCents: -15000,
     occurredAt: Date.now() - 3600000,
     accountId: "acc-1",
+    accountName: "BPI Savings",
+    accountLogoKey: null,
+    accountColorHex: "#C87B54",
     categoryName: "Dining",
     categoryIcon: "🍽",
     categoryKind: "expense" as const,
@@ -125,6 +130,23 @@ describe("TransactionRow", () => {
     const renderer = render(<TransactionRow transaction={income} />);
     const json = JSON.stringify(renderer.toJSON());
     expect(json).toContain("5,000");
+  });
+
+  it("renders the account badge (initials fallback when no logo)", () => {
+    const renderer = render(<TransactionRow transaction={baseTx} />);
+    const json = JSON.stringify(renderer.toJSON());
+    // Initials of "BPI Savings" → "BS"
+    expect(json).toContain("BS");
+    // Badge fallback background color
+    expect(json).toContain("#C87B54");
+  });
+
+  it("renders the account logo image when a logoKey is present", () => {
+    const withLogo = { ...baseTx, accountLogoKey: "bank/bpi.png" };
+    const renderer = render(<TransactionRow transaction={withLogo} />);
+    // Bundled logo asset resolves via require — the image element renders
+    // without the initials fallback.
+    expect(JSON.stringify(renderer.toJSON())).not.toContain("BS");
   });
 });
 
@@ -209,5 +231,104 @@ describe("CategoryRingCard", () => {
       <CategoryRingCard category={category} totalExpenseCents={0} />,
     );
     expect(JSON.stringify(renderer.toJSON())).toContain("\u2014");
+  });
+});
+
+// ─── WeeklyActivityCard ─────────────────────────────────────────────────────
+
+describe("WeeklyActivityCard", () => {
+  const earned = [
+    {
+      accountId: "acc-1",
+      accountName: "BPI",
+      accountLogoKey: "bank/bpi.png",
+      accountColorHex: "#C87B54",
+      amountCents: 30000,
+    },
+  ];
+  const spent = [
+    {
+      accountId: "acc-2",
+      accountName: "Wallet",
+      accountLogoKey: null,
+      accountColorHex: "#7FA06B",
+      amountCents: 10000,
+    },
+    {
+      accountId: "acc-3",
+      accountName: "GCash",
+      accountLogoKey: "bank/gcash.png",
+      accountColorHex: "#6B8D58",
+      amountCents: 5000,
+    },
+  ];
+
+  it("shows earned and spent totals by default", () => {
+    const renderer = render(
+      <WeeklyActivityCard earned={earned} spent={spent} />,
+    );
+    const json = JSON.stringify(renderer.toJSON());
+    expect(json).toContain("Earned");
+    expect(json).toContain("Spent");
+    expect(json).toContain("₱300.00");
+    expect(json).toContain("₱150.00");
+  });
+
+  it("lists accounts with badges and amounts when the spent arc is tapped", () => {
+    const renderer = render(
+      <WeeklyActivityCard earned={earned} spent={spent} />,
+    );
+    act(() => {
+      renderer.root.findByProps({ testID: "segment-spent" }).props.onPress();
+    });
+    const json = JSON.stringify(renderer.toJSON());
+    expect(json).toContain("Spent by account");
+    expect(json).toContain("Wallet");
+    expect(json).toContain("GCash");
+    expect(json).toContain("₱100.00");
+    expect(json).toContain("₱50.00");
+    expect(json).not.toContain("Earned");
+  });
+
+  it("lists accounts when the earned arc is tapped", () => {
+    const renderer = render(
+      <WeeklyActivityCard earned={earned} spent={spent} />,
+    );
+    act(() => {
+      renderer.root.findByProps({ testID: "segment-earned" }).props.onPress();
+    });
+    const json = JSON.stringify(renderer.toJSON());
+    expect(json).toContain("Earned by account");
+    expect(json).toContain("BPI");
+    expect(json).toContain("₱300.00");
+  });
+
+  it("tapping the same segment again returns to the totals", () => {
+    const renderer = render(
+      <WeeklyActivityCard earned={earned} spent={spent} />,
+    );
+    act(() => {
+      renderer.root.findByProps({ testID: "segment-earned" }).props.onPress();
+    });
+    act(() => {
+      renderer.root.findByProps({ testID: "segment-earned" }).props.onPress();
+    });
+    const json = JSON.stringify(renderer.toJSON());
+    expect(json).toContain("Earned");
+    expect(json).toContain("Spent");
+  });
+
+  it("masks amounts when hidden", () => {
+    const renderer = render(
+      <WeeklyActivityCard earned={earned} spent={spent} hidden />,
+    );
+    expect(JSON.stringify(renderer.toJSON())).toContain(HIDDEN_AMOUNT);
+  });
+
+  it("shows the empty state when there is no activity", () => {
+    const renderer = render(<WeeklyActivityCard earned={[]} spent={[]} />);
+    const json = JSON.stringify(renderer.toJSON());
+    expect(json).toContain("No activity");
+    expect(json).toContain("₱0.00");
   });
 });
