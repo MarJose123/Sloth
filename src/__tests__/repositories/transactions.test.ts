@@ -17,6 +17,8 @@ import type { MonthRange } from "@/types";
 import { mockDbInstance } from "@/__tests__/setup";
 import {
   deleteTransaction,
+  getExpenseByAccount,
+  getIncomeByAccount,
   insertTransaction,
   listRecentTransactions,
   listAllTransactions,
@@ -112,6 +114,9 @@ describe("listRecentTransactions", () => {
           amount_cents: -15000,
           occurred_at: 1700000000000,
           account_id: "acc-1",
+          account_name: "BPI Savings",
+          account_logo_key: "bank/bpi.png",
+          account_color_hex: "#C87B54",
           category_name: "Dining",
           category_icon: "🍽",
           category_kind: "expense",
@@ -124,6 +129,9 @@ describe("listRecentTransactions", () => {
     expect(txs[0].merchant).toBe("Starbucks");
     expect(txs[0].amountCents).toBe(-15000);
     expect(txs[0].categoryName).toBe("Dining");
+    expect(txs[0].accountName).toBe("BPI Savings");
+    expect(txs[0].accountLogoKey).toBe("bank/bpi.png");
+    expect(txs[0].accountColorHex).toBe("#C87B54");
   });
 
   it("filters by accountId when provided", async () => {
@@ -231,5 +239,104 @@ describe("listAllTransactions", () => {
 
     const txs = await listAllTransactions();
     expect(txs[0].note).toBe("My note");
+  });
+});
+
+describe("getExpenseByAccount", () => {
+  it("groups expense by account and maps badge data", async () => {
+    mockDbInstance.execute.mockResolvedValue({
+      rows: [
+        {
+          account_id: "acc-1",
+          account_name: "BPI",
+          account_logo_key: "bank/bpi.png",
+          account_color_hex: "#C87B54",
+          total_cents: 25000,
+        },
+        {
+          account_id: "acc-2",
+          account_name: "Wallet",
+          account_logo_key: null,
+          account_color_hex: "#7FA06B",
+          total_cents: 5000,
+        },
+      ],
+    });
+
+    const range: MonthRange = { start: 1000, end: 2000 };
+    const slices = await getExpenseByAccount(range);
+
+    expect(slices).toHaveLength(2);
+    expect(slices[0]).toEqual({
+      accountId: "acc-1",
+      accountName: "BPI",
+      accountLogoKey: "bank/bpi.png",
+      accountColorHex: "#C87B54",
+      amountCents: 25000,
+    });
+    expect(slices[1].accountLogoKey).toBeNull();
+
+    const sql = mockDbInstance.execute.mock.calls[0][0] as string;
+    expect(sql).toContain("SUM(-t.amount_cents)");
+    expect(sql).toContain("GROUP BY a.id");
+    expect(sql).toContain("t.amount_cents < 0");
+  });
+
+  it("scopes to a single account when accountId is provided", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    const range: MonthRange = { start: 1000, end: 2000 };
+    await getExpenseByAccount(range, "acc-1");
+
+    const params = mockDbInstance.execute.mock.calls[0][1] as (
+      string | number
+    )[];
+    expect(params).toContain(1000);
+    expect(params).toContain(2000);
+    expect(params).toContain("acc-1");
+  });
+});
+
+describe("getIncomeByAccount", () => {
+  it("returns income totals grouped by account", async () => {
+    mockDbInstance.execute.mockResolvedValue({
+      rows: [
+        {
+          account_id: "acc-1",
+          account_name: "BPI",
+          account_logo_key: null,
+          account_color_hex: "#C87B54",
+          total_cents: 42000,
+        },
+      ],
+    });
+
+    const range: MonthRange = { start: 1000, end: 2000 };
+    const slices = await getIncomeByAccount(range);
+
+    expect(slices).toHaveLength(1);
+    expect(slices[0]).toEqual({
+      accountId: "acc-1",
+      accountName: "BPI",
+      accountLogoKey: null,
+      accountColorHex: "#C87B54",
+      amountCents: 42000,
+    });
+
+    const sql = mockDbInstance.execute.mock.calls[0][0] as string;
+    expect(sql).toContain("SUM(t.amount_cents)");
+    expect(sql).toContain("t.amount_cents > 0");
+  });
+
+  it("scopes to a single account when accountId is provided", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    const range: MonthRange = { start: 1000, end: 2000 };
+    await getIncomeByAccount(range, "acc-1");
+
+    const params = mockDbInstance.execute.mock.calls[0][1] as (
+      string | number
+    )[];
+    expect(params).toContain("acc-1");
   });
 });

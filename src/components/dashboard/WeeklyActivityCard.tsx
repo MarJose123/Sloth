@@ -9,61 +9,96 @@
  *  of this license document, but changing it is not allowed.
  */
 
+import { useState } from "react";
 import { Text, View } from "react-native";
-import Svg, { G, Rect } from "react-native-svg";
+import Svg, { Circle, G, Path } from "react-native-svg";
 import { useColors } from "@/theme/ThemeContext";
-import type { DailyTotals } from "@/types";
+import { formatCurrency, HIDDEN_AMOUNT } from "@/lib/format";
+import { AccountBadge } from "@/components/dashboard/TransactionRow";
+import type { AccountAmountSlice } from "@/types";
 
 // ─── chart geometry ────────────────────────────────────────────────────────────
 
-const CHART_HEIGHT = 68;
-const BAR_WIDTH = 7;
-const BAR_GAP = 3;
-const GROUP_GAP = 10;
-const BAR_RADIUS = 3;
+const PIE_SIZE = 150;
+const STROKE_WIDTH = 24;
+const RADIUS = (PIE_SIZE - STROKE_WIDTH) / 2;
+const CENTER = PIE_SIZE / 2;
 
-// ─── legend dot ────────────────────────────────────────────────────────────────
+/** Point on a circle at `angleDeg` (0° = 12 o'clock, clockwise on screen). */
+function polar(cx: number, cy: number, r: number, angleDeg: number) {
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
 
-function LegendDot({ color, label }: { color: string; label: string }) {
-  const colors = useColors();
-  return (
-    <View className="flex-row items-center gap-1.5">
-      <View
-        className="h-2 w-2 rounded-full"
-        style={{ backgroundColor: color }}
-      />
-      <Text
-        className="font-mono text-[10.5px] uppercase tracking-[0.06em]"
-        style={{ color: colors.textSecondary }}
-      >
-        {label}
-      </Text>
-    </View>
-  );
+/** SVG path for a donut segment sweeping clockwise from start to end angle. */
+function donutArcPath(startAngle: number, endAngle: number): string {
+  const sweep = endAngle - startAngle;
+  const largeArc = sweep > 180 ? 1 : 0;
+  const outerStart = polar(CENTER, CENTER, RADIUS, startAngle);
+  const outerEnd = polar(CENTER, CENTER, RADIUS, endAngle);
+  const innerStart = polar(CENTER, CENTER, RADIUS - STROKE_WIDTH, startAngle);
+  const innerEnd = polar(CENTER, CENTER, RADIUS - STROKE_WIDTH, endAngle);
+
+  return [
+    `M ${outerStart.x} ${outerStart.y}`,
+    `A ${RADIUS} ${RADIUS} 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y}`,
+    `L ${innerEnd.x} ${innerEnd.y}`,
+    `A ${RADIUS - STROKE_WIDTH} ${RADIUS - STROKE_WIDTH} 0 ${largeArc} 0 ${innerStart.x} ${innerStart.y}`,
+    "Z",
+  ].join(" ");
 }
 
 // ─── card ──────────────────────────────────────────────────────────────────────
 
+type SegmentKind = "earned" | "spent";
+
 /**
- * Grouped bar chart of the last 7 days' income (sage) vs expense (brass),
- * scaled to the busiest day. Zero-value days render only the hairline baseline.
+ * Interactive donut chart of the last 7 days: one sage arc for earned
+ * (income), one brass arc for spent (expense). Tapping an arc lists the
+ * per-account breakdown for that category (badge, name, amount); tapping
+ * again returns to the totals.
  */
 export function WeeklyActivityCard({
-  dailyTotals,
+  earned,
+  spent,
+  hidden = false,
 }: {
-  dailyTotals: DailyTotals[];
+  earned: AccountAmountSlice[];
+  spent: AccountAmountSlice[];
+  /** When true, masks amounts (privacy eye toggle on the dashboard). */
+  hidden?: boolean;
 }) {
   const colors = useColors();
+  const [selectedKind, setSelectedKind] = useState<SegmentKind | null>(null);
 
-  const max = dailyTotals.reduce(
-    (m, d) => Math.max(m, d.expenseCents, d.incomeCents),
-    0,
-  );
-  const scale = max > 0 ? CHART_HEIGHT / max : 0;
+  const earnedTotal = earned.reduce((sum, s) => sum + s.amountCents, 0);
+  const spentTotal = spent.reduce((sum, s) => sum + s.amountCents, 0);
+  const grandTotal = earnedTotal + spentTotal;
 
-  const groupWidth = BAR_WIDTH * 2 + BAR_GAP;
-  const chartWidth =
-    dailyTotals.length * groupWidth + (dailyTotals.length - 1) * GROUP_GAP;
+  const selected =
+    selectedKind === "earned"
+      ? earned
+      : selectedKind === "spent"
+        ? spent
+        : null;
+
+  const handlePress = (kind: SegmentKind) => {
+    setSelectedKind((current) => (current === kind ? null : kind));
+  };
+
+  // ── Segment angles (earned first from 12 o'clock, then spent) ───────────
+  const earnedFraction = grandTotal > 0 ? earnedTotal / grandTotal : 0;
+  const spentFraction = grandTotal > 0 ? spentTotal / grandTotal : 0;
+  const showEmptyRing = grandTotal <= 0;
+  const isSingleEarned = earnedTotal > 0 && spentTotal === 0;
+  const isSingleSpent = spentTotal > 0 && earnedTotal === 0;
+
+  const detailLabel =
+    selectedKind === "earned"
+      ? "Earned by account"
+      : selectedKind === "spent"
+        ? "Spent by account"
+        : "";
 
   return (
     <View
@@ -81,46 +116,150 @@ export function WeeklyActivityCard({
       </Text>
 
       <View className="mt-4 items-center">
-        <Svg width={chartWidth} height={CHART_HEIGHT + 4}>
-          {/* baseline */}
-          <Rect
-            x={0}
-            y={CHART_HEIGHT}
-            width={chartWidth}
-            height={1}
-            fill={colors.hairline}
-          />
-          {dailyTotals.map((day, index) => {
-            const x = index * (groupWidth + GROUP_GAP);
-            const incomeHeight = Math.max(day.incomeCents * scale, 0);
-            const expenseHeight = Math.max(day.expenseCents * scale, 0);
-            return (
-              <G key={day.dayStartEpochMs}>
-                <Rect
-                  x={x}
-                  y={CHART_HEIGHT - incomeHeight}
-                  width={BAR_WIDTH}
-                  height={incomeHeight}
-                  rx={BAR_RADIUS}
+        <Svg width={PIE_SIZE} height={PIE_SIZE}>
+          {showEmptyRing ? (
+            <Circle
+              cx={CENTER}
+              cy={CENTER}
+              r={RADIUS}
+              stroke={colors.hairline}
+              strokeWidth={STROKE_WIDTH}
+              fill="none"
+            />
+          ) : isSingleEarned ? (
+            <Circle
+              cx={CENTER}
+              cy={CENTER}
+              r={RADIUS}
+              stroke={colors.sage}
+              strokeWidth={STROKE_WIDTH}
+              fill="none"
+              onPress={() => handlePress("earned")}
+              testID="segment-earned"
+            />
+          ) : isSingleSpent ? (
+            <Circle
+              cx={CENTER}
+              cy={CENTER}
+              r={RADIUS}
+              stroke={colors.brass}
+              strokeWidth={STROKE_WIDTH}
+              fill="none"
+              onPress={() => handlePress("spent")}
+              testID="segment-spent"
+            />
+          ) : (
+            <>
+              <G>
+                <Path
+                  d={donutArcPath(0, earnedFraction * 360)}
                   fill={colors.sage}
-                />
-                <Rect
-                  x={x + BAR_WIDTH + BAR_GAP}
-                  y={CHART_HEIGHT - expenseHeight}
-                  width={BAR_WIDTH}
-                  height={expenseHeight}
-                  rx={BAR_RADIUS}
-                  fill={colors.brass}
+                  opacity={
+                    selectedKind !== null && selectedKind !== "earned" ? 0.4 : 1
+                  }
+                  onPress={() => handlePress("earned")}
+                  testID="segment-earned"
                 />
               </G>
-            );
-          })}
+              <G>
+                <Path
+                  d={donutArcPath(
+                    earnedFraction * 360,
+                    (earnedFraction + spentFraction) * 360,
+                  )}
+                  fill={colors.brass}
+                  opacity={
+                    selectedKind !== null && selectedKind !== "spent" ? 0.4 : 1
+                  }
+                  onPress={() => handlePress("spent")}
+                  testID="segment-spent"
+                />
+              </G>
+            </>
+          )}
         </Svg>
       </View>
 
-      <View className="mt-4 flex-row justify-center gap-5">
-        <LegendDot color={colors.sage} label="Income" />
-        <LegendDot color={colors.brass} label="Expense" />
+      {/* ── Detail: totals, or the tapped category's accounts ── */}
+      <View className="mt-4">
+        {selected ? (
+          <>
+            <Text
+              className="font-mono text-[10.5px] uppercase tracking-[0.06em]"
+              style={{ color: colors.textSecondary }}
+            >
+              {detailLabel}
+            </Text>
+            {selected.length === 0 ? (
+              <Text
+                className="mt-3 text-[13px] font-manrope-semibold"
+                style={{ color: colors.textSecondary }}
+              >
+                Nothing this week
+              </Text>
+            ) : (
+              selected.map((item) => (
+                <View
+                  key={item.accountId}
+                  className="mt-3 flex-row items-center justify-between"
+                >
+                  <View className="flex-1 flex-row items-center gap-2.5 pr-3">
+                    <AccountBadge
+                      name={item.accountName}
+                      logoKey={item.accountLogoKey}
+                      colorHex={item.accountColorHex}
+                      size={30}
+                    />
+                    <Text
+                      className="text-[13px] font-manrope-semibold"
+                      numberOfLines={1}
+                      style={{ color: colors.textPrimary }}
+                    >
+                      {item.accountName}
+                    </Text>
+                  </View>
+                  <Text
+                    className="font-mono text-[14.5px]"
+                    style={{ color: colors.textPrimary }}
+                  >
+                    {hidden ? HIDDEN_AMOUNT : formatCurrency(item.amountCents)}
+                  </Text>
+                </View>
+              ))
+            )}
+          </>
+        ) : (
+          <View className="gap-2.5">
+            <View className="flex-row items-center justify-between">
+              <Text
+                className="font-mono text-[10.5px] uppercase tracking-[0.06em]"
+                style={{ color: colors.textSecondary }}
+              >
+                {showEmptyRing ? "No activity" : "Earned"}
+              </Text>
+              <Text
+                className="font-mono text-[14.5px]"
+                style={{ color: colors.sage }}
+              >
+                {hidden ? HIDDEN_AMOUNT : formatCurrency(earnedTotal)}
+              </Text>
+            </View>
+            <View className="flex-row items-center justify-between">
+              <Text
+                className="font-mono text-[10.5px] uppercase tracking-[0.06em]"
+                style={{ color: colors.textSecondary }}
+              >
+                Spent
+              </Text>
+              <Text
+                className="font-mono text-[14.5px]"
+                style={{ color: colors.textPrimary }}
+              >
+                {hidden ? HIDDEN_AMOUNT : formatCurrency(spentTotal)}
+              </Text>
+            </View>
+          </View>
+        )}
       </View>
     </View>
   );

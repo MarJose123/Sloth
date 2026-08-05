@@ -19,7 +19,8 @@ import {
   listTopExpenseCategories,
 } from "@/lib/db/repositories/categories";
 import {
-  getDailyTotals,
+  getExpenseByAccount,
+  getIncomeByAccount,
   listRecentTransactions,
 } from "@/lib/db/repositories/transactions";
 import type { DashboardData, DashboardState } from "@/types";
@@ -46,14 +47,16 @@ async function fetchDashboardData(
     categories,
     totalExpenseCents,
     totalIncomeCents,
-    dailyTotals,
+    spentByAccount,
+    earnedByAccount,
     recentTransactions,
   ] = await Promise.all([
     listAccountsWithBalances(),
     listTopExpenseCategories(range, 0, accountId),
     getTotalExpenseCents(range, accountId),
     getTotalIncomeCents(range, accountId),
-    getDailyTotals(weekRange, accountId),
+    getExpenseByAccount(weekRange, accountId),
+    getIncomeByAccount(weekRange, accountId),
     listRecentTransactions(RECENT_TRANSACTIONS_LIMIT, accountId, range),
   ]);
 
@@ -62,7 +65,8 @@ async function fetchDashboardData(
     categories,
     totalExpenseCents,
     totalIncomeCents,
-    dailyTotals,
+    spentByAccount,
+    earnedByAccount,
     recentTransactions,
   };
 }

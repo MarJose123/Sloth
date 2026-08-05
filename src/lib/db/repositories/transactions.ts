@@ -12,6 +12,7 @@
 import * as ExpoCrypto from "expo-crypto";
 import { getDb } from "../client";
 import type {
+  AccountAmountSlice,
   DailyTotals,
   RecentTransaction,
   TransactionLedgerItem,
@@ -30,6 +31,9 @@ interface RecentTransactionRow {
   amount_cents: number | string;
   occurred_at: number | string;
   account_id: string;
+  account_name: string;
+  account_logo_key: string | null;
+  account_color_hex: string;
   category_name: string | null;
   category_icon: string | null;
   category_kind: CategoryKind | null;
@@ -48,6 +52,14 @@ interface TransactionLedgerRow {
   category_kind: CategoryKind | null;
   note: string | null;
   source: "manual" | "scan" | "import";
+}
+
+interface AccountAmountRow {
+  account_id: string;
+  account_name: string;
+  account_logo_key: string | null;
+  account_color_hex: string;
+  total_cents: number | string;
 }
 
 // ─── queries ──────────────────────────────────────────────────────────────────
@@ -77,8 +89,11 @@ export async function listRecentTransactions(
 
   const { rows } = await db.execute(
     `SELECT t.id, t.merchant, t.amount_cents, t.occurred_at, t.account_id,
+            a.name AS account_name, a.logo_key AS account_logo_key,
+            a.color_hex AS account_color_hex,
             c.name AS category_name, c.icon AS category_icon, c.kind AS category_kind
      FROM transactions t
+     LEFT JOIN accounts a ON a.id = t.account_id
      LEFT JOIN categories c ON c.id = t.category_id
      ${whereClause}
      ORDER BY t.created_at DESC
@@ -92,6 +107,9 @@ export async function listRecentTransactions(
     amountCents: Number(row.amount_cents),
     occurredAt: Number(row.occurred_at),
     accountId: row.account_id,
+    accountName: row.account_name,
+    accountLogoKey: row.account_logo_key ?? null,
+    accountColorHex: row.account_color_hex,
     categoryName: row.category_name ?? null,
     categoryIcon: row.category_icon ?? null,
     categoryKind: row.category_kind ?? null,
@@ -202,8 +220,7 @@ export async function deleteTransaction(id: string): Promise<void> {
 
 /**
  * Daily expense/income totals for every day in `range` (local timezone),
- * zero-filled so days without transactions still appear. Used by the
- * dashboard's weekly activity chart.
+ * zero-filled so days without transactions still appear.
  */
 export async function getDailyTotals(
   range: MonthRange,
@@ -256,4 +273,86 @@ export async function getDailyTotals(
     cursor.setDate(cursor.getDate() + 1);
   }
   return totals;
+}
+
+/**
+ * Expense totals grouped by account for `range` (positive cents), ordered
+ * largest first. Feeds the "spent" side of the dashboard's interactive
+ * weekly activity pie chart. Scoped to a single account when `accountId`
+ * is provided.
+ */
+export async function getExpenseByAccount(
+  range: MonthRange,
+  accountId?: string,
+): Promise<AccountAmountSlice[]> {
+  const db = await getDb();
+  const params: (string | number)[] = [range.start, range.end];
+  const accountClause = accountId ? "AND t.account_id = ?" : "";
+  if (accountId) params.push(accountId);
+
+  const { rows } = await db.execute(
+    `SELECT a.id   AS account_id,
+            a.name AS account_name,
+            a.logo_key  AS account_logo_key,
+            a.color_hex AS account_color_hex,
+            SUM(-t.amount_cents) AS total_cents
+       FROM transactions t
+       JOIN accounts a ON a.id = t.account_id
+      WHERE t.amount_cents < 0
+        AND t.occurred_at >= ?
+        AND t.occurred_at < ?
+        ${accountClause}
+      GROUP BY a.id
+      ORDER BY total_cents DESC;`,
+    params,
+  );
+
+  return (rows as unknown as AccountAmountRow[]).map((row) => ({
+    accountId: row.account_id,
+    accountName: row.account_name,
+    accountLogoKey: row.account_logo_key ?? null,
+    accountColorHex: row.account_color_hex,
+    amountCents: Number(row.total_cents),
+  }));
+}
+
+/**
+ * Income totals grouped by account for `range` (positive cents), ordered
+ * largest first. Feeds the "earned" side of the dashboard's interactive
+ * weekly activity pie chart. Scoped to a single account when `accountId`
+ * is provided.
+ */
+export async function getIncomeByAccount(
+  range: MonthRange,
+  accountId?: string,
+): Promise<AccountAmountSlice[]> {
+  const db = await getDb();
+  const params: (string | number)[] = [range.start, range.end];
+  const accountClause = accountId ? "AND t.account_id = ?" : "";
+  if (accountId) params.push(accountId);
+
+  const { rows } = await db.execute(
+    `SELECT a.id   AS account_id,
+            a.name AS account_name,
+            a.logo_key  AS account_logo_key,
+            a.color_hex AS account_color_hex,
+            SUM(t.amount_cents) AS total_cents
+       FROM transactions t
+       JOIN accounts a ON a.id = t.account_id
+      WHERE t.amount_cents > 0
+        AND t.occurred_at >= ?
+        AND t.occurred_at < ?
+        ${accountClause}
+      GROUP BY a.id
+      ORDER BY total_cents DESC;`,
+    params,
+  );
+
+  return (rows as unknown as AccountAmountRow[]).map((row) => ({
+    accountId: row.account_id,
+    accountName: row.account_name,
+    accountLogoKey: row.account_logo_key ?? null,
+    accountColorHex: row.account_color_hex,
+    amountCents: Number(row.total_cents),
+  }));
 }

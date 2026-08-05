@@ -41,7 +41,7 @@ import { formatAmountOnBlur } from "@/lib/format";
 import { BANK_LOGOS } from "@/lib/logoResolver";
 import { FormField } from "@/components/ui/FormField";
 import { useToast } from "@/hooks/useToast";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Color from "color";
@@ -57,6 +57,9 @@ type AccountFormData = z.infer<typeof accountSchema>;
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
+/** Fallback badge color for accounts created without a logo (schema NOT NULL). */
+const DEFAULT_ACCOUNT_COLOR = colors.brass;
+
 const ACCOUNT_TYPES: {
   type: AccountType;
   label: string;
@@ -68,80 +71,21 @@ const ACCOUNT_TYPES: {
   { type: "investment", label: "Investment", icon: "trending-up" },
 ];
 
-const BADGE_COLORS = [
-  colors.brass,
-  colors.sage,
-  colors.rust,
-  colors.dustyBlue,
-  colors.textSecondary,
-  colors.ochre,
-  colors.brassSoft,
-  "#D48FB8",
-  "#A78BDB",
-  "#6FC9B8",
-  "#F0C27A",
-  "#8CA89B",
-] as const;
-
 const BADGE_MODES: {
-  key: "color" | "logo" | "custom";
+  key: "logo" | "custom";
   label: string;
   icon: LucideIconName;
 }[] = [
-  { key: "color", label: "Color", icon: "swatch-book" },
   { key: "logo", label: "Logo", icon: "building" },
   { key: "custom", label: "Custom", icon: "upload" },
 ];
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-function getInitials(name: string): string {
-  const words = name.trim().split(/\s+/);
-  if (words.length === 1) return (words[0] ?? "").slice(0, 2).toUpperCase();
-  return words
-    .slice(0, 2)
-    .map((w) => (w[0] ?? "").toUpperCase())
-    .join("");
-}
-
 function parseBalanceCents(text: string): number {
   const stripped = text.replace(/[$,\s]/g, "");
   const val = parseFloat(stripped);
   return isNaN(val) ? 0 : Math.round(val * 100);
-}
-
-// ─── color swatch ─────────────────────────────────────────────────────────────
-
-function ColorSwatch({
-  color,
-  selected,
-  onPress,
-}: {
-  color: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable onPress={onPress} className="active:opacity-70">
-      <View
-        className="border-brass"
-        style={{
-          padding: selected ? 3 : 0,
-          borderRadius: 15,
-          borderWidth: selected ? 2 : 0,
-        }}
-      >
-        <View
-          style={{
-            width: selected ? 20 : 26,
-            height: selected ? 20 : 26,
-            borderRadius: selected ? 10 : 13,
-            backgroundColor: color,
-          }}
-        />
-      </View>
-    </Pressable>
-  );
 }
 
 // ─── logo grid item ───────────────────────────────────────────────────────────
@@ -196,13 +140,10 @@ export default function AddAccountScreen() {
   const colors = useColors();
   const toast = useToast();
   const [selectedType, setSelectedType] = useState<AccountType>("wallet");
-  const [selectedColorIdx, setSelectedColorIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
   // Badge mode state
-  const [badgeMode, setBadgeMode] = useState<"color" | "logo" | "custom">(
-    "color",
-  );
+  const [badgeMode, setBadgeMode] = useState<"logo" | "custom">("logo");
   const [selectedLogoKey, setSelectedLogoKey] = useState<string | null>(null);
   const [customLogoUri, setCustomLogoUri] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -218,11 +159,6 @@ export default function AddAccountScreen() {
       balance: "0.00",
     },
   });
-
-  const name = useWatch({ control, name: "name" });
-  const selectedColor = BADGE_COLORS[selectedColorIdx] ?? colors.brass;
-  const initials = getInitials(name);
-  const hasName = name.trim().length > 0;
 
   // Resolve the final logoKey to save and preview source
   let resolvedLogoKey: string | null = null;
@@ -244,7 +180,7 @@ export default function AddAccountScreen() {
         await insertAccount({
           name: data.name.trim(),
           type: selectedType,
-          colorHex: selectedColor,
+          colorHex: DEFAULT_ACCOUNT_COLOR,
           logoKey: resolvedLogoKey,
           startingBalanceCents: parseBalanceCents(data.balance ?? "0.00"),
         });
@@ -258,7 +194,7 @@ export default function AddAccountScreen() {
         setIsSaving(false);
       }
     },
-    [selectedType, selectedColor, resolvedLogoKey, toast],
+    [selectedType, resolvedLogoKey, toast],
   );
 
   const handleSave = handleSubmit(onSubmit, (fieldErrors) => {
@@ -339,7 +275,7 @@ export default function AddAccountScreen() {
     }
   }, [customLogoUri, toast]);
 
-  const handleBadgeModeChange = (mode: "color" | "logo" | "custom") => {
+  const handleBadgeModeChange = (mode: "logo" | "custom") => {
     setBadgeMode(mode);
     if (mode !== "logo") setSelectedLogoKey(null);
     if (mode !== "custom") setCustomLogoUri(null);
@@ -470,32 +406,22 @@ export default function AddAccountScreen() {
 
           {/* Preview badge */}
           <View className="mb-4 items-center">
-            <View
-              className="h-16 w-16 items-center justify-center overflow-hidden rounded-2xl"
-              style={{
-                backgroundColor:
-                  badgeMode === "color" ? selectedColor : "transparent",
-              }}
-            >
-              {previewSource && (
+            {previewSource ? (
+              <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-2xl">
                 <Image
                   source={previewSource}
                   style={{ width: 56, height: 56 }}
                   resizeMode="cover"
                 />
-              )}
-              {badgeMode === "color" &&
-                (hasName ? (
-                  <Text
-                    className="font-mono-medium text-base"
-                    style={{ color: colors.ink }}
-                  >
-                    {initials}
-                  </Text>
-                ) : (
-                  <Lucide name="image" size={22} color={colors.ink} />
-                ))}
-            </View>
+              </View>
+            ) : (
+              <View
+                className="h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed"
+                style={{ borderColor: colors.hairline }}
+              >
+                <Lucide name="image" size={22} color={colors.textSecondary} />
+              </View>
+            )}
           </View>
 
           {/* ── Mode pills ── */}
@@ -531,31 +457,6 @@ export default function AddAccountScreen() {
           </View>
 
           {/* ── Mode content ── */}
-          {badgeMode === "color" && (
-            <ScrollView
-              className="mb-4"
-              style={{ maxHeight: 140 }}
-              nestedScrollEnabled
-              showsVerticalScrollIndicator={false}
-            >
-              <View className="flex-row flex-wrap">
-                {BADGE_COLORS.map((clr, idx) => (
-                  <View
-                    key={clr}
-                    className="items-center pb-4"
-                    style={{ width: `${100 / 6}%` }}
-                  >
-                    <ColorSwatch
-                      color={clr}
-                      selected={selectedColorIdx === idx}
-                      onPress={() => setSelectedColorIdx(idx)}
-                    />
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
-          )}
-
           {badgeMode === "logo" && (
             <ScrollView
               className="mb-5"
