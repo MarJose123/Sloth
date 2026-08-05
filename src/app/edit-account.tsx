@@ -42,7 +42,7 @@ import { BANK_LOGOS } from "@/lib/logoResolver";
 import { FormField } from "@/components/ui/FormField";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { useToast } from "@/hooks/useToast";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Color from "color";
@@ -68,82 +68,16 @@ const ACCOUNT_TYPES: {
   { type: "investment", label: "Investment", icon: "trending-up" },
 ];
 
-const BADGE_COLORS = [
-  colors.brass,
-  colors.sage,
-  colors.rust,
-  colors.dustyBlue,
-  colors.textSecondary,
-  colors.ochre,
-  colors.brassSoft,
-  "#D48FB8",
-  "#A78BDB",
-  "#6FC9B8",
-  "#F0C27A",
-  "#8CA89B",
-] as const;
-
 const BADGE_MODES: {
-  key: "color" | "logo" | "custom";
+  key: "logo" | "custom";
   label: string;
   icon: LucideIconName;
 }[] = [
-  { key: "color", label: "Color", icon: "swatch-book" },
   { key: "logo", label: "Logo", icon: "building" },
   { key: "custom", label: "Custom", icon: "upload" },
 ];
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
-
-function getInitials(name: string): string {
-  const words = name.trim().split(/\s+/);
-  if (words.length === 1) return (words[0] ?? "").slice(0, 2).toUpperCase();
-  return words
-    .slice(0, 2)
-    .map((w) => (w[0] ?? "").toUpperCase())
-    .join("");
-}
-
-/** Returns the index of the closest matching BADGE_COLORS entry, or 0. */
-function findClosestColorIndex(hex: string): number {
-  const target = hex.toLowerCase();
-  const idx = BADGE_COLORS.findIndex((c) => c.toLowerCase() === target);
-  return idx >= 0 ? idx : 0;
-}
-
-// ─── color swatch ─────────────────────────────────────────────────────────────
-
-function ColorSwatch({
-  color,
-  selected,
-  onPress,
-}: {
-  color: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable onPress={onPress} className="active:opacity-70">
-      <View
-        className="border-brass"
-        style={{
-          padding: selected ? 3 : 0,
-          borderRadius: 15,
-          borderWidth: selected ? 2 : 0,
-        }}
-      >
-        <View
-          style={{
-            width: selected ? 20 : 26,
-            height: selected ? 20 : 26,
-            borderRadius: selected ? 10 : 13,
-            backgroundColor: color,
-          }}
-        />
-      </View>
-    </Pressable>
-  );
-}
 
 // ─── logo grid item ───────────────────────────────────────────────────────────
 
@@ -200,10 +134,8 @@ export default function EditAccountScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedType, setSelectedType] = useState<AccountType>("wallet");
-  const [selectedColorIdx, setSelectedColorIdx] = useState(0);
-  const [badgeMode, setBadgeMode] = useState<"color" | "logo" | "custom">(
-    "color",
-  );
+  const [badgeMode, setBadgeMode] = useState<"logo" | "custom">("logo");
+  const [storedColorHex, setStoredColorHex] = useState<string>(colors.brass);
   const [selectedLogoKey, setSelectedLogoKey] = useState<string | null>(null);
   const [customLogoUri, setCustomLogoUri] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -236,6 +168,7 @@ export default function EditAccountScreen() {
 
         reset({ name: account.name });
         setSelectedType(account.type);
+        setStoredColorHex(account.colorHex);
 
         // Determine badge mode from logoKey
         if (account.logoKey && account.logoKey.startsWith("bank/")) {
@@ -247,8 +180,9 @@ export default function EditAccountScreen() {
           const uri = `${documentDirectory}account-logos/${filename}`;
           setCustomLogoUri(uri);
         } else {
-          setBadgeMode("color");
-          setSelectedColorIdx(findClosestColorIndex(account.colorHex));
+          // No logo selected — keep the badge unset and let the user pick
+          // Logo or Custom. colorHex is preserved as a display fallback.
+          setBadgeMode("logo");
         }
       } catch (err) {
         toast.error("Could not load account", {
@@ -263,11 +197,6 @@ export default function EditAccountScreen() {
   }, [id, reset]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Derived preview ────────────────────────────────────────────────────
-
-  const name = useWatch({ control, name: "name" });
-  const selectedColor = BADGE_COLORS[selectedColorIdx] ?? colors.brass;
-  const initials = getInitials(name);
-  const hasName = name.trim().length > 0;
 
   let resolvedLogoKey: string | null = null;
   let previewSource: ReturnType<typeof require> | { uri: string } | null = null;
@@ -292,7 +221,7 @@ export default function EditAccountScreen() {
           id,
           name: data.name.trim(),
           type: selectedType,
-          colorHex: selectedColor,
+          colorHex: storedColorHex,
           logoKey: resolvedLogoKey,
         });
         router.back();
@@ -305,7 +234,7 @@ export default function EditAccountScreen() {
         setIsSaving(false);
       }
     },
-    [id, selectedType, selectedColor, resolvedLogoKey, toast],
+    [id, selectedType, storedColorHex, resolvedLogoKey, toast],
   );
 
   const handleSave = handleSubmit(onSubmit, (fieldErrors) => {
@@ -381,7 +310,7 @@ export default function EditAccountScreen() {
     }
   }, [customLogoUri, toast]);
 
-  const handleBadgeModeChange = (mode: "color" | "logo" | "custom") => {
+  const handleBadgeModeChange = (mode: "logo" | "custom") => {
     setBadgeMode(mode);
     if (mode !== "logo") setSelectedLogoKey(null);
     if (mode !== "custom") setCustomLogoUri(null);
@@ -522,32 +451,22 @@ export default function EditAccountScreen() {
 
           {/* Preview badge */}
           <View className="mb-4 items-center">
-            <View
-              className="h-16 w-16 items-center justify-center overflow-hidden rounded-2xl"
-              style={{
-                backgroundColor:
-                  badgeMode === "color" ? selectedColor : "transparent",
-              }}
-            >
-              {previewSource && (
+            {previewSource ? (
+              <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-2xl">
                 <Image
                   source={previewSource}
                   style={{ width: 56, height: 56 }}
                   resizeMode="cover"
                 />
-              )}
-              {badgeMode === "color" &&
-                (hasName ? (
-                  <Text
-                    className="font-mono-medium text-base"
-                    style={{ color: colors.ink }}
-                  >
-                    {initials}
-                  </Text>
-                ) : (
-                  <Lucide name="image" size={22} color={colors.ink} />
-                ))}
-            </View>
+              </View>
+            ) : (
+              <View
+                className="h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed"
+                style={{ borderColor: colors.hairline }}
+              >
+                <Lucide name="image" size={22} color={colors.textSecondary} />
+              </View>
+            )}
           </View>
 
           {/* ── Mode pills ── */}
@@ -581,31 +500,6 @@ export default function EditAccountScreen() {
           </View>
 
           {/* ── Mode content ── */}
-          {badgeMode === "color" && (
-            <ScrollView
-              className="mb-4"
-              style={{ maxHeight: 140 }}
-              nestedScrollEnabled
-              showsVerticalScrollIndicator={false}
-            >
-              <View className="flex-row flex-wrap">
-                {BADGE_COLORS.map((clr, idx) => (
-                  <View
-                    key={clr}
-                    className="items-center pb-4"
-                    style={{ width: `${100 / 6}%` }}
-                  >
-                    <ColorSwatch
-                      color={clr}
-                      selected={selectedColorIdx === idx}
-                      onPress={() => setSelectedColorIdx(idx)}
-                    />
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
-          )}
-
           {badgeMode === "logo" && (
             <ScrollView
               className="mb-5"

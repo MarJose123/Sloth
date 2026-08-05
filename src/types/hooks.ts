@@ -14,7 +14,7 @@
 import type { AccountWithBalance } from "./account";
 import type { Category, CategorySpend } from "./category";
 import type {
-  DailyTotals,
+  AccountAmountSlice,
   RecentTransaction,
   TransactionLedgerItem,
 } from "./transaction";
@@ -53,7 +53,10 @@ export interface DashboardData {
   categories: CategorySpend[];
   totalExpenseCents: number;
   totalIncomeCents: number;
-  dailyTotals: DailyTotals[];
+  /** Per-account expense totals for the last 7 days (pie "spent" side). */
+  spentByAccount: AccountAmountSlice[];
+  /** Per-account income totals for the last 7 days (pie "earned" side). */
+  earnedByAccount: AccountAmountSlice[];
   recentTransactions: RecentTransaction[];
 }
 

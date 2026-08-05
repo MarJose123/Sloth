@@ -9,7 +9,8 @@
  *  of this license document, but changing it is not allowed.
  */
 
-import { Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
+import { documentDirectory } from "expo-file-system/legacy";
 import type { RecentTransaction } from "@/types";
 import {
   formatRelativeTime,
@@ -17,6 +18,74 @@ import {
   HIDDEN_AMOUNT,
 } from "@/lib/format";
 import { useColors } from "@/theme/ThemeContext";
+import { resolveLogoSrc } from "@/lib/logoResolver";
+
+/** Two-letter initials from an account name, matching the accounts list. */
+function getInitials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) return (words[0] ?? "").slice(0, 2).toUpperCase();
+  return words
+    .slice(0, 2)
+    .map((w) => (w[0] ?? "").toUpperCase())
+    .join("");
+}
+
+/** Small account badge — bank/custom logo image, or color + initials fallback. */
+export function AccountBadge({
+  name,
+  logoKey,
+  colorHex,
+  size = 30,
+}: {
+  name: string;
+  logoKey: string | null;
+  colorHex: string;
+  size?: number;
+}) {
+  const colors = useColors();
+  const logoSrc = resolveLogoSrc(logoKey);
+  const radius = Math.round(size * 0.33);
+
+  if (logoSrc?.type === "bundled" && logoSrc.source) {
+    return (
+      <Image
+        source={logoSrc.source}
+        style={{ width: size, height: size, borderRadius: radius }}
+        resizeMode="cover"
+      />
+    );
+  }
+
+  if (logoSrc?.type === "uri" && logoSrc.uri) {
+    return (
+      <Image
+        source={{ uri: `${documentDirectory}${logoSrc.uri}` }}
+        style={{ width: size, height: size, borderRadius: radius }}
+        resizeMode="cover"
+      />
+    );
+  }
+
+  return (
+    <View
+      className="items-center justify-center overflow-hidden"
+      style={{
+        width: size,
+        height: size,
+        borderRadius: radius,
+        backgroundColor: colorHex,
+      }}
+    >
+      <Text
+        className="font-mono-medium"
+        style={{ color: colors.ink, fontSize: Math.round(size * 0.35) }}
+        numberOfLines={1}
+      >
+        {getInitials(name)}
+      </Text>
+    </View>
+  );
+}
 
 export function TransactionRow({
   transaction,
@@ -37,6 +106,13 @@ export function TransactionRow({
         borderTopColor: colors.hairline,
       }}
     >
+      <View className="mr-3 flex-shrink-0">
+        <AccountBadge
+          name={transaction.accountName}
+          logoKey={transaction.accountLogoKey}
+          colorHex={transaction.accountColorHex}
+        />
+      </View>
       <View className="flex-1 pr-3">
         <Text
           className="text-[14.5px] font-manrope-semibold text-text-primary"

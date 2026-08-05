@@ -112,7 +112,8 @@ export default function DashboardScreen() {
     categories,
     totalExpenseCents,
     totalIncomeCents,
-    dailyTotals,
+    spentByAccount,
+    earnedByAccount,
     recentTransactions,
   } = state.data;
 
@@ -206,7 +207,14 @@ export default function DashboardScreen() {
 
         {hasAccounts ? (
           <>
-            {/* ── This month: expense & income card ── */}
+            <Animated.View entering={FadeInDown.delay(200).duration(450)}>
+              <AccountSwitcher
+                accounts={accounts}
+                selectedAccountId={selectedAccountId}
+                onSelect={setSelectedAccountId}
+              />
+            </Animated.View>
+
             <Animated.View entering={FadeInDown.delay(140).duration(450)}>
               <View
                 className="mb-5 rounded-2xl border p-5"
@@ -215,6 +223,27 @@ export default function DashboardScreen() {
                   borderColor: colors.hairline,
                 }}
               >
+                <Text
+                  className="mb-1.5 text-[13px] "
+                  style={{
+                    color: colors.textSecondary,
+                  }}
+                >
+                  {selectedAccount
+                    ? `${selectedAccount.name} balance`
+                    : "Total balance"}
+                </Text>
+                <AnimatedBalance
+                  cents={totalBalanceCents}
+                  hidden={amountsHidden}
+                  className="font-fraunces-medium text-[48px] leading-[52px] text-text-primary"
+                />
+
+                {/* ── This month: expense & income (same card) ── */}
+                <View
+                  className="my-4 h-px"
+                  style={{ backgroundColor: colors.hairline }}
+                />
                 <Text
                   className="font-mono text-[10.5px] uppercase tracking-[0.08em]"
                   style={{ color: colors.textSecondary }}
@@ -258,34 +287,12 @@ export default function DashboardScreen() {
               </View>
             </Animated.View>
 
-            <Animated.View entering={FadeInDown.delay(200).duration(450)}>
-              <AccountSwitcher
-                accounts={accounts}
-                selectedAccountId={selectedAccountId}
-                onSelect={setSelectedAccountId}
-              />
-            </Animated.View>
-
             <Animated.View entering={FadeInDown.delay(260).duration(450)}>
-              <Text
-                className="mb-1.5 text-[13px] "
-                style={{
-                  color: colors.textSecondary,
-                }}
-              >
-                {selectedAccount
-                  ? `${selectedAccount.name} balance`
-                  : "Total balance"}
-              </Text>
-              <AnimatedBalance
-                cents={totalBalanceCents}
+              <WeeklyActivityCard
+                earned={earnedByAccount}
+                spent={spentByAccount}
                 hidden={amountsHidden}
-                className="mb-[26px] font-fraunces-medium text-[48px] leading-[52px] text-text-primary"
               />
-            </Animated.View>
-
-            <Animated.View entering={FadeInDown.delay(320).duration(450)}>
-              <WeeklyActivityCard dailyTotals={dailyTotals} />
             </Animated.View>
 
             {categories.length > 0 && (
