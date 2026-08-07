@@ -404,7 +404,7 @@ export default function EditAccountScreen() {
           {/* ── Type selector ── */}
           <Text
             className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]"
-            style={{ color: colors.brass }}
+            style={{ color: c.brassText }}
           >
             Type
           </Text>
@@ -444,7 +444,7 @@ export default function EditAccountScreen() {
           {/* ── Badge ── */}
           <Text
             className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]"
-            style={{ color: colors.brass }}
+            style={{ color: c.brassText }}
           >
             Badge
           </Text>
@@ -462,9 +462,9 @@ export default function EditAccountScreen() {
             ) : (
               <View
                 className="h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed"
-                style={{ borderColor: colors.hairline }}
+                style={{ borderColor: c.hairline }}
               >
-                <Lucide name="image" size={22} color={colors.textSecondary} />
+                <Lucide name="image" size={22} color={c.textSecondary} />
               </View>
             )}
           </View>
@@ -481,16 +481,20 @@ export default function EditAccountScreen() {
                   key={mode.key}
                   onPress={() => handleBadgeModeChange(mode.key)}
                   className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg px-2 py-2 active:opacity-80"
-                  style={{ backgroundColor: active ? colors.brass : undefined }}
+                  style={{
+                    backgroundColor: active ? c.brassButton : undefined,
+                  }}
                 >
                   <Lucide
                     name={mode.icon}
                     size={14}
-                    color={active ? colors.ink : c.textSecondary}
+                    color={active ? c.buttonLabel : c.textSecondary}
                   />
                   <Text
                     className="text-[11px] font-manrope-bold"
-                    style={{ color: active ? colors.ink : c.textSecondary }}
+                    style={{
+                      color: active ? c.buttonLabel : c.textSecondary,
+                    }}
                   >
                     {mode.label}
                   </Text>
@@ -547,22 +551,24 @@ export default function EditAccountScreen() {
                   <View className="flex-row gap-2">
                     <Pressable
                       onPress={handleCropToSquare}
-                      className="rounded-lg bg-surface-elevated px-4 py-2 active:opacity-70"
+                      className="rounded-lg px-4 py-2 active:opacity-70"
+                      style={{ backgroundColor: c.surfaceElevated }}
                     >
                       <Text
                         className="text-[12px] font-manrope-semibold"
-                        style={{ color: colors.brass }}
+                        style={{ color: c.brassText }}
                       >
                         Crop to square
                       </Text>
                     </Pressable>
                     <Pressable
                       onPress={handlePickImage}
-                      className="rounded-lg bg-surface-elevated px-4 py-2 active:opacity-70"
+                      className="rounded-lg px-4 py-2 active:opacity-70"
+                      style={{ backgroundColor: c.surfaceElevated }}
                     >
                       <Text
                         className="text-[12px] font-manrope-semibold"
-                        style={{ color: colors.brass }}
+                        style={{ color: c.brassText }}
                       >
                         Change image
                       </Text>
@@ -602,12 +608,12 @@ export default function EditAccountScreen() {
             className="rounded-2xl py-4 active:opacity-80"
             style={{
               opacity: isSaving ? 0.6 : 1,
-              backgroundColor: colors.brass,
+              backgroundColor: c.brassButton,
             }}
           >
             <Text
               className="text-center font-manrope-bold text-sm"
-              style={{ color: colors.ink }}
+              style={{ color: c.buttonLabel }}
             >
               {isSaving ? "Saving\u2026" : "Save changes"}
             </Text>

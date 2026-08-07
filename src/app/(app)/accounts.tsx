@@ -204,7 +204,7 @@ export default function AccountsScreen() {
             >
               <Text
                 className="font-manrope-bold text-[14.5px]"
-                style={{ color: colors.brass }}
+                style={{ color: colors.brassText }}
               >
                 + Add
               </Text>
@@ -248,11 +248,12 @@ export default function AccountsScreen() {
             </Text>
             <Pressable
               onPress={() => router.push("/add-account")}
-              className="rounded-2xl bg-brass px-6 py-3.5 active:opacity-80"
+              className="rounded-2xl px-6 py-3.5 active:opacity-80"
+              style={{ backgroundColor: colors.brassButton }}
             >
               <Text
                 className="font-manrope-bold text-sm "
-                style={{ color: colors.ink }}
+                style={{ color: colors.buttonLabel }}
               >
                 Add account
               </Text>

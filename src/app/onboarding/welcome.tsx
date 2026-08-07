@@ -251,7 +251,7 @@ function createStyles(c: ColorPalette) {
 
     // ── Brass button ──
     brassBtn: {
-      backgroundColor: c.brass,
+      backgroundColor: c.brassButton,
       borderRadius: 14,
       paddingVertical: 16,
       alignItems: "center" as const,
@@ -260,7 +260,7 @@ function createStyles(c: ColorPalette) {
       fontFamily: "Manrope_700Bold",
       fontSize: 18,
       letterSpacing: 0.15,
-      color: c.ink,
+      color: c.buttonLabel,
     },
   };
 }
@@ -630,7 +630,10 @@ export default function OnboardingCarousel() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <View className="flex-1 pt-safe bg-surface-bg">
+      <View
+        className="flex-1 pt-safe"
+        style={{ backgroundColor: colors.surfaceBg }}
+      >
         <View style={{ flex: 1, overflow: "hidden" }}>
           <GestureDetector gesture={componentPan}>
             <Animated.View style={[styles.track, trackStyle]}>

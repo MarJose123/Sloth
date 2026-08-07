@@ -55,6 +55,7 @@ function AnimatedBalance({
   /** When true, renders the masked amount instead of the counted-up figure. */
   hidden?: boolean;
 }) {
+  const colors = useColors();
   const [displayCents, setDisplayCents] = useState(cents);
   const prevRef = useRef(cents);
 
@@ -78,7 +79,7 @@ function AnimatedBalance({
   }, [cents]);
 
   return (
-    <Text className={className}>
+    <Text className={className} style={{ color: colors.textPrimary }}>
       {hidden ? HIDDEN_AMOUNT : formatCurrency(displayCents)}
     </Text>
   );
@@ -236,7 +237,7 @@ export default function DashboardScreen() {
                 <AnimatedBalance
                   cents={totalBalanceCents}
                   hidden={amountsHidden}
-                  className="font-fraunces-medium text-[48px] leading-[52px] text-text-primary"
+                  className="font-fraunces-medium text-[48px] leading-[52px]"
                 />
 
                 {/* ── This month: expense & income (same card) ── */}

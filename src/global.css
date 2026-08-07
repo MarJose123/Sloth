@@ -36,6 +36,9 @@
   /* ── Brand accents ──────────────────────────────────────────── */
   --sloth-brass: #c87b54;
   --sloth-brass-soft: #a96b42;
+  --sloth-brass-text: #8f5636;
+  --sloth-brass-button: #a3542e;
+  --sloth-button-label: #f3eee1;
   --sloth-sage: #6b8d58;
   --sloth-rust: #9c4a3d;
 
@@ -67,6 +70,9 @@
     /* ── Brand accents ────────────────────────────────────────── */
     --sloth-brass: #c87b54;
     --sloth-brass-soft: #8f5636;
+    --sloth-brass-text: #c87b54;
+    --sloth-brass-button: #c87b54;
+    --sloth-button-label: #1b1f1a;
     --sloth-sage: #7fa06b;
     --sloth-rust: #9c4a3d;
 
@@ -106,6 +112,9 @@
   /* ── Accents ───────────────────────────────────────────────────── */
   --color-brass: var(--sloth-brass, #c87b54);
   --color-brass-soft: var(--sloth-brass-soft, #8f5636);
+  --color-brass-text: var(--sloth-brass-text, #8f5636);
+  --color-brass-button: var(--sloth-brass-button, #c87b54);
+  --color-button-label: var(--sloth-button-label, #1b1f1a);
   --color-sage: var(--sloth-sage, #7fa06b);
   --color-rust: var(--sloth-rust, #9c4a3d);
 

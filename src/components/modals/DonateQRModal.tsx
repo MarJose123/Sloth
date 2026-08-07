@@ -138,12 +138,12 @@ export function DonateQRModal({ visible, onClose }: DonateQRModalProps) {
           <Pressable
             onPress={handleSave}
             className="mt-4 flex-row items-center justify-center gap-2 rounded-[12px] py-[13px] active:opacity-80"
-            style={{ backgroundColor: colors.brass }}
+            style={{ backgroundColor: colors.brassButton }}
           >
-            <Lucide name="download" size={16} color={colors.ink} />
+            <Lucide name="download" size={16} color={colors.buttonLabel} />
             <Text
               className="font-manrope-bold text-[13.5px]"
-              style={{ color: colors.ink }}
+              style={{ color: colors.buttonLabel }}
             >
               Save to Photos
             </Text>

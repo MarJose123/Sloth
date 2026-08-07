@@ -323,7 +323,10 @@ export default function AddAccountScreen() {
               >
                 <Text
                   className="font-manrope-bold text-[13px]"
-                  style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
+                  style={{
+                    opacity: isSaving ? 0.4 : 1,
+                    color: colors.brassText,
+                  }}
                 >
                   Save
                 </Text>
@@ -357,7 +360,7 @@ export default function AddAccountScreen() {
           {/* ── Type selector ── */}
           <Text
             className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]"
-            style={{ color: colors.brass }}
+            style={{ color: colors.brassText }}
           >
             Type
           </Text>
@@ -399,7 +402,7 @@ export default function AddAccountScreen() {
           {/* ── Badge ── */}
           <Text
             className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]"
-            style={{ color: colors.brass }}
+            style={{ color: colors.brassText }}
           >
             Badge
           </Text>
@@ -436,17 +439,19 @@ export default function AddAccountScreen() {
                   key={mode.key}
                   onPress={() => handleBadgeModeChange(mode.key)}
                   className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg px-2 py-2 active:opacity-80"
-                  style={{ backgroundColor: active ? colors.brass : undefined }}
+                  style={{
+                    backgroundColor: active ? colors.brassButton : undefined,
+                  }}
                 >
                   <Lucide
                     name={mode.icon}
                     size={14}
-                    color={active ? colors.ink : colors.textSecondary}
+                    color={active ? colors.buttonLabel : colors.textSecondary}
                   />
                   <Text
                     className="text-[11px] font-manrope-bold"
                     style={{
-                      color: active ? colors.ink : colors.textSecondary,
+                      color: active ? colors.buttonLabel : colors.textSecondary,
                     }}
                   >
                     {mode.label}
@@ -504,22 +509,24 @@ export default function AddAccountScreen() {
                   <View className="flex-row gap-2">
                     <Pressable
                       onPress={handleCropToSquare}
-                      className="rounded-lg bg-surface-elevated px-4 py-2 active:opacity-70"
+                      className="rounded-lg px-4 py-2 active:opacity-70"
+                      style={{ backgroundColor: colors.surfaceElevated }}
                     >
                       <Text
                         className="text-[12px] font-manrope-semibold"
-                        style={{ color: colors.brass }}
+                        style={{ color: colors.brassText }}
                       >
                         Crop to square
                       </Text>
                     </Pressable>
                     <Pressable
                       onPress={handlePickImage}
-                      className="rounded-lg bg-surface-elevated px-4 py-2 active:opacity-70"
+                      className="rounded-lg px-4 py-2 active:opacity-70"
+                      style={{ backgroundColor: colors.surfaceElevated }}
                     >
                       <Text
                         className="text-[12px] font-manrope-semibold"
-                        style={{ color: colors.brass }}
+                        style={{ color: colors.brassText }}
                       >
                         Change image
                       </Text>
@@ -584,12 +591,12 @@ export default function AddAccountScreen() {
             className="rounded-2xl py-4 active:opacity-80"
             style={{
               opacity: isSaving ? 0.6 : 1,
-              backgroundColor: colors.brass,
+              backgroundColor: colors.brassButton,
             }}
           >
             <Text
               className="text-center font-manrope-bold text-sm"
-              style={{ color: colors.ink }}
+              style={{ color: colors.buttonLabel }}
             >
               {isSaving ? "Adding\u2026" : "Add account"}
             </Text>

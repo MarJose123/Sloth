@@ -18,13 +18,14 @@ import { hashPin, isValidPinFormat } from "@/lib/pin";
 import { storage } from "@/lib/storage";
 import { markSessionUnlocked } from "@/lib/sessionLock";
 import { toast } from "@/hooks/useToast";
-import { lightColors } from "@/theme/lightColors";
+import { useColors } from "@/theme/ThemeContext";
 
 const PIN_LENGTH = 6;
 
 type Stage = "enter" | "confirm";
 
 export default function PinSetupScreen() {
+  const colors = useColors();
   const [stage, setStage] = useState<Stage>("enter");
   const [firstPin, setFirstPin] = useState("");
   const [currentInput, setCurrentInput] = useState("");
@@ -77,22 +78,18 @@ export default function PinSetupScreen() {
 
   return (
     <View
-      className="flex-1 px-5 pb-5 pt-safe "
-      style={{
-        backgroundColor: lightColors.surfaceBg,
-      }}
+      className="flex-1 px-5 pb-5 pt-safe"
+      style={{ backgroundColor: colors.surfaceBg }}
     >
       <Text
-        className="mt-15 text-center font-mono text-[14px] uppercase tracking-[2px] "
-        style={{
-          color: lightColors.textSecondary,
-        }}
+        className="mt-15 text-center font-mono text-[14px] uppercase tracking-[2px]"
+        style={{ color: colors.textSecondary }}
       >
         Sloth setup
       </Text>
       <Text
         className="mb-7 mt-2.5 text-center font-fraunces-medium text-[24px]"
-        style={{ color: lightColors.textPrimary }}
+        style={{ color: colors.textPrimary }}
       >
         {stage === "enter" ? "Create a 6-digit PIN" : "Confirm your PIN"}
       </Text>

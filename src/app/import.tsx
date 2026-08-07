@@ -251,7 +251,10 @@ export default function ImportScreen() {
     parsedFile !== null && selectedAccountId !== null && !isImporting;
 
   return (
-    <View className="flex-1 pt-safe bg-surface-bg">
+    <View
+      className="flex-1 pt-safe"
+      style={{ backgroundColor: colors.surfaceBg }}
+    >
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
@@ -264,11 +267,17 @@ export default function ImportScreen() {
               onPress={() => router.back()}
               className="active:opacity-60"
             >
-              <Text className="text-[14.5px] text-text-secondary">
+              <Text
+                className="text-[14.5px]"
+                style={{ color: colors.textSecondary }}
+              >
                 {"Cancel"}
               </Text>
             </Pressable>
-            <Text className="font-fraunces-medium text-[22px] text-text-primary">
+            <Text
+              className="font-fraunces-medium text-[22px]"
+              style={{ color: colors.textPrimary }}
+            >
               {"Import"}
             </Text>
             <Pressable
@@ -277,8 +286,11 @@ export default function ImportScreen() {
               className="active:opacity-60"
             >
               <Text
-                className="font-manrope-bold text-[14.5px] text-brass"
-                style={{ opacity: canImport ? 1 : 0.35 }}
+                className="font-manrope-bold text-[14.5px]"
+                style={{
+                  opacity: canImport ? 1 : 0.35,
+                  color: colors.brassText,
+                }}
               >
                 {isImporting ? "Working…" : "Import"}
               </Text>
@@ -289,22 +301,35 @@ export default function ImportScreen() {
         {/* ── File drop zone ── */}
         <Pressable
           onPress={handlePickFile}
-          className="mb-5 rounded-2xl border border-dashed border-hairline bg-surface-card px-4 py-5 active:opacity-70"
+          className="mb-5 rounded-2xl border border-dashed px-4 py-5 active:opacity-70"
+          style={{
+            borderColor: colors.hairline,
+            backgroundColor: colors.surfaceCard,
+          }}
         >
           {parsedFile ? (
             <>
               <View className="mb-1 flex-row items-center gap-2">
                 <Lucide name="file-text" size={16} color={colors.brass} />
-                <Text className="text-[14.5px] font-manrope-bold text-text-primary">
+                <Text
+                  className="text-[14.5px] font-manrope-bold"
+                  style={{ color: colors.textPrimary }}
+                >
                   {parsedFile.name}
                 </Text>
               </View>
-              <Text className="text-[12px] text-text-secondary">
+              <Text
+                className="text-[12px]"
+                style={{ color: colors.textSecondary }}
+              >
                 {parsedFile.rowCount} {"rows detected · parsed on this device"}
               </Text>
             </>
           ) : (
-            <Text className="text-center text-[14.5px] text-text-secondary">
+            <Text
+              className="text-center text-[14.5px]"
+              style={{ color: colors.textSecondary }}
+            >
               {"Tap to choose a CSV or OFX file"}
             </Text>
           )}
@@ -313,7 +338,10 @@ export default function ImportScreen() {
         {parsedFile && (
           <>
             {/* ── Target account ── */}
-            <Text className="mb-2 font-mono text-[11.5px] uppercase tracking-[0.08em] text-brass">
+            <Text
+              className="mb-2 font-mono text-[11.5px] uppercase tracking-[0.08em]"
+              style={{ color: colors.brassText }}
+            >
               {"Import into"}
             </Text>
             <Pressable
@@ -328,9 +356,16 @@ export default function ImportScreen() {
                   router.push("/select-account");
                 }
               }}
-              className="mb-5 flex-row items-center justify-between rounded-2xl border border-hairline bg-surface-card px-4 py-3.5 active:opacity-70"
+              className="mb-5 flex-row items-center justify-between rounded-2xl border px-4 py-3.5 active:opacity-70"
+              style={{
+                borderColor: colors.hairline,
+                backgroundColor: colors.surfaceCard,
+              }}
             >
-              <Text className="text-[14.5px] text-text-primary">
+              <Text
+                className="text-[14.5px]"
+                style={{ color: colors.textPrimary }}
+              >
                 {selectedAccountName}
               </Text>
               <ChevronRightIcon size={18} color={colors.textSecondary} />
@@ -339,19 +374,30 @@ export default function ImportScreen() {
             {/* ── Column mapping ── */}
             {parsedFile.type === "csv" && (
               <>
-                <Text className="mb-2 font-mono text-[11.5px] uppercase tracking-[0.08em] text-brass">
+                <Text
+                  className="mb-2 font-mono text-[11.5px] uppercase tracking-[0.08em]"
+                  style={{ color: colors.brassText }}
+                >
                   {"Column mapping"}
                 </Text>
-                <View className="mb-5 overflow-hidden rounded-2xl border border-hairline bg-surface-card">
+                <View
+                  className="mb-5 overflow-hidden rounded-2xl border"
+                  style={{
+                    borderColor: colors.hairline,
+                    backgroundColor: colors.surfaceCard,
+                  }}
+                >
                   {parsedFile.columns.map((col, i) => (
                     <View
                       key={col}
-                      className={`flex-row items-center gap-3 px-4 py-3 ${
-                        i > 0 ? "border-t border-hairline" : ""
-                      }`}
+                      className={`flex-row items-center gap-3 px-4 py-3 ${i > 0 ? "border-t" : ""}`}
+                      style={
+                        i > 0 ? { borderTopColor: colors.hairline } : undefined
+                      }
                     >
                       <Text
-                        className="flex-1 font-mono text-[13px] text-text-secondary"
+                        className="flex-1 font-mono text-[13px]"
+                        style={{ color: colors.textSecondary }}
                         numberOfLines={1}
                       >
                         {'"'}
@@ -382,7 +428,10 @@ export default function ImportScreen() {
                         }}
                         className="flex-1"
                       >
-                        <Text className="text-right text-[13.5px] font-manrope-semibold text-text-primary">
+                        <Text
+                          className="text-right text-[13.5px] font-manrope-semibold"
+                          style={{ color: colors.textPrimary }}
+                        >
                           {columnMapping[col] ?? "—"}
                         </Text>
                       </Pressable>
@@ -393,7 +442,10 @@ export default function ImportScreen() {
             )}
 
             {/* ── Preview ── */}
-            <Text className="mb-2 font-mono text-[12px] uppercase tracking-[1px] text-text-secondary">
+            <Text
+              className="mb-2 font-mono text-[12px] uppercase tracking-[1px]"
+              style={{ color: colors.textSecondary }}
+            >
               {"Preview — first rows"}
             </Text>
             {parsedFile.preview.map((row, idx) => {
@@ -410,18 +462,23 @@ export default function ImportScreen() {
               return (
                 <View
                   key={idx}
-                  className={`flex-row justify-between py-2 ${
-                    idx > 0 ? "border-t border-hairline" : ""
-                  }`}
+                  className={`flex-row justify-between py-2 ${idx > 0 ? "border-t" : ""}`}
+                  style={
+                    idx > 0 ? { borderTopColor: colors.hairline } : undefined
+                  }
                 >
                   <Text
-                    className="flex-1 text-[13px] text-text-primary"
+                    className="flex-1 text-[13px]"
+                    style={{ color: colors.textPrimary }}
                     numberOfLines={1}
                   >
                     {merchant}
                   </Text>
                   <Text
-                    className={`font-mono text-[13px] ${isPositive ? "text-sage" : "text-text-secondary"}`}
+                    className="font-mono text-[13px]"
+                    style={{
+                      color: isPositive ? colors.sage : colors.textSecondary,
+                    }}
                   >
                     {amount}
                   </Text>

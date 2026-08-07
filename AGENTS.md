@@ -81,7 +81,7 @@ React Native requires exact font-file key names, no fallbacks.
 
 ### 2.1 Color Tokens
 
-The theme uses a two-layer system: `--sloth-*` CSS variables defined in `:root` / `@media (prefers-color-scheme: dark)` in `global.css`, aliased to `--color-*` Tailwind utilities via `@theme`. Components should use the Tailwind utility names (`bg-surface-bg`, `text-text-primary`, `text-brass`, etc.).
+The theme is driven by two layers: the `--sloth-*` CSS variables in `global.css` (compile-time fallbacks only) and the JS palettes in `src/theme/` which drive the runtime theme. **Apply theme colours via `useColors()` + inline `style` — Tailwind colour classes do NOT follow the dark/light theme** (see §8.6).
 
 | Token | CSS variable (`@theme` alias) | `--sloth-*` variable | Usage |
 |---|---|---|---|
@@ -92,6 +92,9 @@ The theme uses a two-layer system: `--sloth-*` CSS variables defined in `:root` 
 | Text secondary | `--color-text-secondary` | `--sloth-text-secondary` | Secondary text, labels |
 | Brass | `--color-brass` | `--sloth-brass` | Primary accent, CTA buttons |
 | Brass soft | `--color-brass-soft` | `--sloth-brass-soft` | Pressed state |
+| Brass text | `--color-brass-text` | `--sloth-brass-text` | Brass used as text/label on surfaces — readable variant (light: `#8F5636`, dark: `#C87B54`) |
+| Brass button | `--color-brass-button` | `--sloth-brass-button` | CTA button fill (light: `#A3542E` deep brass so the label reads; dark: `#C87B54`) |
+| Button label | `--color-button-label` | `--sloth-button-label` | Text/icon on brass CTA buttons (light: `#F3EEE1` cream; dark: `#1B1F1A` ink) |
 | Sage | `--color-sage` | `--sloth-sage` | Income, success, secondary accent |
 | Rust | `--color-rust` | `--sloth-rust` | Alerts, negative balance, errors |
 | Hairline | `--color-hairline` | `--sloth-hairline` | Borders, dividers (utility: `hairline`) |
@@ -100,9 +103,9 @@ The theme uses a two-layer system: `--sloth-*` CSS variables defined in `:root` 
 | Ink (static) | `--color-ink` | `--sloth-ink` | CTA text on brass (#1B1F1A, same in both themes) |
 | Parchment (static) | `--color-parchment` | `--sloth-parchment` | QR / badge bg (#F3EEE1, same in both themes) |
 
-**Dark mode defaults:** surfaceBg=#1B1F1A, surfaceCard=#242920, surfaceElevated=#2E3428, textPrimary=#F3EEE1, textSecondary=#A79F8C, hairline=rgba(243,238,225,0.09), tabBar=rgba(18,20,28,0.95), sage=#7FA06B, brassSoft=#8F5636.
+**Dark mode defaults:** surfaceBg=#1B1F1A, surfaceCard=#242920, surfaceElevated=#2E3428, textPrimary=#F3EEE1, textSecondary=#A79F8C, hairline=rgba(243,238,225,0.09), tabBar=rgba(18,20,28,0.95), sage=#7FA06B, brassSoft=#8F5636, brassText=#C87B54, brassButton=#C87B54, buttonLabel=#1B1F1A.
 
-**Light mode defaults:** surfaceBg=#F5F0E4, surfaceCard=#EBE6D8, surfaceElevated=#E0DBCB, textPrimary=#1B1F1A, textSecondary=#6B6352, hairline=rgba(27,31,26,0.09), tabBar=rgba(235,230,216,0.95), sage=#6B8D58, brassSoft=#A96B42.
+**Light mode defaults:** surfaceBg=#F5F0E4, surfaceCard=#EBE6D8, surfaceElevated=#E0DBCB, textPrimary=#1B1F1A, textSecondary=#6B6352, hairline=rgba(27,31,26,0.09), tabBar=rgba(235,230,216,0.95), sage=#6B8D58, brassSoft=#A96B42, brassText=#8F5636, brassButton=#A3542E, buttonLabel=#F3EEE1.
 
 JS counterpart: `src/theme/colors.ts` exports the same values as typed `ColorPalette` for inline `style={}` use. The `useColors()` hook (imported from `ThemeContext`) returns the active palette at runtime.
 
@@ -395,7 +398,7 @@ existing `SafeAreaProvider`.
 
 ### Screen 19 — Backup PIN Setup
 - **File:** `src/app/pin-setup.tsx` (flat route, root-level push)
-- **Theme:** Follows user theme (light/dark/auto) via `useColors()` — unlike onboarding PIN which is light-only
+- **Theme:** Follows user theme (light/dark/auto) via `useColors()`
 - **Access:** Settings → Security → Backup PIN (and biometric toggle guard when no PIN set)
 - **Elements:** ← back arrow + "Set backup PIN" header (Fraunces 450 22px), "Create a 6-digit backup PIN" subtitle (Fraunces 450 24px centered), PinDots (6 dots), Keypad (3×4 circle keypad)
 - **Flow:** Enter PIN → Confirm PIN → `storage.setPinHash()` → `router.back()` to settings
@@ -554,11 +557,11 @@ Layer 4: PIN Management (Settings)
 
 ### 8.1 Architecture
 
-Theming uses a **`VariableContextProvider`** from NativeWind, wrapping the app at the root layout:
+Theming is driven by the JS palettes exposed through React context at the root layout:
 
 ```
 src/theme/
-  ThemeContext.tsx      ← Simple ThemeProvider wrapping VariableContextProvider
+  ThemeContext.tsx      ← ThemeProvider: resolves preference + system scheme, exposes palette
   darkColors.ts         ← Dark palette (default)
   lightColors.ts        ← Light palette
   colors.ts             ← Re-exports darkColors as default + exports both palettes
@@ -570,26 +573,16 @@ src/theme/
 
 The ThemeProvider is a straightforward component that:
 
-- Receives a theme `name` prop (currently only `"default"`)
-- Reads the device color scheme via `useColorScheme()` from React Native
-- Selects the matching palette (`darkColors` or `lightColors` from the theme map)
-- Maps the palette's JS values to `--sloth-*` CSS variable names
-- Passes them into NativeWind's `<VariableContextProvider>`, which overrides the `var(--sloth-*)` references in `global.css` at runtime
+- Loads the stored theme preference (`storage.getThemePreference()`: "light" / "dark" / "auto")
+- Resolves the effective scheme (`preference === "auto"` → device scheme via `Appearance.getColorScheme()`)
+- Selects the matching palette (`darkColors` or `lightColors`) and exposes it via `useTheme().palette` / `useColors()`
+- Syncs the native appearance with `Appearance.setColorScheme()` so the system chrome matches
 
 ```tsx
-import { useColorScheme } from "react-native";
-import { VariableContextProvider } from "nativewind";
+import { useTheme, useColors } from "@/theme/ThemeContext";
 ```
 
-The CSS variables it provides are:
-```
---sloth-surface-bg, --sloth-surface-card, --sloth-surface-elevated
---sloth-text-primary, --sloth-text-secondary
---sloth-brass, --sloth-brass-soft, --sloth-sage, --sloth-rust
---sloth-dusty-blue, --sloth-ochre
---sloth-ink, --sloth-parchment
---sloth-hairline, --sloth-tab-bar
-```
+`useColors()` returns the active palette as plain JS values (the same shape as `darkColors` / `lightColors`). There is **no** `VariableContextProvider` in this project — Tailwind colour classes are NOT theme-aware (see §8.4/§8.6). The `--sloth-*` variables still exist in `global.css` as compile-time fallbacks only.
 
 ### 8.3 Color Palettes
 
@@ -599,32 +592,23 @@ The CSS variables it provides are:
 
 ### 8.4 How Runtime Theme Switching Works
 
-The theme switching uses a CSS-variable-override approach via React context:
+Theme switching is driven by the **JS palettes**, not by CSS:
 
-1. **`global.css` defaults** — `:root` defines **light-mode** defaults for all `--sloth-*` CSS variables. The `@media (prefers-color-scheme: dark)` block provides dark-mode overrides.
+1. **JS palettes are the source of truth** — `ThemeContext.tsx` resolves the active theme from the stored preference (`storage.getThemePreference()`) + the system scheme, and `useColors()` returns the matching palette (`darkColors` / `lightColors`) as plain JS values. Components apply them via inline `style`.
 
-2. **`VariableContextProvider` overrides** — `ThemeContext.tsx` wraps the app and injects the JS palette values into CSS variables via React context. When the device color scheme changes, `useColorScheme()` updates, and the new palette takes effect immediately.
+2. **`global.css` is a compile-time fallback only** — `:root` defines light-mode defaults for the `--sloth-*` variables and `@media (prefers-color-scheme: dark)` provides dark overrides. This only matches when the *device* colour scheme happens to align with the app theme (e.g. "auto" on a dark device). It does NOT track a user-picked Light/Dark preference — `Appearance.setColorScheme()` does not reliably flip the media query evaluated by `react-native-css`/NativeWind.
 
-3. **`@theme` aliases** — The `@theme` block in `global.css` maps `--sloth-*` variables to `--color-*` Tailwind utility names (e.g., `--color-surface-bg: var(--sloth-surface-bg)`). Components use semantic Tailwind classes like `bg-surface-bg`, `text-text-primary`, `text-brass`.
+3. **Tailwind colour utilities are NOT theme-aware** — the `--color-*` aliases in `@theme` resolve against the `:root` values, so `bg-surface-bg`, `text-text-primary`, `text-brass`, etc. always render the light-mode value regardless of the runtime theme. Apply theme colours with `useColors()` + inline `style` (§8.6).
 
 ### 8.5 StatusBar Syncing
 
 A `ThemedStatusBar` component is rendered in the root layout (`src/app/_layout.tsx`) that reads `resolved` from `useTheme()` and renders `<StatusBar style={resolved === "dark" ? "light" : "dark"} animated />`. This ensures status bar icons are always visible regardless of the active theme. The onboarding layout no longer has its own hardcoded StatusBar — it relies on the global one.
 
-### 8.6 Styling Components — Prefer Tailwind Classes
+### 8.6 Styling Components — Use `useColors()` + inline `style` for theme colours
 
-**The CSS variable mechanism (§8.4) means Tailwind utility classes like `bg-surface-bg`,
-`text-text-primary`, `border-hairline`, etc. automatically switch with the theme.**
-Components should use these classes rather than inline `style={{}}` for static colour properties.
+**Tailwind colour classes (`bg-surface-bg`, `text-text-primary`, `text-brass`, `border-hairline`, etc.) do NOT follow the runtime dark/light theme.** They resolve against the `:root` (light) CSS variables and always render the light value. The JS palettes via `useColors()` are the single source of truth for the active theme at runtime (see §8.4).
 
 **✅ DO this (preferred):**
-```tsx
-<View className="flex-1 bg-surface-bg">
-  <Text className="text-text-primary">Hello</Text>
-</View>
-```
-
-**❌ NOT this (unnecessary indirection):**
 ```tsx
 const colors = useColors();
 <View className="flex-1" style={{ backgroundColor: colors.surfaceBg }}>
@@ -632,36 +616,37 @@ const colors = useColors();
 </View>
 ```
 
-**When `useColors()` is still appropriate — use it ONLY for these cases:**
+**❌ NOT this — the classes won't switch with the theme:**
+```tsx
+<View className="flex-1 bg-surface-bg">
+  <Text className="text-text-primary">Hello</Text>
+</View>
+```
+
+`useColors()` is appropriate for **all** colours — static, conditional, dynamic, and theme-neutral (brass, sage, rust, ink, parchment, etc. — no colour belongs in `className`):
+
+```tsx
+const colors = useColors();
+<Text style={{ color: isIncome ? colors.sage : colors.textPrimary }}>Amount</Text>
+<View style={{ backgroundColor: value ? colors.brass : colors.surfaceElevated }} />
+<View style={{ borderColor: colors.hairline, borderWidth: 1 }} />
+```
+
+**`className` is still fine for non-colour layout** — spacing, radii, font sizes, alignment, border widths (all theme-independent): `px-5`, `rounded-2xl`, `text-[13px]`, `font-manrope-bold`, `items-center`, `flex-1`, `border`.
+
+**Never** mix a Tailwind colour class with an inline `style` for the same property on the same element — pick one mechanism.
+
+**Legitimate non-`style` uses of `useColors()`** (component props, not `style`):
 
 | Use case | Example |
 |---|---|
-| Native component props (not `style`) | `tintColor={colors.brass}` on RefreshControl, `placeholderTextColor={colors.textSecondary}` on TextInput |
+| Native component props | `tintColor={colors.brass}` on RefreshControl, `placeholderTextColor={colors.textSecondary}` on TextInput |
 | Icon / SVG component props | `color={colors.brass}` on Lucide/XIcon, `stroke={colors.hairline}` on Circle |
-| Dynamic icon/SVG colour with alpha | `colors.brass + "80"` (alpha concatenation — no Tailwind equivalent) |
-| RN-specific style props | `shadowColor: colors.brass` (RN shadow props map to Tailwind poorly) |
+| Dynamic icon/SVG colour with alpha | `colors.brass + "80"` (alpha concatenation) |
+| RN-specific style props | `shadowColor: colors.brass` |
 | expo-router config objects | `contentStyle: { backgroundColor: colors.surfaceBg }` |
 | Module-level/initialiser constants | `export const BADGE_COLORS = [colors.brass, ...]`, `useState<string>(colors.brass)` |
 | `createStyles(c: ColorPalette)` factories | Stylesheet-like factory patterns (e.g. onboarding/welcome.tsx) |
-| `colors.tabBar` | No Tailwind utility exists for this token |
-
-**For dynamic/conditional colours,** use dynamic `className` expressions — NOT `useColors()`:
-
-```tsx
-// ✅ DO: dynamic className
-<Text className={isIncome ? "text-sage" : "text-text-primary"}>Amount</Text>
-<View className={value ? "bg-brass" : "bg-surface-elevated"} />
-
-// ❌ NOT: useColors() for conditional colours
-const colors = useColors();
-<Text style={{ color: isIncome ? colors.sage : colors.textPrimary }}>Amount</Text>
-```
-
-**Never** use `useColors()` for a static colour that has a direct Tailwind equivalent
-(e.g., `style={{ backgroundColor: colors.surfaceBg }}` when `className="bg-surface-bg"` works).
-
-**Never** duplicate a Tailwind class with an inline style — if `className` already has
-`bg-surface-card`, don't add `style={{ backgroundColor: colors.surfaceCard }}`.
 
 ### 8.7 Module-Level Constants
 
@@ -682,7 +667,7 @@ The Appearance section in Settings uses a segmented control (Light / Dark) that 
 | File | Role |
 |---|---|
 | `src/global.css` | `:root` + `@media (prefers-color-scheme: dark)` CSS variables + `@theme` |
-| `src/theme/ThemeContext.tsx` | VariableContextProvider bridge (simple, no hooks yet) |
+| `src/theme/ThemeContext.tsx` | ThemeProvider — resolves preference + system scheme, exposes palette via `useTheme()`/`useColors()` |
 | `src/theme/darkColors.ts` | JS dark palette for inline styles |
 | `src/theme/lightColors.ts` | JS light palette for inline styles |
 | `src/theme/colors.ts` | Exports both palettes + default `colors` (dark) |
@@ -690,24 +675,17 @@ The Appearance section in Settings uses a segmented control (Light / Dark) that 
 
 ### 8.10 The `dark:` Tailwind Variant
 
-NativeWind v5 supports the `dark:` variant, which maps to
-`@media (prefers-color-scheme: dark)`. It is **available** in this project but
-**rarely needed** because the project uses semantic colour tokens
-(`bg-surface-bg`, `text-text-primary`, etc.) that already auto-switch via the CSS variable
-mechanism (§8.4).
+Do **not** use the `dark:` variant for theme colours — it maps to
+`@media (prefers-color-scheme: dark)`, which does not reliably follow the app's
+chosen Light/Dark preference (same limitation as every Tailwind colour utility,
+see §8.4/§8.6). A `dark:` class renders based on the *device* colour scheme, not
+the in-app theme, so it will disagree with `useColors()` whenever the user's
+preference differs from the device scheme.
 
-**When `dark:` may be useful:**
-- For a one-off override where a component needs a different colour in dark mode
-  beyond what the semantic token provides. Example: `dark:border-hairline` to add
-  a border that only appears in dark mode.
-
-**Why `dark:` is normally unnecessary here:**
-- `bg-surface-bg` already means "the background surface colour" and swaps automatically.
-- `text-text-primary` already means "the primary text colour" and swaps automatically.
-- There is no need to write `bg-surface-bg-light dark:bg-surface-bg-dark` — the semantic token approach handles both modes in a single class.
-
-**Never** mix the two approaches on the same element — don't write
-`bg-surface-bg dark:bg-surface-card` (confusing: the dark value of one token is another token's light value). If a genuine one-off override is needed, use `dark:` with a literal colour or a purpose-specific token.
+Apply theme-dependent colours exclusively via `useColors()` + inline `style`
+(§8.6). If a one-off device-scheme-dependent override is ever needed, `dark:`
+may be used for non-theme surfaces — never mix it with theme colours on the same
+element.
 
 ## 9 · Build & CI
 
@@ -840,7 +818,7 @@ This runs `prettier --write . && expo lint` (see `package.json` scripts).
 | 12 | Never create routes under `(tabs)` — the route group is `(app)` |
 | 13 | Font alias names in `global.css` (`--font-*`) MUST match the alias keys in `useAppFonts.ts` exactly |
 | 14 | **Never use `npm`, `yarn`, or `pnpm`** — only `bun` commands (`bun install`, `bun add`, `bun remove`, `bun lint`, etc.). The lock file is `bun.lock`, not `package-lock.json` |
-| 15 | **Never use `useColors()` + inline `style` for a static colour** that has a Tailwind utility equivalent. Use `className="bg-surface-bg"` instead of `style={{ backgroundColor: colors.surfaceBg }}`. See §8.6 for the full rule and legitimate exceptions. |
+| 15 | **Use `useColors()` + inline `style` for ALL colours** (text, labels, backgrounds, borders, icons on components — including theme-neutral tokens like `brass`/`sage`/`rust`/`ink`). Tailwind colour classes (`bg-surface-bg`, `text-text-primary`, `text-brass`, etc.) do NOT follow the runtime dark/light theme — they always render the `:root` (light) value. `className` is fine for non-colour layout only. See §8.6 for the full rule and the (rare) exceptions. |
 | 16 | **Never install or add a package directly via a tool command.** If a new package dependency is needed, ask the user to install it themselves (e.g. "please run `bun add <package>`"). The sandboxed environment may not have the correct permissions, and tool-driven installs can corrupt the lockfile or modify the project state unexpectedly. |
 
 ---

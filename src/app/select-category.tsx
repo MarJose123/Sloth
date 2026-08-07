@@ -120,7 +120,7 @@ export default function SelectCategorySheet() {
         ))}
         {!loading && pickerCategories.length === 0 && (
           <Text
-            className="text-center text-text-secondary text-sm font-manrope py-8"
+            className="text-center text-sm font-manrope py-8"
             style={{ color: colors.textSecondary }}
           >
             No categories yet.

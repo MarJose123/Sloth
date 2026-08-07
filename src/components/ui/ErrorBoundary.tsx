@@ -11,6 +11,7 @@
 
 import { Component, useState, type ReactNode } from "react";
 import { View, Text, Pressable } from "react-native";
+import { useColors } from "@/theme/ThemeContext";
 import { SlothAppIcon } from "@/components/SlothAppIcon";
 
 interface Props {
@@ -61,16 +62,26 @@ function ErrorFallback({
   onReset: () => void;
 }) {
   const [showDetails, setShowDetails] = useState(false);
+  const colors = useColors();
 
   return (
-    <View className="flex-1 items-center justify-center bg-surface-bg px-6">
+    <View
+      className="flex-1 items-center justify-center px-6"
+      style={{ backgroundColor: colors.surfaceBg }}
+    >
       <SlothAppIcon size={96} />
 
-      <Text className="mt-6 text-center font-fraunces-medium text-[26px] text-text-primary leading-snug">
+      <Text
+        className="mt-6 text-center font-fraunces-medium text-[26px] leading-snug"
+        style={{ color: colors.textPrimary }}
+      >
         {"Something went wrong"}
       </Text>
 
-      <Text className="mt-3 max-w-[300px] text-center text-[14px] font-manrope text-text-secondary leading-relaxed">
+      <Text
+        className="mt-3 max-w-[300px] text-center text-[14px] font-manrope leading-relaxed"
+        style={{ color: colors.textSecondary }}
+      >
         {
           "Sloth ran into an unexpected issue. Don't worry — your data is safe and encrypted on your device."
         }
@@ -78,9 +89,13 @@ function ErrorFallback({
 
       <Pressable
         onPress={onReset}
-        className="mt-8 rounded-[14px] bg-brass px-8 py-3 active:opacity-80"
+        className="mt-8 rounded-[14px] px-8 py-3 active:opacity-80"
+        style={{ backgroundColor: colors.brassButton }}
       >
-        <Text className="font-manrope-bold text-[15px] text-ink">
+        <Text
+          className="font-manrope-bold text-[15px]"
+          style={{ color: colors.buttonLabel }}
+        >
           Try Again
         </Text>
       </Pressable>
@@ -90,14 +105,23 @@ function ErrorFallback({
         className="mt-6"
         hitSlop={12}
       >
-        <Text className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-text-secondary">
+        <Text
+          className="font-mono text-[10.5px] uppercase tracking-[0.08em]"
+          style={{ color: colors.textSecondary }}
+        >
           {showDetails ? "Hide details" : "Error details"}
         </Text>
       </Pressable>
 
       {showDetails && error !== null && (
-        <View className="mt-3 w-full max-w-[320px] rounded-[14px] bg-surface-elevated p-4">
-          <Text className="font-mono text-[11px] text-rust leading-relaxed">
+        <View
+          className="mt-3 w-full max-w-[320px] rounded-[14px] p-4"
+          style={{ backgroundColor: colors.surfaceElevated }}
+        >
+          <Text
+            className="font-mono text-[11px] leading-relaxed"
+            style={{ color: colors.rust }}
+          >
             {error.name}: {error.message}
           </Text>
         </View>
