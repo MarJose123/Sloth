@@ -22,6 +22,7 @@ import { useCallback, useState } from "react";
 import type { ReactNode } from "react";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Application from "expo-application";
+import * as Device from "expo-device";
 import { SlothAppIcon } from "@/components/SlothAppIcon";
 import { ArrowLeftIcon, ChevronRightIcon } from "@/components/navigation/icons";
 import { useColors } from "@/theme/ThemeContext";
@@ -33,7 +34,32 @@ import { UpdateModal } from "@/components/UpdateModal";
 const APP_VERSION = Application.nativeApplicationVersion ?? "1.0.0";
 const APP_BUILD_NUMBER = Application.nativeBuildVersion ?? "1";
 
+// Device fingerprint prefilled into the bug-report form (entry.962252763).
+// e.g. "Google Pixel 7 · Android 15"
+const DEVICE_INFO = [
+  [Device.brand, Device.modelName]
+    .filter((part): part is string => Boolean(part))
+    .join(" "),
+  [Device.osName, Device.osVersion]
+    .filter((part): part is string => Boolean(part))
+    .join(" "),
+]
+  .filter((part) => part.length > 0)
+  .join(" · ");
+
 const GITHUB_BASE = "https://github.com/MarJose123/sloth";
+const ReportIssueUrl =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfuk7nxLy2gOryqhRZMfWTt5TsDlgaqjXNqTKCeXJsv7tazPA/viewform";
+const RequestFeatureUrl = "https://forms.gle/nVKPj66PTff8DgwG7";
+
+// Prefilled bug-report form URL. `URLSearchParams` handles the
+// percent-encoding of device info (spaces, "·" separator, etc.).
+const buildReportIssueUrl = (): string => {
+  const url = new URL(ReportIssueUrl);
+  url.searchParams.set("entry.656768655", APP_VERSION);
+  url.searchParams.set("entry.962252763", DEVICE_INFO);
+  return url.toString();
+};
 
 // ─── row components ───────────────────────────────────────────────────────────
 
@@ -246,11 +272,11 @@ export default function AboutScreen() {
         <AboutRow title="Source code" onPress={() => openUrl(GITHUB_BASE)} />
         <AboutRow
           title="Request a feature"
-          onPress={() => openUrl(`${GITHUB_BASE}/issues/new`)}
+          onPress={() => openUrl(RequestFeatureUrl)}
         />
         <AboutRow
           title="Report an error"
-          onPress={() => openUrl(`${GITHUB_BASE}/issues/new`)}
+          onPress={() => openUrl(buildReportIssueUrl())}
         />
         <AboutRow
           title="Acknowledgments"
