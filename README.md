@@ -1,3 +1,5 @@
+![Sloth Banner](.art/sloth-banner.png)
+
 # Sloth
 
 A private, fully offline personal finance tracker.
@@ -7,6 +9,10 @@ No cloud. No sync. No bank credential sharing. No account to create anywhere but
 ## Why
 
 Most finance apps ask you to hand over your bank login to a third party so they can "aggregate" your data — which really means it now lives on someone else's servers, subject to someone else's breach history, business model, and terms of service. Sloth takes the opposite approach: your transactions never leave your phone.
+
+## Demo
+Click the image below to watch the demo on YouTube.
+[![Sloth: Finance Tracker Demo](https://img.youtube.com/vi/0R-J6VmcbV8/maxresdefault.jpg)](https://www.youtube.com/watch?v=0R-J6VmcbV8)
 
 ## Features
 
