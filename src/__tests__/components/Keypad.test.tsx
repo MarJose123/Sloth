@@ -19,6 +19,22 @@
 import { act, create } from "react-test-renderer";
 import { Keypad } from "@/components/Keypad";
 
+// Mock ThemeContext — KeypadKey calls useColors() for the key styling.
+jest.mock("@/theme/ThemeContext", () => {
+  const colors = jest.requireActual("@/theme/colors").darkColors;
+  return {
+    useColors: () => colors,
+    useTheme: () => ({
+      preference: "auto" as const,
+      resolved: "dark" as const,
+      palette: colors,
+      loaded: true,
+      setPreference: jest.fn(),
+    }),
+    ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
+  };
+});
+
 function render(component: React.ReactElement) {
   let renderer: ReturnType<typeof create>;
   act(() => {
