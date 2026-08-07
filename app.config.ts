@@ -47,7 +47,7 @@ export default ({ config }: ConfigContext): SlothExpoConfig => ({
   ...config,
   name: getAppName(),
   slug: "sloth",
-  version: "1.2.0",
+  version: "1.3.0",
   icon: "./assets/icons/icon.png",
   scheme: "sloth",
   userInterfaceStyle: "automatic",
@@ -132,5 +132,5 @@ export default ({ config }: ConfigContext): SlothExpoConfig => ({
     },
   },
   platforms: ["ios", "android"],
-  androidBuildNumber: 144,
+  androidBuildNumber: 145,
 });
