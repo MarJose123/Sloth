@@ -93,16 +93,19 @@ export function CategoryRingCard({
 
         {/* Inner icon circle — absolutely positioned over the SVG */}
         <View
-          className="bg-surface-elevated"
           style={[
             styles.innerCircle,
             {
               top: INNER_OFFSET,
               left: INNER_OFFSET,
+              backgroundColor: colors.surfaceElevated,
             },
           ]}
         >
-          <Text className="font-mono-medium text-[11px] text-ink text-center">
+          <Text
+            className="font-mono-medium text-[11px] text-center"
+            style={{ color: colors.textPrimary }}
+          >
             {percent > 0 ? `${percent}%` : "\u2014"}
           </Text>
         </View>

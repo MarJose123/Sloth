@@ -264,7 +264,10 @@ export default function EditCategoryScreen() {
               >
                 <Text
                   className="font-manrope-bold text-[13px] "
-                  style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
+                  style={{
+                    opacity: isSaving ? 0.4 : 1,
+                    color: colors.brassText,
+                  }}
                 >
                   Save
                 </Text>
@@ -326,7 +329,7 @@ export default function EditCategoryScreen() {
           <Text
             className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.08em] "
             style={{
-              color: colors.brass,
+              color: colors.brassText,
             }}
           >
             Icon
@@ -360,7 +363,7 @@ export default function EditCategoryScreen() {
           <Text
             className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.08em] "
             style={{
-              color: colors.brass,
+              color: colors.brassText,
             }}
           >
             Type
@@ -387,7 +390,7 @@ export default function EditCategoryScreen() {
                   <Text
                     className="text-base font-manrope-bold"
                     style={{
-                      color: active ? colors.brass : colors.textSecondary,
+                      color: active ? colors.brassText : colors.textSecondary,
                     }}
                   >
                     {kindOpt === "expense" ? "\u2212" : "+"}
@@ -412,12 +415,12 @@ export default function EditCategoryScreen() {
             className="rounded-2xl  py-4 active:opacity-80"
             style={{
               opacity: isSaving ? 0.6 : 1,
-              backgroundColor: colors.brass,
+              backgroundColor: colors.brassButton,
             }}
           >
             <Text
               className="text-center font-manrope-bold text-sm "
-              style={{ color: colors.ink }}
+              style={{ color: colors.buttonLabel }}
             >
               {isSaving ? "Saving\u2026" : "Save changes"}
             </Text>

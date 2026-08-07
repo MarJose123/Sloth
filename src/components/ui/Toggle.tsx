@@ -10,6 +10,7 @@
  */
 
 import { Pressable, View } from "react-native";
+import { useColors } from "@/theme/ThemeContext";
 
 interface ToggleProps {
   value: boolean;
@@ -27,12 +28,12 @@ export function Toggle({
   onValueChange,
   disabled = false,
 }: ToggleProps) {
+  const colors = useColors();
   return (
     <Pressable
       onPress={() => !disabled && onValueChange(!value)}
       accessibilityRole="switch"
       accessibilityState={{ checked: value, disabled }}
-      className={`border-hairline ${value ? "bg-brass" : "bg-surface-elevated"}`}
       style={{
         width: 40,
         height: 24,
@@ -40,16 +41,18 @@ export function Toggle({
         paddingHorizontal: 3,
         justifyContent: "center",
         borderWidth: value ? 0 : 1,
+        borderColor: colors.hairline,
+        backgroundColor: value ? colors.brassText : colors.surfaceElevated,
         opacity: disabled ? 0.4 : 1,
       }}
     >
       <View
-        className={value ? "bg-text-primary" : "bg-text-secondary"}
         style={{
           width: 18,
           height: 18,
           borderRadius: 9,
           alignSelf: value ? "flex-end" : "flex-start",
+          backgroundColor: value ? colors.parchment : colors.textSecondary,
         }}
       />
     </Pressable>

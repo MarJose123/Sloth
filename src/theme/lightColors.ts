@@ -26,6 +26,12 @@ export const lightColors: IThemeColors = {
   textSecondary: "#6B6352",
   brass: "#C87B54",
   brassSoft: "#A96B42",
+  /** Deeper brass for text/labels — 5.2:1 on surfaceBg, 4.7:1 on surfaceCard (AA) */
+  brassText: "#8F5636",
+  /** Deeper brass CTA fill — black labels read muddy on #C87B54 in light mode */
+  brassButton: "#A3542E",
+  /** Cream label on the deep-brass fill — 4.7:1 label, 4.8:1 button vs page */
+  buttonLabel: "#F3EEE1",
   sage: "#6B8D58",
   rust: "#9C4A3D",
   dustyBlue: "#6E8FB0",

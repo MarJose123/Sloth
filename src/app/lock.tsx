@@ -31,6 +31,7 @@ import {
   checkBiometricAvailability,
   authenticateWithBiometrics,
 } from "@/lib/biometrics";
+import { useColors } from "@/theme/ThemeContext";
 
 const PIN_LENGTH = 6;
 
@@ -45,6 +46,7 @@ type ViewState =
   | { screen: "pin_verify"; error?: string };
 
 export default function LockScreen() {
+  const colors = useColors();
   const params = useLocalSearchParams<{ mode?: string }>();
   // "set" mode is only honored inside an already-unlocked session (a
   // settings-driven change-PIN flow). A cold-start deep link to
@@ -172,13 +174,20 @@ export default function LockScreen() {
   if (view.screen === "resolving") {
     // Brief gate while the unlock method resolves — avoids flashing the wrong
     // screen (e.g. biometric UI for a PIN-only user).
-    return <View className="flex-1 bg-surface-bg" />;
+    return (
+      <View
+        className="flex-1"
+        style={{
+          backgroundColor: colors.surfaceBg,
+        }}
+      />
+    );
   }
 
   if (view.screen === "biometric") {
     const lockedOut = !bioUsable && !hasPin;
     return (
-      <View className="flex-1 bg-surface-bg">
+      <View className="flex-1 " style={{ backgroundColor: colors.surfaceBg }}>
         {/* Glow layer anchored to the full screen — unaffected by content padding */}
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
           <GlowBackdrop />
@@ -190,7 +199,10 @@ export default function LockScreen() {
           >
             {/* Brass brand-mark */}
             <View className="mb-2">
-              <Text className="text-center font-mono text-[12.5px] uppercase tracking-[2px] text-brass">
+              <Text
+                className="text-center font-mono text-[12.5px] uppercase tracking-[2px] "
+                style={{ color: colors.brassText }}
+              >
                 Sloth
               </Text>
             </View>
@@ -198,10 +210,16 @@ export default function LockScreen() {
             {/* Biometric ring with app logo */}
             <SlothAppIcon size={90} />
 
-            <Text className="mb-2 mt-8 text-center font-fraunces-medium text-[24px] text-text-primary">
+            <Text
+              className="mb-2 mt-8 text-center font-fraunces-medium text-[24px] "
+              style={{ color: colors.textPrimary }}
+            >
               Welcome back
             </Text>
-            <Text className="mb-10 text-center text-[14.5px] text-text-secondary">
+            <Text
+              className="mb-10 text-center text-[14.5px]"
+              style={{ color: colors.textSecondary }}
+            >
               Unlock to see your accounts
             </Text>
 
@@ -212,14 +230,20 @@ export default function LockScreen() {
                   onPress={handleBiometricFallback}
                 />
                 {view.error && (
-                  <Text className="mt-4 text-center text-[12.5px] text-rust">
+                  <Text
+                    className="mt-4 text-center text-[12.5px]"
+                    style={{ color: colors.rust }}
+                  >
                     {view.error}
                   </Text>
                 )}
               </>
             ) : lockedOut ? (
               <>
-                <Text className="mb-4 text-center text-[12.5px] text-rust">
+                <Text
+                  className="mb-4 text-center text-[12.5px]"
+                  style={{ color: colors.rust }}
+                >
                   {view.error ?? BIOMETRICS_LOST_MESSAGE}
                 </Text>
                 <TextLink
@@ -247,7 +271,7 @@ export default function LockScreen() {
 
   // PIN verify screen
   return (
-    <View className="flex-1 bg-surface-bg">
+    <View className="flex-1" style={{ backgroundColor: colors.surfaceBg }}>
       {/* Glow layer anchored to the full screen — unaffected by content padding */}
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
         <GlowBackdrop />
@@ -255,12 +279,18 @@ export default function LockScreen() {
       <View className="flex-1 px-5 pb-5 pt-safe">
         <Animated.View entering={FadeInDown.duration(450)} className="flex-1">
           {/* Sloth locked eyebrow */}
-          <Text className="mb-2 mt-15 text-center font-mono text-[12.5px] uppercase tracking-[2px] text-brass">
+          <Text
+            className="mb-2 mt-15 text-center font-mono text-[12.5px] uppercase tracking-[2px]"
+            style={{ color: colors.brassText }}
+          >
             Sloth locked
           </Text>
 
           {/* Title */}
-          <Text className="mb-8 mt-2.5 text-center font-fraunces-medium text-[22px] text-text-primary">
+          <Text
+            className="mb-8 mt-2.5 text-center font-fraunces-medium text-[22px]"
+            style={{ color: colors.textPrimary }}
+          >
             {mode === "set" ? "Create a 6-digit PIN" : "Enter your PIN"}
           </Text>
 

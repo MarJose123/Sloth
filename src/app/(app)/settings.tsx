@@ -34,7 +34,6 @@ import type { LucideIconName } from "@react-native-vector-icons/lucide";
 import { ChevronRightIcon } from "@/components/navigation/icons";
 import type { ThemePreference } from "@/types";
 import { useTheme, useColors } from "@/theme/ThemeContext";
-import { colors } from "@/theme/colors";
 import { useToast } from "@/hooks/useToast";
 
 // ─── local primitives ────────────────────────────────────────────────────────
@@ -62,13 +61,14 @@ function SegmentedThemeControl({
           onPress={() => onChange(option)}
           className="rounded-lg px-[10px] py-[5px] active:opacity-80"
           style={{
-            backgroundColor: option === value ? colors.brass : undefined,
+            backgroundColor: option === value ? colors.brassButton : undefined,
           }}
         >
           <Text
             className="text-[11.5px] font-manrope-bold capitalize"
             style={{
-              color: option === value ? colors.ink : colors.textSecondary,
+              color:
+                option === value ? colors.buttonLabel : colors.textSecondary,
             }}
           >
             {option}
@@ -80,11 +80,12 @@ function SegmentedThemeControl({
 }
 
 function SectionLabel({ label }: { label: string }) {
+  const colors = useColors();
   return (
     <Text
       className="mb-2 mt-[18px] font-mono text-[11.5px] uppercase tracking-[0.08em] "
       style={{
-        color: colors.brass,
+        color: colors.brassText,
       }}
     >
       {label}
@@ -442,7 +443,10 @@ export default function SettingsScreen() {
         />
 
         {/* ── Build stamp ── */}
-        <Text className="mt-8 text-center font-mono text-[11.5px] text-text-secondary">
+        <Text
+          className="mt-8 text-center font-mono text-[11.5px]"
+          style={{ color: colors.textSecondary }}
+        >
           Sloth {APP_VERSION} ({APP_BUILD_NUMBER}) · GPLv3
         </Text>
       </ScrollView>

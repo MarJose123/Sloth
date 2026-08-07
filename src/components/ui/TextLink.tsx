@@ -10,6 +10,7 @@
  */
 
 import { Pressable, Text } from "react-native";
+import { useColors } from "@/theme/ThemeContext";
 
 interface TextLinkProps {
   label: string;
@@ -18,13 +19,17 @@ interface TextLinkProps {
 }
 
 export function TextLink({ label, onPress, className = "" }: TextLinkProps) {
+  const colors = useColors();
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       className={`items-center py-1 ${className}`}
     >
-      <Text className="text-center text-[14.5px] text-text-secondary underline">
+      <Text
+        className="text-center text-[14.5px] underline"
+        style={{ color: colors.textSecondary }}
+      >
         {label}
       </Text>
     </Pressable>

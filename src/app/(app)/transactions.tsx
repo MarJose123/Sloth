@@ -325,7 +325,7 @@ export default function TransactionsScreen() {
             >
               <Text
                 className="font-manrope-bold text-[14.5px] "
-                style={{ color: colors.brass }}
+                style={{ color: colors.brassText }}
               >
                 + Add
               </Text>
@@ -409,7 +409,7 @@ export default function TransactionsScreen() {
             >
               <Text
                 className="font-mono text-[11px] "
-                style={{ color: colors.brass }}
+                style={{ color: colors.brassText }}
               >
                 This month
               </Text>
@@ -454,12 +454,12 @@ export default function TransactionsScreen() {
               onPress={() => router.push("/add-transaction")}
               className="rounded-2xl  px-6 py-3.5 active:opacity-80"
               style={{
-                backgroundColor: colors.brass,
+                backgroundColor: colors.brassButton,
               }}
             >
               <Text
                 className="font-manrope-bold text-sm"
-                style={{ color: colors.ink }}
+                style={{ color: colors.buttonLabel }}
               >
                 Add transaction
               </Text>

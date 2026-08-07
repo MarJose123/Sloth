@@ -93,7 +93,7 @@ function MethodPill({
     >
       <Text
         className="text-[12px] font-manrope-semibold "
-        style={{ color: active ? colors.brass : colors.textSecondary }}
+        style={{ color: active ? colors.brassText : colors.textSecondary }}
       >
         {label}
       </Text>
@@ -369,7 +369,10 @@ export default function AddTransactionScreen() {
               )}
             />
             {errors.amount && (
-              <Text className="mt-1 font-mono text-[10px] text-rust">
+              <Text
+                className="mt-1 font-mono text-[10px]"
+                style={{ color: colors.rust }}
+              >
                 {errors.amount.message}
               </Text>
             )}
@@ -424,7 +427,10 @@ export default function AddTransactionScreen() {
                 }}
               />
               {errors.accountId && (
-                <Text className="ml-1 mt-1 font-mono text-[10px] text-rust">
+                <Text
+                  className="ml-1 mt-1 font-mono text-[10px]"
+                  style={{ color: colors.rust }}
+                >
                   {errors.accountId.message}
                 </Text>
               )}
@@ -456,7 +462,10 @@ export default function AddTransactionScreen() {
                 }}
               />
               {errors.categoryId && (
-                <Text className="ml-1 mt-1 font-mono text-[10px] text-rust">
+                <Text
+                  className="ml-1 mt-1 font-mono text-[10px]"
+                  style={{ color: colors.rust }}
+                >
                   {errors.categoryId.message}
                 </Text>
               )}

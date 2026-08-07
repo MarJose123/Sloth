@@ -139,7 +139,7 @@ export default function CategoriesScreen() {
             >
               <Text
                 className="font-manrope-bold text-[14.5px] "
-                style={{ color: colors.brass }}
+                style={{ color: colors.brassText }}
               >
                 + Add
               </Text>
@@ -198,13 +198,13 @@ export default function CategoriesScreen() {
               onPress={() => router.push("/add-category")}
               className="rounded-2xl  px-6 py-3.5 active:opacity-80"
               style={{
-                backgroundColor: colors.brass,
+                backgroundColor: colors.brassButton,
               }}
             >
               <Text
                 className="font-manrope-bold text-sm "
                 style={{
-                  color: colors.ink,
+                  color: colors.buttonLabel,
                 }}
               >
                 Create category
@@ -239,7 +239,7 @@ export default function CategoriesScreen() {
             }}
           >
             <Text
-              className="text-[14.5px] text-text-secondary"
+              className="text-[14.5px]"
               style={{
                 color: colors.textSecondary,
               }}

@@ -85,7 +85,7 @@ export function UpdateModal({
             </Text>
             <Text
               className="mb-6 text-center text-sm font-semibold"
-              style={{ color: colors.brass }}
+              style={{ color: colors.brassText }}
             >
               Version {updateInfo.version} (Build {updateInfo.build})
             </Text>
@@ -112,7 +112,7 @@ export function UpdateModal({
                 >
                   <Text
                     className="text-center text-xs underline"
-                    style={{ color: colors.brass }}
+                    style={{ color: colors.brassText }}
                   >
                     Read full notes
                   </Text>
@@ -247,16 +247,18 @@ export function UpdateModal({
               onPress={isDownloading ? undefined : onDownload || onInstall}
               className="flex-1 flex-row items-center justify-center gap-2 rounded-lg px-4 py-3"
               style={{
-                backgroundColor: isLoading ? `${colors.brass}80` : colors.brass,
+                backgroundColor: isLoading
+                  ? `${colors.brassButton}80`
+                  : colors.brassButton,
               }}
               disabled={isLoading}
             >
               {isLoading && (
-                <ActivityIndicator size="small" color={colors.ink} />
+                <ActivityIndicator size="small" color={colors.buttonLabel} />
               )}
               <Text
                 className="text-center text-sm font-semibold"
-                style={{ color: colors.ink }}
+                style={{ color: colors.buttonLabel }}
               >
                 {isInstalling
                   ? "Installing..."

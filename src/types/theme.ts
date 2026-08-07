@@ -19,6 +19,12 @@ export interface IThemeColors {
   textSecondary: string;
   brass: string;
   brassSoft: string;
+  /** Brass accent used as text/label on surfaces (readable variant) */
+  brassText: string;
+  /** CTA button fill (deep brass in light mode for contrast) */
+  brassButton: string;
+  /** Text/label color on brass CTA buttons */
+  buttonLabel: string;
   sage: string;
   rust: string;
   dustyBlue: string;

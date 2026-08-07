@@ -46,8 +46,8 @@ export function AddTabButton(props: PressableProps) {
             alignItems: "center",
             justifyContent: "center",
             overflow: "hidden",
-            backgroundColor: colors.brass,
-            shadowColor: colors.brass,
+            backgroundColor: colors.brassButton,
+            shadowColor: colors.brassButton,
             shadowOffset: { width: 0, height: 10 },
             shadowOpacity: 0.5,
             shadowRadius: 24,
@@ -56,7 +56,7 @@ export function AddTabButton(props: PressableProps) {
           props.style as StyleProp<ViewStyle>,
         ]}
       >
-        <PlusIcon size={26} color={colors.textPrimary} />
+        <PlusIcon size={26} color={colors.buttonLabel} />
       </Pressable>
     </View>
   );

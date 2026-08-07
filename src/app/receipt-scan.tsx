@@ -149,7 +149,10 @@ export default function ReceiptScanScreen() {
 
   if (!permission) {
     return (
-      <View className="flex-1 items-center justify-center bg-surface-bg">
+      <View
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: c.surfaceBg }}
+      >
         <Text
           className="text-sm font-manrope"
           style={{ color: c.textSecondary }}
@@ -164,7 +167,10 @@ export default function ReceiptScanScreen() {
 
   if (!permission.granted) {
     return (
-      <View className="flex-1 items-center justify-center bg-surface-bg px-5">
+      <View
+        className="flex-1 items-center justify-center px-5"
+        style={{ backgroundColor: c.surfaceBg }}
+      >
         <Text
           className="mb-5 text-center text-sm leading-[1.55]"
           style={{
@@ -176,11 +182,12 @@ export default function ReceiptScanScreen() {
         </Text>
         <Pressable
           onPress={requestPermission}
-          className="rounded-2xl bg-brass px-5 py-3 active:opacity-80"
+          className="rounded-2xl px-5 py-3 active:opacity-80"
+          style={{ backgroundColor: c.brassButton }}
         >
           <Text
             className="text-sm font-manrope-bold"
-            style={{ color: colors.ink }}
+            style={{ color: c.buttonLabel }}
           >
             Grant Permission
           </Text>
@@ -192,7 +199,7 @@ export default function ReceiptScanScreen() {
   // ── Main view ────────────────────────────────────────────────────────────
 
   return (
-    <View className="flex-1 bg-surface-bg">
+    <View className="flex-1" style={{ backgroundColor: c.surfaceBg }}>
       {/* ── Camera viewport ── */}
       <CameraView
         ref={cameraRef}
@@ -335,7 +342,7 @@ export default function ReceiptScanScreen() {
           <Pressable onPress={handleRetake} className="mt-3 active:opacity-60">
             <Text
               className="text-center text-xs font-manrope-semibold"
-              style={{ color: colors.brass }}
+              style={{ color: c.brassText }}
             >
               Try again
             </Text>

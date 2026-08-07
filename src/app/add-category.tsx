@@ -236,13 +236,16 @@ export default function CategoryEditorScreen() {
                 className="active:opacity-60"
               >
                 <Text
-                  className="text-[14.5px] text-text-secondary"
+                  className="text-[14.5px]"
                   style={{ color: colors.textSecondary }}
                 >
                   Cancel
                 </Text>
               </Pressable>
-              <Text className="font-fraunces-medium text-[20px] text-text-primary">
+              <Text
+                className="font-fraunces-medium text-[20px]"
+                style={{ color: colors.textPrimary }}
+              >
                 {isEditing ? "Edit category" : "New category"}
               </Text>
               <Pressable
@@ -252,7 +255,10 @@ export default function CategoryEditorScreen() {
               >
                 <Text
                   className="font-manrope-bold text-[13px] "
-                  style={{ opacity: isSaving ? 0.4 : 1, color: colors.brass }}
+                  style={{
+                    opacity: isSaving ? 0.4 : 1,
+                    color: colors.brassText,
+                  }}
                 >
                   Save
                 </Text>
@@ -310,7 +316,7 @@ export default function CategoryEditorScreen() {
           <Text
             className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.08em] "
             style={{
-              color: colors.brass,
+              color: colors.brassText,
             }}
           >
             Icon
@@ -343,7 +349,7 @@ export default function CategoryEditorScreen() {
           {/* ── Type selector ── */}
           <Text
             className="mb-3 font-mono text-[10.5px] uppercase tracking-[0.08em] "
-            style={{ color: colors.brass }}
+            style={{ color: colors.brassText }}
           >
             Type
           </Text>
@@ -369,7 +375,7 @@ export default function CategoryEditorScreen() {
                   <Text
                     className="text-base font-manrope-bold"
                     style={{
-                      color: active ? colors.brass : colors.textSecondary,
+                      color: active ? colors.brassText : colors.textSecondary,
                     }}
                   >
                     {kindOpt === "expense" ? "\u2212" : "+"}
@@ -394,13 +400,13 @@ export default function CategoryEditorScreen() {
             className="rounded-2xl  py-4 active:opacity-80"
             style={{
               opacity: isSaving ? 0.6 : 1,
-              backgroundColor: colors.brass,
+              backgroundColor: colors.brassButton,
             }}
           >
             <Text
               className="text-center font-manrope-bold text-sm "
               style={{
-                color: colors.ink,
+                color: colors.buttonLabel,
               }}
             >
               {isSaving

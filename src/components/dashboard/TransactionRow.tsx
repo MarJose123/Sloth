@@ -115,7 +115,7 @@ export function TransactionRow({
       </View>
       <View className="flex-1 pr-3">
         <Text
-          className="text-[14.5px] font-manrope-semibold text-text-primary"
+          className="text-[14.5px] font-manrope-semibold"
           numberOfLines={1}
           style={{
             color: colors.textPrimary,

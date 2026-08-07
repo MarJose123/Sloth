@@ -25,6 +25,12 @@ export const darkColors: IThemeColors = {
   textSecondary: "#A79F8C",
   brass: "#C87B54",
   brassSoft: "#8F5636",
+  /** Same as brass on dark — already 5.1:1 against the ink background */
+  brassText: "#C87B54",
+  /** CTA button fill — unchanged brass in dark mode */
+  brassButton: "#C87B54",
+  /** CTA button label — ink on brass in dark mode */
+  buttonLabel: "#1B1F1A",
   sage: "#7FA06B",
   rust: "#9C4A3D",
   dustyBlue: "#6E8FB0",

@@ -39,7 +39,7 @@ export function ReceiptScanResult({
   const c = useColors();
 
   return (
-    <View className="flex-1 bg-surface-bg pt-safe">
+    <View className="flex-1 pt-safe" style={{ backgroundColor: c.surfaceBg }}>
       {/* ── Header ── */}
       <View className="flex-row items-center justify-between px-5 pb-3 pt-4">
         <Pressable onPress={onClose} hitSlop={20} className="active:opacity-60">
@@ -151,16 +151,17 @@ export function ReceiptScanResult({
         {/* ── Use these details ── */}
         <Pressable
           onPress={onConfirm}
-          className="mt-5 rounded-2xl bg-brass py-3.5 active:opacity-80"
+          className="mt-5 rounded-2xl py-3.5 active:opacity-80"
+          style={{ backgroundColor: c.brassButton }}
         >
           <View className="flex-row items-center justify-center gap-1.5">
             <Text
               className="text-sm font-manrope-bold"
-              style={{ color: colors.ink }}
+              style={{ color: c.buttonLabel }}
             >
               Use these details
             </Text>
-            <Lucide name="arrow-right" size={16} color={colors.ink} />
+            <Lucide name="arrow-right" size={16} color={c.buttonLabel} />
           </View>
         </Pressable>
 

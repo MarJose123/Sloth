@@ -44,11 +44,11 @@ export function EmptyAccountsCard({
       <Pressable
         onPress={onAddAccount}
         className="rounded-2xl px-5 py-3.5 active:opacity-80"
-        style={{ backgroundColor: colors.brass }}
+        style={{ backgroundColor: colors.brassButton }}
       >
         <Text
           className="font-manrope-bold text-[15px]"
-          style={{ color: colors.ink }}
+          style={{ color: colors.buttonLabel }}
         >
           + Add your first account
         </Text>
