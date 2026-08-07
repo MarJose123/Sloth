@@ -43,7 +43,8 @@ const ACTIONS: FabAction[] = [
   {
     icon: "credit-card",
     label: "New account",
-    description: "Add a wallet, savings, credits, or investment account",
+    description:
+      "Add a wallet, savings, credits, investment, loan, or time deposit account",
     route: "/add-account",
   },
   {

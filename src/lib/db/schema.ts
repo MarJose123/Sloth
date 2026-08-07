@@ -18,12 +18,16 @@ export const SCHEMA_STATEMENTS = [
   `CREATE TABLE IF NOT EXISTS accounts (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('wallet','savings','credit','investment')),
+    type TEXT NOT NULL CHECK (type IN ('wallet','savings','credit','investment','loan','time-deposit')),
     starting_balance INTEGER NOT NULL DEFAULT 0,
     logo_key TEXT,
     color_hex TEXT NOT NULL,
     created_at INTEGER NOT NULL,
-    archived_at INTEGER
+    archived_at INTEGER,
+    interest_rate_bps INTEGER,
+    placement_term_months INTEGER,
+    interest_payout TEXT CHECK (interest_payout IN ('monthly','quarterly','semi-annual','annual','maturity')),
+    note TEXT
   ) STRICT;`,
 
   `CREATE TABLE IF NOT EXISTS categories (
@@ -31,7 +35,7 @@ export const SCHEMA_STATEMENTS = [
     name TEXT NOT NULL,
     icon TEXT NOT NULL,
     color_hex TEXT NOT NULL,
-    kind TEXT NOT NULL CHECK (kind IN ('expense','income')),
+    kind TEXT NOT NULL CHECK (kind IN ('expense','income','loan-payment')),
     created_at INTEGER NOT NULL,
     archived_at INTEGER
   ) STRICT;`,

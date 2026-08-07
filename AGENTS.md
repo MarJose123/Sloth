@@ -44,9 +44,9 @@ SQLCipher. There is no cloud sync, no analytics endpoint, no third-party login.
 | Form validation | `react-hook-form` ^7.82.0 + `@hookform/resolvers` ^5.4.0 + `zod` ^4.4.3 | `useForm` + `Controller` + `useWatch` pattern; `zodResolver` |
 | Toast / notifications | `sonner-native` ^0.26.4 | Wrapped by `useToast()` hook in `src/hooks/useToast.tsx` |
 | Color utilities | `color` ^5.0.3 | Hex manipulation in badge and logo components |
-| Testing | Jest via `jest-expo` ~57.0.2 | `bun test` runs `jest`; 135+ tests across 15 suites |
+| Testing | Jest via `jest-expo` ~57.0.2 | Run with `bun run test` / `npx jest` — plain `bun test` uses Bun's native runner and is NOT supported (it fails resolving `better-sqlite3` from the op-sqlite mock). 210+ tests across 21 suites |
 | Lint | ESLint flat config + Prettier | `eslint-config-expo` + `eslint-plugin-prettier` + `eslint-plugin-unused-imports` |
-| Package manager | Bun 1.3.14 (pinned in `eas.json`) | Use `bun install`, `bun add`, `bun remove` — **never `npm install`**. Lock file: `bun.lock`. `bun lint` runs `prettier --write . && expo lint`; `bun test` runs `jest` |
+| Package manager | Bun 1.3.14 (pinned in `eas.json`) | Use `bun install`, `bun add`, `bun remove` — **never `npm install`**. Lock file: `bun.lock`. `bun lint` runs `prettier --write . && expo lint`; `bun run test` runs `jest` (plain `bun test` is unsupported — see Testing row) |
 | Build | EAS CLI ≥ 20.5.1, `eas build --local` | GH Actions ubuntu-latest |
 | Java | JDK 17 (hard requirement for AGP + RN 0.86) | |
 | Android SDK | Compile/target 36, minSdk 31, buildTools 36.0.0 (via `expo-build-properties` in `app.json`) | |
@@ -242,7 +242,7 @@ existing `SafeAreaProvider`.
 - **Elements:** Lottie badge, "How it works" mono eyebrow, H2 "Three ways Sloth keeps
   this yours." (Fraunces 450 25px), 3 feature rows (hairline top border, brass circle icon,
   bold title + dim description), dots (dot 2 active), "Continue" brass button
-- **Feature rows:** rendered by `FeatureRow.tsx` component
+- **Feature rows:** rendered inline by the local `FeatureRow` function in `welcome.tsx` (carousel slide 1)
   1. Icon "1" — "No bank credentials, ever"
   2. Icon "2" — "Processed on your phone"
   3. Icon "3" — "Fully offline, always"
@@ -268,10 +268,15 @@ existing `SafeAreaProvider`.
       (mono labels/values; income in `sage`)
     - Account switcher chips (horizontal scroll; component: `AccountSwitcher.tsx`)
     - "Total balance" label (12px dim), balance (Fraunces 450 44px -0.01em tracking);
-      the balance counts up over ~550ms when it changes (`AnimatedBalance`)
-    - "Activity · last 7 days" card (`WeeklyActivityCard.tsx`): grouped bar chart
-      (income `sage` / expense `brass`) from `getDailyTotals()` in
-      `src/lib/db/repositories/transactions.ts`, zero-filled per local day
+      the balance counts up over ~550ms when it changes (`AnimatedBalance`).
+      All-accounts view = Σ positive (asset) balances minus loan balances (loans are
+      stored negative, so they reduce the total); credit-card debt stays excluded.
+      Selecting a single account shows that account's own signed balance
+    - "Activity · last 7 days" card (`WeeklyActivityCard.tsx`): interactive donut
+      with a sage "earned" arc and a brass "spent" arc; tapping an arc lists the
+      per-account breakdown (badge, name, amount). Fed by `getExpenseByAccount()` /
+      `getIncomeByAccount()` in `src/lib/db/repositories/transactions.ts`
+      (kind-filtered — loan-payment transactions are excluded)
     - Ring row: 3 ring cards (`--surface-card`, 16px radius), rings are `border:3px solid <color>`
       circles with percentage text (IBM Plex Mono 10px) — no fill (component: `CategoryRingCard.tsx`)
     - Recent section header with inline "+ Add" brass pill button (700, 11px, 14px radius)
@@ -283,20 +288,30 @@ existing `SafeAreaProvider`.
 ### Screen 05 — Add Transaction (push route)
 - **File:** `src/app/add-transaction.tsx` (push form); action sheet at `src/app/fab-sheet.tsx`
 - **Elements:** Cancel / "New expense" / Save header (title flips to "New income" when the
-  selected category is an income type), amount display (Fraunces 450 46px,
+  selected category is an income type, or "Loan payment" when it's a loan-payment type),
+  amount display (Fraunces 450 46px,
   cursor `--brass`), method pills (Manual/Scan receipt/Import; active:
   `rgba(200,123,84,0.14)` bg brass border), four field blocks (`--surface-card`, 14px radius),
   scan hint row (sage, "◎" prefix), **no** tab bar
-- **Category picker:** lists expense AND income categories; the guard queries the DB live at
-  tap time (only blocks when zero categories exist). Saved amount sign follows the selected
-  category's kind: expense → negative, income → positive.
+- **Category picker:** lists categories filtered by the selected account type
+  (time-deposit → income only, loan → expense + loan-payment, else expense + income);
+  the guard queries the DB live at tap time (only blocks when zero matching categories exist).
+  Saved amount sign follows the selected category's kind: expense → negative,
+  income → positive, loan-payment → positive (reduces a loan balance).
+- **Account-type rules (enforced in the picker, the form, and `insertTransaction`):**
+  time-deposit accounts cannot have expense transactions; loan-payment categories
+  only apply to loan accounts. Loan-payment transactions are excluded from expense,
+  income, ring, and weekly-chart aggregates.
 - **Hook:** `useAddTransactionData` (refetches on focus so pickers and guards never see stale data)
 
 ### Screen 06 — Accounts List
 - **File:** `src/app/(app)/accounts.tsx`
-- **Elements:** "Accounts" (Fraunces 450 20px) + "+ Add" brass link, account cards
-  (`--surface-card`, 16px radius, 38×38 logo tile 11px radius), balance (IBM Plex Mono 14px),
-  "Add another account" dashed card, footnote (11px dim centered), tab bar
+- **Elements:** "Accounts" (Fraunces 450 20px) + "+ Add" brass link, **Net worth card**
+  (Σ signed balances — loan and credit debt reduce it; rust when negative), account cards
+  (`--surface-card`, 16px radius, 38×38 logo tile 11px radius), balance (IBM Plex Mono 14px;
+  loan/credit balances rust when negative), time-deposit cards append `· 3.50% · 12 MO`
+  (rate + term) to the type line, "Add another account" dashed card, footnote
+  (11px dim centered), tab bar
 - **Logo tile (badge):** 3-mode selector (Color / Bank Logo / Custom Upload). Color mode: one of 12
   swatches rendered in a 6-column scrollable grid (`BADGE_COLORS`) — brass, sage, rust, dusty blue,
   text secondary, ochre, brass soft, rose, violet, teal, warm yellow, muted mint. Logo mode: 16 bundled
@@ -318,17 +333,22 @@ existing `SafeAreaProvider`.
 
 ### Screen 08 — Categories / Expense Types
 - **File:** `src/app/(app)/categories.tsx`
-- **Elements:** "Categories" title + "+ Add" link, "This month · ring shows share of total
-  spend" sub label (11px dim), category rows with conic-gradient ring, inner `--surface-card`
-  circle with emoji, name (13.5px 700) + type badge (IBM Plex Mono 11px dim), spend +
-  tx count (IBM Plex Mono 12.5px), dashed "Create a new expense type" card
-- **Ring formula:** `background: conic-gradient(var(--ring-color) var(--pct), rgba(243,238,225,0.09) 0)`
+- **Elements:** "Categories" title + "+ Add" link, "This month" sub label (11px dim),
+  category rows (34×34 rounded-full emoji tile, name 14.5px 700, kind badge — IBM Plex Mono
+  11px dim uppercase, spend + tx count — IBM Plex Mono 12.5px), dashed "Create a new expense
+  type" card, empty state "Create expense, income, and loan payment types…"
+- **Kind handling:** expense/income categories show their spend; **loan-payment categories
+  show ₱0 spend** (loan payments are excluded from spend aggregates — `CASE WHEN c.kind IN
+  ('expense','income')` in `listAllCategoriesWithSpend`) but stay listed and manageable.
 
 ### Screen 09 — Add Account
 - **File:** `src/app/add-account.tsx` (flat route)
-- **Elements:** Cancel / "New account" / Save header, name field, type grid (2×2:
-  Wallet/Savings/Credits/Investment), logo preview (64×64 `--surface-card` dashed), logo grid
-  (4×2 tiles), upload tile (dashed brass text), starting balance field, "Add account" brass
+- **Elements:** Cancel / "New account" / Save header, name field, type grid
+  (Wallet/Savings/Credits/Investment/Loan/Time Deposit), logo preview (64×64 `--surface-card` dashed), logo grid
+  (4×2 tiles), upload tile (dashed brass text), starting balance field (relabels to "Placement amount"
+  for time deposits, "Loan amount owed" for loans), conditional time-deposit details block
+  (interest rate % / placement term months / interest payout pills / optional note — shown only for
+  Time Deposit, shared `TimeDepositFields` component), "Add account" brass
   button
 - **Active type tile:** `rgba(200,123,84,0.1)` bg, brass border, `--parchment` text
 
@@ -337,7 +357,7 @@ existing `SafeAreaProvider`.
 - **Elements:** Cancel / "New category" / Save header, category preview row (58×58 brass
   circle + inline name field), icon grid (6 cols, 12 icons + "···" overflow), colour dot
   row (5 dots; active: double ring `--ink` inner then `--brass` outer), type tiles
-  (Expense / Income 2-col)
+  (Expense / Income / Loan payment 3-col)
 
 ### Screen 11 — PIN Entry / Lock Screen
 - **File:** `src/app/lock.tsx`
@@ -364,7 +384,7 @@ existing `SafeAreaProvider`.
   Receipt heuristics in `src/lib/ocr.ts` extract merchant, total (in cents), and date from
   raw text blocks. API: `recognizeText(imageUri) → { blocks: [{ text, lines }] }`.
 - **Flow:** capture → OCR → detected results card (merchant, amount, date) →
-  "Use these details" → pre-fills `/transaction/new` via `router.replace` with params
+  "Use these details" → pre-fills `/add-transaction` via `router.replace` with params
   (`merchant`, `amountCents`, `date`, `source: "scan"`).
 - **Elements:** camera viewport overlay gradient, ✕ close + "Flash: Auto" top bar,
   "Align receipt in frame · processed on-device" caption, dashed receipt frame with brass scan-line,
@@ -438,14 +458,18 @@ CREATE TABLE settings (
 ) STRICT;
 
 CREATE TABLE accounts (
-  id               TEXT PRIMARY KEY NOT NULL,
-  name             TEXT NOT NULL,
-  type             TEXT NOT NULL CHECK (type IN ('wallet','savings','credit','investment')),
-  starting_balance INTEGER NOT NULL DEFAULT 0,
-  logo_key         TEXT,
-  color_hex        TEXT NOT NULL,
-  created_at       INTEGER NOT NULL,
-  archived_at      INTEGER
+  id                     TEXT PRIMARY KEY NOT NULL,
+  name                   TEXT NOT NULL,
+  type                   TEXT NOT NULL CHECK (type IN ('wallet','savings','credit','investment','loan','time-deposit')),
+  starting_balance       INTEGER NOT NULL DEFAULT 0,
+  logo_key               TEXT,
+  color_hex              TEXT NOT NULL,
+  created_at             INTEGER NOT NULL,
+  archived_at            INTEGER,
+  interest_rate_bps      INTEGER,
+  placement_term_months  INTEGER,
+  interest_payout        TEXT CHECK (interest_payout IN ('monthly','quarterly','semi-annual','annual','maturity')),
+  note                   TEXT
 ) STRICT;
 
 CREATE TABLE categories (
@@ -453,7 +477,7 @@ CREATE TABLE categories (
   name       TEXT NOT NULL,
   icon       TEXT NOT NULL,
   color_hex  TEXT NOT NULL,
-  kind       TEXT NOT NULL CHECK (kind IN ('expense','income')),
+  kind       TEXT NOT NULL CHECK (kind IN ('expense','income','loan-payment')),
   created_at INTEGER NOT NULL,
   archived_at INTEGER
 ) STRICT;
@@ -461,7 +485,7 @@ CREATE TABLE categories (
 CREATE TABLE transactions (
   id           TEXT PRIMARY KEY NOT NULL,
   account_id   TEXT NOT NULL REFERENCES accounts(id),
-  category_id  TEXT REFERENCES categories(id),
+  category_id  TEXT NOT NULL REFERENCES categories(id),
   merchant     TEXT NOT NULL,
   amount_cents INTEGER NOT NULL,
   occurred_at  INTEGER NOT NULL,
@@ -477,12 +501,25 @@ CREATE INDEX IF NOT EXISTS idx_transactions_category
 CREATE INDEX IF NOT EXISTS idx_transactions_occurred_at
   ON transactions(occurred_at);
 
-PRAGMA user_version = 1;  -- increment on each migration
+-- Migration history (src/lib/db/migrations.ts). Never mutate or renumber
+-- a shipped entry — append a new version instead (hard rule 17).
+--   v1: full SCHEMA_STATEMENTS
+--   v2: transactions.category_id → NOT NULL (table rebuild)
+--   v3: account types checking/cash → wallet/savings/credit/investment (rebuild)
+--   v4: accounts += 'loan' + 'time-deposit' types, += interest_rate_bps,
+--       placement_term_months, interest_payout, note (rebuild)
+--   v6: idempotent ALTER TABLE ADD COLUMN for the v4 detail columns on installs
+--       that skipped v4 (function-based; PRAGMA table_info guard)
+--   v7: accounts CHECK rebuild (final type list, for stale v4/v5 installs)
+--   v8: categories CHECK rebuild (adds 'loan-payment' kind)
 ```
 
 **Rules:**
 - Amounts: **integer cents only** — never floats.
-- Migrations: `PRAGMA user_version` gate pattern in `migrations.ts`.
+- Migrations: `PRAGMA user_version` gate pattern in `migrations.ts`. Entries are either
+  `statements[]` or an `apply(tx)` function (runtime logic, e.g. idempotent
+  `PRAGMA table_info`-guarded `ALTER TABLE ADD COLUMN`). **Never mutate or renumber a
+  shipped entry — append a new version** (hard rule 17).
 - Key storage: `expo-crypto` random 256-bit hex → `SecureStore`, key name `sloth.db_encryption_key`,
   accessibility `WHEN_UNLOCKED_THIS_DEVICE_ONLY` (see `key.ts`).
 
@@ -796,7 +833,8 @@ Steps:
 bun lint
 ```
 
-This runs `prettier --write . && expo lint` (see `package.json` scripts).
+This runs `prettier --write . && expo lint` (see `package.json` scripts). The test
+suite gate is `bun run test` / `npx jest` (plain `bun test` is unsupported — see §1).
 
 ---
 
@@ -820,6 +858,7 @@ This runs `prettier --write . && expo lint` (see `package.json` scripts).
 | 14 | **Never use `npm`, `yarn`, or `pnpm`** — only `bun` commands (`bun install`, `bun add`, `bun remove`, `bun lint`, etc.). The lock file is `bun.lock`, not `package-lock.json` |
 | 15 | **Use `useColors()` + inline `style` for ALL colours** (text, labels, backgrounds, borders, icons on components — including theme-neutral tokens like `brass`/`sage`/`rust`/`ink`). Tailwind colour classes (`bg-surface-bg`, `text-text-primary`, `text-brass`, etc.) do NOT follow the runtime dark/light theme — they always render the `:root` (light) value. `className` is fine for non-colour layout only. See §8.6 for the full rule and the (rare) exceptions. |
 | 16 | **Never install or add a package directly via a tool command.** If a new package dependency is needed, ask the user to install it themselves (e.g. "please run `bun add <package>`"). The sandboxed environment may not have the correct permissions, and tool-driven installs can corrupt the lockfile or modify the project state unexpectedly. |
+| 17 | **Never mutate or renumber a shipped migration.** Migrations are immutable once any install has run them — a rewritten entry silently skips (or re-runs) on existing devices, leaving schema drift (e.g. "no such column" / "CHECK constraint failed" on stale installs). Always append a new `version` to `src/lib/db/migrations.ts` (hard rule §5.2). |
 
 ---
 
@@ -847,7 +886,7 @@ Each phase requires explicit approval before implementation begins.
 
 ### Phase 2 — Core Finance Screens ✅ Complete
 - [x] Screen 04: Dashboard (`dashboard.tsx`, `AccountSwitcher`, `CategoryRingCard`, `TransactionRow`, `EmptyAccountsCard`)
-- [x] Screen 05: Add Transaction (`transaction/new.tsx` push)
+- [x] Screen 05: Add Transaction (`add-transaction.tsx` push; `transaction/create.tsx` legacy redirect)
 - [x] Screen 06: Accounts list (`accounts.tsx`)
 - [x] Screen 07: Settings (`settings.tsx`, `Toggle.tsx`)
 - [x] Repositories: accounts, transactions, categories, settings (under `src/lib/db/repositories/`)
@@ -867,6 +906,18 @@ Each phase requires explicit approval before implementation begins.
 - [x] Screen 00 Splash component: `SplashScreen.tsx`
 - [x] Screen 19: Backup PIN Setup (`pin-setup.tsx`, theme-aware)
 
+### Phase 4B — Account Types & Transaction Flow ✅ Complete
+- [x] `loan` account type — liability convention: balance stored negative; sign flips on
+      type conversion (`-ABS` on becoming loan, `ABS` on leaving)
+- [x] `time-deposit` account type + detail columns (`interest_rate_bps`, `placement_term_months`,
+      `interest_payout`, `note`) with shared `TimeDepositFields` form block (rate/term/payout/note)
+- [x] Migration v4 merge + v6/v7 recovery migrations (idempotent column add, CHECK rebuilds)
+- [x] `loan-payment` category kind + migration v8: payments stored positive reduce the loan
+      balance and are excluded from every expense/income aggregate (dashboard, rings, weekly chart)
+- [x] Add Transaction rules: time-deposit blocks expense; category picker filtered by account
+      type (`src/lib/transactionFlow.ts`); `insertTransaction` guards (TD+expense,
+      loan-payment-only-on-loan, no income on loan)
+
 ### Phase 5 — OCR & Import Logic 🔲 Next
 - [ ] Screen 13: expo-camera capture → on-device OCR (`src/lib/ocr.ts`) → pre-fill Add Transaction form
 - [ ] Screen 14: CSV column parser → map to schema → bulk insert
@@ -881,7 +932,9 @@ Each phase requires explicit approval before implementation begins.
 - [x] ErrorBoundary (global React error boundary with Sloth-themed fallback UI)
 - [x] Screenshot prevention toggle (`expo-screen-capture` `usePreventScreenCapture` hook)
 - [x] PIN management in Settings (setup / change / remove with lockout guard)
-- [x] Unused components deleted (FeatureRow, SlothMark, StepDots, ErrorBoundary, CustomTabBar)
+- [x] Unused standalone component files deleted (FeatureRow, SlothMark, StepDots, CustomTabBar —
+      FeatureRow and StepDots now live inline in `onboarding/welcome.tsx`; ErrorBoundary kept
+      at `components/ui/ErrorBoundary.tsx`)
 - [x] Onboarding text sizes bumped for readability
 - [x] Screen transitions (`slide_from_right` on push screens, instant tab switches)
 
@@ -981,11 +1034,14 @@ sloth/
     │   ├── SlothAppIcon.tsx        ← Shared SVG (Splash, Onboarding, About)
     │   ├── DialFrame.tsx           ← Keypad dial circle wrapper
     │   ├── Keypad.tsx              ← PIN keypad (3×4 circle keypad)
+    │   ├── ReceiptScanResult.tsx   ← OCR result card (merchant/amount/date + confirm)
+    │   ├── UpdateModal.tsx         ← App-update notice modal
     │   ├── dashboard/
     │   │   ├── AccountSwitcher.tsx
     │   │   ├── CategoryRingCard.tsx
     │   │   ├── EmptyAccountsCard.tsx
-    │   │   └── TransactionRow.tsx
+    │   │   ├── TransactionRow.tsx
+    │   │   └── WeeklyActivityCard.tsx ← Interactive earned/spent donut (last 7 days)
     │   ├── modals/
     │   │   └── DonateQRModal.tsx
     │   ├── navigation/
@@ -1001,6 +1057,7 @@ sloth/
     │       ├── PinDots.tsx         ← 6-dot PIN display
     │       ├── Skeleton.tsx        ← Shimmer skeleton primitives (Skeleton / SkeletonCircle / SkeletonList)
     │       ├── TextLink.tsx        ← Styled link text
+    │       ├── TimeDepositFields.tsx ← Time-deposit details block (rate/term/payout/note)
     │       └── Toggle.tsx          ← Settings toggle switch
     │
     ├── hooks/
@@ -1036,7 +1093,9 @@ sloth/
     │   ├── pin.ts                  ← PIN hashing/verification
     │   ├── selectionBus.ts         ← Cross-component selection event bus
     │   ├── sessionLock.ts          ← In-memory session unlock/recovery flags + shouldLockGate predicate for the cold-start lock gate
-    │   └── storage.ts              ← SecureStore/AsyncStorage wrapper
+    │   ├── storage.ts              ← SecureStore/AsyncStorage wrapper
+    │   ├── timeDeposit.ts          ← Time-deposit constants, helpers, zod field schemas
+    │   ├── transactionFlow.ts      ← Account-type → category-kind rules for Add Transaction
     │
     ├── screens/
     │   └── SplashScreen.tsx        ← Screen 00 visual component
@@ -1074,6 +1133,7 @@ sloth/
     │   │   ├── ErrorBoundary.test.tsx
     │   │   ├── Keypad.test.tsx
     │   │   ├── NavigationAndIcons.test.tsx
+    │   │   ├── ReceiptScanScreen.test.tsx
     │   │   └── UIComponents.test.tsx
     │   ├── repositories/
     │   │   ├── accounts.test.ts
@@ -1082,9 +1142,14 @@ sloth/
     │   │   └── transactions.test.ts
     │   ├── csvParser.test.ts
     │   ├── format.test.ts
+    │   ├── idleLock.test.ts
+    │   ├── migrations.test.ts
     │   ├── ocr.test.ts
     │   ├── pin.test.ts
-    │   └── selectionBus.test.ts
+    │   ├── selectionBus.test.ts
+    │   ├── sessionLock.test.ts
+    │   ├── storage.test.ts
+    │   └── transactionFlow.test.ts
     │
     └── db/.gitkeep                 ← legacy placeholder (DO NOT USE — all DB code under lib/db/)
 ```

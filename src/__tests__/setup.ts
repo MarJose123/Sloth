@@ -21,7 +21,9 @@ const mockDbInstance = {
   delete: jest.fn(),
   transaction: jest.fn(
     async (cb: (tx: { execute: jest.Mock }) => Promise<void>) => {
-      const tx = { execute: jest.fn() };
+      // execute resolves a bare query result so migrations (statement or
+      // function-based) can run inside tests.
+      const tx = { execute: jest.fn(async () => ({ rows: [] })) };
       await cb(tx);
     },
   ),

@@ -161,6 +161,10 @@ describe("AccountSwitcher", () => {
       colorHex: "#C87B54",
       logoKey: null,
       balanceCents: 100000,
+      interestRateBps: null,
+      placementTermMonths: null,
+      interestPayout: null,
+      note: null,
     },
     {
       id: "acc-2",
@@ -169,6 +173,10 @@ describe("AccountSwitcher", () => {
       colorHex: "#7FA06B",
       logoKey: null,
       balanceCents: 50000,
+      interestRateBps: null,
+      placementTermMonths: null,
+      interestPayout: null,
+      note: null,
     },
   ];
 

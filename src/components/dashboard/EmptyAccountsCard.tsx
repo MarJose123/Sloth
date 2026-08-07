@@ -38,8 +38,9 @@ export function EmptyAccountsCard({
         className="mb-6 text-center text-[14.5px] leading-5.25 "
         style={{ color: colors.textSecondary }}
       >
-        Add a wallet, savings, credits, or investment account to start tracking
-        your balance and spending — everything stays on this device.
+        Add a wallet, savings, credits, investment, loan, or time deposit
+        account to start tracking your balance and spending — everything stays
+        on this device.
       </Text>
       <Pressable
         onPress={onAddAccount}

@@ -112,6 +112,22 @@ describe("insertCategory", () => {
       expect.arrayContaining([id, "Transport", "🚈", "#6FC9B8", "expense"]),
     );
   });
+
+  it("accepts the loan-payment kind", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    await insertCategory({
+      name: "Loan Payment",
+      icon: "🏦",
+      colorHex: "#C87B54",
+      kind: "loan-payment",
+    });
+
+    expect(mockDbInstance.execute).toHaveBeenCalledWith(
+      expect.stringContaining("INSERT INTO categories"),
+      expect.arrayContaining(["Loan Payment", "loan-payment"]),
+    );
+  });
 });
 
 describe("updateCategory", () => {
@@ -159,6 +175,31 @@ describe("listAllCategoriesWithSpend", () => {
     expect(cats).toHaveLength(1);
     expect(cats[0].spendCents).toBe(50000);
     expect(cats[0].transactionCount).toBe(3);
+
+    const sql = mockDbInstance.execute.mock.calls[0][0] as string;
+    expect(sql).toContain("CASE WHEN c.kind IN ('expense','income')");
+  });
+
+  it("maps loan-payment categories with zero spend", async () => {
+    mockDbInstance.execute.mockResolvedValue({
+      rows: [
+        {
+          id: "cat-9",
+          name: "Loan Payment",
+          icon: "🏦",
+          color_hex: "#C87B54",
+          kind: "loan-payment",
+          spend_cents: 0,
+          transaction_count: 2,
+        },
+      ],
+    });
+
+    const range = { start: 0, end: Date.now() };
+    const cats = await listAllCategoriesWithSpend(range);
+    expect(cats).toHaveLength(1);
+    expect(cats[0].kind).toBe("loan-payment");
+    expect(cats[0].spendCents).toBe(0);
   });
 });
 

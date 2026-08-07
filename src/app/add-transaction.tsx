@@ -39,6 +39,10 @@ import {
 import { onAccountSelected, onCategorySelected } from "@/lib/selectionBus";
 import { useToast } from "@/hooks/useToast";
 import { insertTransaction } from "@/lib/db/repositories/transactions";
+import {
+  allowedCategoryEmptyHint,
+  allowedCategoryKinds,
+} from "@/lib/transactionFlow";
 import { FormField } from "@/components/ui/FormField";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import Color from "color";
@@ -214,14 +218,28 @@ export default function AddTransactionScreen() {
     async (data: TransactionFormData) => {
       const clean = data.amount.replace(/[$,]/g, "").trim();
       const magnitudeCents = Math.round(Math.abs(parseFloat(clean)) * 100);
-      // Income categories record positive amounts, expense categories
-      // negative. Looked up from the DB so the sign can never disagree
-      // with what the picker showed.
+      // Income and loan-payment categories record positive amounts, expense
+      // categories negative. Looked up from the DB so the sign can never
+      // disagree with what the picker showed.
       const category = await getCategoryById(data.categoryId);
       const amountCents =
-        category?.kind === "income" ? magnitudeCents : -magnitudeCents;
+        category?.kind === "income" || category?.kind === "loan-payment"
+          ? magnitudeCents
+          : -magnitudeCents;
       const occurredAt = Date.parse(data.date);
       const finalDate = isNaN(occurredAt) ? Date.now() : occurredAt;
+
+      // Friendlier pre-check before the repository guard rejects it.
+      if (
+        selectedAccount?.type === "time-deposit" &&
+        category?.kind === "expense"
+      ) {
+        toast.warning("Time deposit", {
+          description:
+            "Time deposits are locked placements — only income transactions are allowed.",
+        });
+        return;
+      }
 
       setIsSaving(true);
       try {
@@ -244,7 +262,7 @@ export default function AddTransactionScreen() {
         setIsSaving(false);
       }
     },
-    [method, toast],
+    [method, toast, selectedAccount],
   );
 
   const handleSave = handleSubmit(onSubmit, (fieldErrors) => {
@@ -320,9 +338,11 @@ export default function AddTransactionScreen() {
                 className="font-fraunces-medium text-[18px] "
                 style={{ color: colors.textPrimary }}
               >
-                {selectedCategory?.kind === "income"
-                  ? "New income"
-                  : "New expense"}
+                {selectedCategory?.kind === "loan-payment"
+                  ? "Loan payment"
+                  : selectedCategory?.kind === "income"
+                    ? "New income"
+                    : "New expense"}
               </Text>
               <Pressable
                 onPress={handleSave}
@@ -449,16 +469,28 @@ export default function AddTransactionScreen() {
                   // Query the DB at tap time so the guard can never see
                   // stale reference data — e.g. a category created moments
                   // ago but not yet reflected in the hook's in-memory list.
-                  // Any category (expense OR income) can be picked; the
-                  // amount sign follows the chosen category's kind on save.
+                  // The picker is filtered by the selected account's type:
+                  // time deposits only allow income, loans allow expense +
+                  // loan-payment. The amount sign follows the chosen
+                  // category's kind on save.
                   const allCategories = await listAllCategories();
-                  if (allCategories.length === 0) {
+                  const allowedKinds = allowedCategoryKinds(
+                    selectedAccount?.type,
+                  );
+                  if (
+                    allCategories.filter((c) => allowedKinds.includes(c.kind))
+                      .length === 0
+                  ) {
                     toast.warning("No categories", {
-                      description: "Create a category first.",
+                      description: allowedCategoryEmptyHint(
+                        selectedAccount?.type,
+                      ),
                     });
                     return;
                   }
-                  router.push("/select-category");
+                  router.push(
+                    `/select-category?accountType=${selectedAccount?.type ?? ""}`,
+                  );
                 }}
               />
               {errors.categoryId && (
@@ -467,6 +499,16 @@ export default function AddTransactionScreen() {
                   style={{ color: colors.rust }}
                 >
                   {errors.categoryId.message}
+                </Text>
+              )}
+              {selectedAccount?.type === "loan" && (
+                <Text
+                  className="ml-1 mt-1 font-mono text-[10.5px]"
+                  style={{ color: colors.textSecondary }}
+                >
+                  {selectedCategory?.kind === "loan-payment"
+                    ? "This payment reduces your loan balance."
+                    : "Tip: pick a \u201CLoan payment\u201D category to reduce your loan balance."}
                 </Text>
               )}
             </View>

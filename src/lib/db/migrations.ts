@@ -9,12 +9,14 @@
  *  of this license document, but changing it is not allowed.
  */
 
-import type { DB } from "@op-engineering/op-sqlite";
+import type { DB, Transaction } from "@op-engineering/op-sqlite";
 import { SCHEMA_STATEMENTS } from "./schema";
 
 interface Migration {
   version: number;
-  statements: readonly string[];
+  statements?: readonly string[];
+  /** Alternative to statements for migrations needing runtime logic. */
+  apply?: (tx: Transaction) => Promise<void>;
 }
 
 // Append new migrations here; never mutate a previously-shipped entry.
@@ -74,6 +76,118 @@ const MIGRATIONS: readonly Migration[] = [
       `ALTER TABLE accounts_new RENAME TO accounts;`,
     ],
   },
+  {
+    version: 4,
+    statements: [
+      // Add the "loan" and "time-deposit" account types plus time-deposit
+      // detail columns.  SQLite cannot ALTER a CHECK constraint, so we
+      // recreate the accounts table with the widened CHECK and the new
+      // nullable columns.  Existing rows are copied verbatim; the detail
+      // columns default to NULL for pre-existing accounts.
+      `CREATE TABLE accounts_new (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL CHECK (type IN ('wallet','savings','credit','investment','loan','time-deposit')),
+        starting_balance INTEGER NOT NULL DEFAULT 0,
+        logo_key TEXT,
+        color_hex TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        archived_at INTEGER,
+        interest_rate_bps INTEGER,
+        placement_term_months INTEGER,
+        interest_payout TEXT CHECK (interest_payout IN ('monthly','quarterly','semi-annual','annual','maturity')),
+        note TEXT
+      ) STRICT;`,
+      `INSERT INTO accounts_new (id, name, type, starting_balance, logo_key, color_hex, created_at, archived_at)
+       SELECT id, name, type, starting_balance, logo_key, color_hex, created_at, archived_at
+       FROM accounts;`,
+      `DROP TABLE accounts;`,
+      `ALTER TABLE accounts_new RENAME TO accounts;`,
+    ],
+  },
+  {
+    version: 6,
+    // Dev builds shipped versions 4 and 5 with accounts tables that lack the
+    // time-deposit detail columns, and the merged v4 above cannot re-run for
+    // installs already past it (user_version >= 4). SQLite has no
+    // "ADD COLUMN IF NOT EXISTS", so add any missing columns idempotently.
+    apply: async (tx) => {
+      const { rows } = await tx.execute("PRAGMA table_info(accounts);");
+      const existing = new Set(
+        (rows as unknown as { name: string }[]).map((r) => r.name),
+      );
+      const columns: { name: string; ddl: string }[] = [
+        { name: "interest_rate_bps", ddl: "interest_rate_bps INTEGER" },
+        {
+          name: "placement_term_months",
+          ddl: "placement_term_months INTEGER",
+        },
+        {
+          name: "interest_payout",
+          ddl: "interest_payout TEXT CHECK (interest_payout IN ('monthly','quarterly','semi-annual','annual','maturity'))",
+        },
+        { name: "note", ddl: "note TEXT" },
+      ];
+      for (const column of columns) {
+        if (!existing.has(column.name)) {
+          await tx.execute(`ALTER TABLE accounts ADD COLUMN ${column.ddl};`);
+        }
+      }
+    },
+  },
+  {
+    version: 7,
+    statements: [
+      // v6 added the detail columns but ALTER TABLE ADD COLUMN cannot change
+      // the accounts CHECK constraint, so installs that ran the old v4/v5
+      // still reject type 'time-deposit' on INSERT.  Rebuild the table with
+      // the final CHECK and all detail columns; v6 guarantees the source
+      // columns exist by this point.
+      `CREATE TABLE accounts_new (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL CHECK (type IN ('wallet','savings','credit','investment','loan','time-deposit')),
+        starting_balance INTEGER NOT NULL DEFAULT 0,
+        logo_key TEXT,
+        color_hex TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        archived_at INTEGER,
+        interest_rate_bps INTEGER,
+        placement_term_months INTEGER,
+        interest_payout TEXT CHECK (interest_payout IN ('monthly','quarterly','semi-annual','annual','maturity')),
+        note TEXT
+      ) STRICT;`,
+      `INSERT INTO accounts_new (id, name, type, starting_balance, logo_key, color_hex, created_at, archived_at,
+                                 interest_rate_bps, placement_term_months, interest_payout, note)
+       SELECT id, name, type, starting_balance, logo_key, color_hex, created_at, archived_at,
+              interest_rate_bps, placement_term_months, interest_payout, note
+       FROM accounts;`,
+      `DROP TABLE accounts;`,
+      `ALTER TABLE accounts_new RENAME TO accounts;`,
+    ],
+  },
+  {
+    version: 8,
+    statements: [
+      // Add the "loan-payment" category kind (used to reduce a loan balance).
+      // SQLite cannot ALTER a CHECK constraint, so rebuild the categories
+      // table with the widened CHECK.  Existing rows are copied verbatim.
+      `CREATE TABLE categories_new (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        icon TEXT NOT NULL,
+        color_hex TEXT NOT NULL,
+        kind TEXT NOT NULL CHECK (kind IN ('expense','income','loan-payment')),
+        created_at INTEGER NOT NULL,
+        archived_at INTEGER
+      ) STRICT;`,
+      `INSERT INTO categories_new (id, name, icon, color_hex, kind, created_at, archived_at)
+       SELECT id, name, icon, color_hex, kind, created_at, archived_at
+       FROM categories;`,
+      `DROP TABLE categories;`,
+      `ALTER TABLE categories_new RENAME TO categories;`,
+    ],
+  },
 ];
 
 export async function runMigrations(db: DB): Promise<void> {
@@ -86,8 +200,13 @@ export async function runMigrations(db: DB): Promise<void> {
 
   for (const migration of pending) {
     await db.transaction(async (tx) => {
-      for (const statement of migration.statements) {
-        await tx.execute(statement);
+      if (migration.statements) {
+        for (const statement of migration.statements) {
+          await tx.execute(statement);
+        }
+      }
+      if (migration.apply) {
+        await migration.apply(tx);
       }
     });
     // PRAGMA writes can't run inside the transaction on all platforms reliably;

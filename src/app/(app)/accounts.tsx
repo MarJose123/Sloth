@@ -47,13 +47,28 @@ const TYPE_LABELS: Record<string, string> = {
   savings: "SAVINGS",
   credit: "CREDITS",
   investment: "INVESTMENT",
+  loan: "LOAN",
+  "time-deposit": "TIME DEPOSIT",
 };
+
+/** "3.50% · 12 MO" for time deposits with rate + term, else null. */
+function formatTimeDepositDetail(account: AccountWithBalance): string | null {
+  if (
+    account.type !== "time-deposit" ||
+    account.interestRateBps == null ||
+    account.placementTermMonths == null
+  ) {
+    return null;
+  }
+  return `${(account.interestRateBps / 100).toFixed(2)}% · ${account.placementTermMonths} MO`;
+}
 
 // ─── AccountCard ──────────────────────────────────────────────────────────────
 
 function AccountCard({ account }: { account: AccountWithBalance }) {
   const initials = getInitials(account.name);
   const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
+  const timeDepositDetail = formatTimeDepositDetail(account);
   const colors = useColors();
   const { amountsHidden } = useAmountsVisibility();
   const logoSrc = resolveLogoSrc(account.logoKey);
@@ -114,6 +129,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
           style={{ color: colors.textSecondary }}
         >
           {typeLabel}
+          {timeDepositDetail ? ` · ${timeDepositDetail}` : ""}
         </Text>
       </View>
 
@@ -121,7 +137,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
         className="font-mono text-[15.5px]"
         style={{
           color:
-            account.type === "credit"
+            account.type === "credit" || account.type === "loan"
               ? account.balanceCents < 0
                 ? colors.rust
                 : colors.sage
@@ -243,7 +259,7 @@ export default function AccountsScreen() {
               }}
             >
               {
-                "Add your first account — wallet, savings, credits, or investment — to start tracking your money."
+                "Add your first account — wallet, savings, credits, investment, loan, or time deposit — to start tracking your money."
               }
             </Text>
             <Pressable

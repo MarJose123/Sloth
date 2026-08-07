@@ -49,7 +49,7 @@ import Color from "color";
 const categorySchema = z.object({
   name: z.string().min(1, "Enter a category name"),
   icon: z.string().min(1),
-  kind: z.enum(["expense", "income"]),
+  kind: z.enum(["expense", "income", "loan-payment"]),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
@@ -369,43 +369,51 @@ export default function EditCategoryScreen() {
             Type
           </Text>
           <View className="mb-8 flex-row gap-2">
-            {(["expense", "income"] as CategoryKind[]).map((kindOpt) => {
-              const active = kind === kindOpt;
-              return (
-                <Pressable
-                  key={kindOpt}
-                  onPress={() =>
-                    setValue("kind", kindOpt, { shouldValidate: true })
-                  }
-                  className="flex-1 flex-row items-center gap-2 rounded-2xl border p-3.5 active:opacity-80"
-                  style={{
-                    backgroundColor: active
-                      ? Color(colors.brass).alpha(0.1).toString()
-                      : colors.surfaceCard,
-                    borderColor: active
-                      ? Color(colors.brass).alpha(0.5).toString()
-                      : colors.hairline,
-                  }}
-                >
-                  <Text
-                    className="text-base font-manrope-bold"
+            {(["expense", "income", "loan-payment"] as CategoryKind[]).map(
+              (kindOpt) => {
+                const active = kind === kindOpt;
+                return (
+                  <Pressable
+                    key={kindOpt}
+                    onPress={() =>
+                      setValue("kind", kindOpt, { shouldValidate: true })
+                    }
+                    className="flex-1 flex-row items-center gap-2 rounded-2xl border p-3.5 active:opacity-80"
                     style={{
-                      color: active ? colors.brassText : colors.textSecondary,
+                      backgroundColor: active
+                        ? Color(colors.brass).alpha(0.1).toString()
+                        : colors.surfaceCard,
+                      borderColor: active
+                        ? Color(colors.brass).alpha(0.5).toString()
+                        : colors.hairline,
                     }}
                   >
-                    {kindOpt === "expense" ? "\u2212" : "+"}
-                  </Text>
-                  <Text
-                    className="text-[12.5px] font-manrope-semibold capitalize"
-                    style={{
-                      color: active ? colors.textPrimary : colors.textSecondary,
-                    }}
-                  >
-                    {kindOpt}
-                  </Text>
-                </Pressable>
-              );
-            })}
+                    <Text
+                      className="text-base font-manrope-bold"
+                      style={{
+                        color: active ? colors.brassText : colors.textSecondary,
+                      }}
+                    >
+                      {kindOpt === "expense"
+                        ? "\u2212"
+                        : kindOpt === "income"
+                          ? "+"
+                          : "\u2193"}
+                    </Text>
+                    <Text
+                      className="text-[12.5px] font-manrope-semibold capitalize"
+                      style={{
+                        color: active
+                          ? colors.textPrimary
+                          : colors.textSecondary,
+                      }}
+                    >
+                      {kindOpt === "loan-payment" ? "loan payment" : kindOpt}
+                    </Text>
+                  </Pressable>
+                );
+              },
+            )}
           </View>
 
           {/* ── Save button ── */}

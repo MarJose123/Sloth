@@ -11,15 +11,20 @@
 
 import { useCallback, useState } from "react";
 import { Text, View, Pressable } from "react-native";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { listAllCategories } from "@/lib/db/repositories/categories";
-import type { Category } from "@/types";
+import type { AccountType, Category } from "@/types";
 import { useColors } from "@/theme/ThemeContext";
 import { onCategorySelected } from "@/lib/selectionBus";
+import {
+  allowedCategoryEmptyHint,
+  allowedCategoryKinds,
+} from "@/lib/transactionFlow";
 import { SkeletonList } from "@/components/ui/Skeleton";
 
 export default function SelectCategorySheet() {
   const colors = useColors();
+  const { accountType } = useLocalSearchParams<{ accountType?: string }>();
   const [categories, setCategories] = useState<Category[] | null>(null);
 
   // Reads the DB directly (same query as the Add Transaction guard) so the
@@ -52,7 +57,10 @@ export default function SelectCategorySheet() {
   }, []);
 
   const loading = categories === null;
-  const pickerCategories = categories ?? [];
+  const allowedKinds = allowedCategoryKinds(accountType as AccountType);
+  const pickerCategories = (categories ?? []).filter((cat) =>
+    allowedKinds.includes(cat.kind),
+  );
 
   return (
     <View
@@ -123,7 +131,7 @@ export default function SelectCategorySheet() {
             className="text-center text-sm font-manrope py-8"
             style={{ color: colors.textSecondary }}
           >
-            No categories yet.
+            {allowedCategoryEmptyHint(accountType as AccountType)}
           </Text>
         )}
       </View>

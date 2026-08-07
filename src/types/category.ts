@@ -11,7 +11,7 @@
 
 /** Category-related types. */
 
-export type CategoryKind = "expense" | "income";
+export type CategoryKind = "expense" | "income" | "loan-payment";
 
 /** A bare category row — used by the Add Transaction picker. */
 export interface Category {

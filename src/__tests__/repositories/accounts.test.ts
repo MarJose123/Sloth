@@ -70,6 +70,92 @@ describe("insertAccount", () => {
     const params = mockDbInstance.execute.mock.calls[0][1];
     expect(params).toContain(null);
   });
+
+  it("stores loan starting balance as negative (liability convention)", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    await insertAccount({
+      name: "Car Loan",
+      type: "loan",
+      colorHex: "#C87B54",
+      logoKey: null,
+      startingBalanceCents: 500000,
+    });
+
+    const params = mockDbInstance.execute.mock.calls[0][1];
+    expect(params).toContain("loan");
+    expect(params).toContain(-500000);
+  });
+
+  it("does not negate non-loan starting balances", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    await insertAccount({
+      name: "Credit Card",
+      type: "credit",
+      colorHex: "#D48FB8",
+      logoKey: null,
+      startingBalanceCents: -25000,
+    });
+
+    const params = mockDbInstance.execute.mock.calls[0][1];
+    expect(params).toContain(-25000);
+  });
+
+  it("keeps time-deposit starting balance positive (asset type)", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    await insertAccount({
+      name: "TD 6 Months",
+      type: "time-deposit",
+      colorHex: "#6B8D58",
+      logoKey: null,
+      startingBalanceCents: 250000,
+    });
+
+    const params = mockDbInstance.execute.mock.calls[0][1];
+    expect(params).toContain("time-deposit");
+    expect(params).toContain(250000);
+    expect(params).not.toContain(-250000);
+  });
+
+  it("stores time-deposit details for time-deposit accounts", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    await insertAccount({
+      name: "TD 1 Year",
+      type: "time-deposit",
+      colorHex: "#6B8D58",
+      logoKey: null,
+      startingBalanceCents: 100000,
+      timeDeposit: {
+        interestRateBps: 350,
+        placementTermMonths: 12,
+        interestPayout: "quarterly",
+        note: "Rollover",
+      },
+    });
+
+    const params = mockDbInstance.execute.mock.calls[0][1];
+    expect(params).toEqual(
+      expect.arrayContaining([350, 12, "quarterly", "Rollover"]),
+    );
+  });
+
+  it("stores NULL time-deposit details for other account types", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    await insertAccount({
+      name: "Savings",
+      type: "savings",
+      colorHex: "#7FA06B",
+      logoKey: null,
+      startingBalanceCents: 0,
+    });
+
+    const params = mockDbInstance.execute.mock.calls[0][1];
+    expect(params).toEqual(expect.arrayContaining([null, null, null, null]));
+  });
 });
 
 describe("listAccountsWithBalances", () => {
@@ -92,11 +178,23 @@ describe("listAccountsWithBalances", () => {
           logo_key: "bank/bpi.png",
           balance_cents: -5000,
         },
+        {
+          id: "acc-3",
+          name: "TD 6 Months",
+          type: "time-deposit",
+          color_hex: "#6B8D58",
+          logo_key: null,
+          balance_cents: 250000,
+          interest_rate_bps: 350,
+          placement_term_months: 6,
+          interest_payout: "maturity",
+          note: "Branch 42",
+        },
       ],
     });
 
     const accounts = await listAccountsWithBalances();
-    expect(accounts).toHaveLength(2);
+    expect(accounts).toHaveLength(3);
     expect(accounts[0]).toEqual({
       id: "acc-1",
       name: "BPI Savings",
@@ -104,6 +202,10 @@ describe("listAccountsWithBalances", () => {
       colorHex: "#C87B54",
       logoKey: null,
       balanceCents: 150000,
+      interestRateBps: null,
+      placementTermMonths: null,
+      interestPayout: null,
+      note: null,
     });
     expect(accounts[1]).toEqual({
       id: "acc-2",
@@ -112,6 +214,22 @@ describe("listAccountsWithBalances", () => {
       colorHex: "#D48FB8",
       logoKey: "bank/bpi.png",
       balanceCents: -5000,
+      interestRateBps: null,
+      placementTermMonths: null,
+      interestPayout: null,
+      note: null,
+    });
+    expect(accounts[2]).toEqual({
+      id: "acc-3",
+      name: "TD 6 Months",
+      type: "time-deposit",
+      colorHex: "#6B8D58",
+      logoKey: null,
+      balanceCents: 250000,
+      interestRateBps: 350,
+      placementTermMonths: 6,
+      interestPayout: "maturity",
+      note: "Branch 42",
     });
   });
 });
@@ -153,6 +271,32 @@ describe("getAccountById", () => {
       ["acc-42"],
     );
   });
+
+  it("returns time-deposit detail fields", async () => {
+    mockDbInstance.execute.mockResolvedValue({
+      rows: [
+        {
+          id: "acc-1",
+          name: "TD 1 Year",
+          type: "time-deposit",
+          starting_balance: 100000,
+          color_hex: "#6B8D58",
+          logo_key: null,
+          interest_rate_bps: 350,
+          placement_term_months: 12,
+          interest_payout: "quarterly",
+          note: "Rollover",
+        },
+      ],
+    });
+
+    const account = await getAccountById("acc-1");
+    expect(account).not.toBeNull();
+    expect(account!.interestRateBps).toBe(350);
+    expect(account!.placementTermMonths).toBe(12);
+    expect(account!.interestPayout).toBe("quarterly");
+    expect(account!.note).toBe("Rollover");
+  });
 });
 
 describe("updateAccount", () => {
@@ -192,5 +336,79 @@ describe("updateAccount", () => {
 
     const params = mockDbInstance.execute.mock.calls[0][1];
     expect(params).toContain(null);
+  });
+
+  it("negates the stored balance when the type changes to loan", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    await updateAccount({
+      id: "acc-1",
+      name: "Home Loan",
+      type: "loan",
+      colorHex: "#C87B54",
+      logoKey: null,
+    });
+
+    const [sql, params] = mockDbInstance.execute.mock.calls[0];
+    expect(sql).toContain("starting_balance = CASE");
+    expect(sql).toContain("WHEN ? = 'loan' THEN -ABS(starting_balance)");
+    // The type is bound three times: the type column + the two CASE branches.
+    expect(params.filter((p: unknown) => p === "loan")).toHaveLength(3);
+  });
+
+  it("restores a positive balance when converting away from loan", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    await updateAccount({
+      id: "acc-1",
+      name: "Now Savings",
+      type: "savings",
+      colorHex: "#7FA06B",
+      logoKey: null,
+    });
+
+    const [sql, params] = mockDbInstance.execute.mock.calls[0];
+    expect(sql).toContain(
+      "WHEN ? <> 'loan' AND type = 'loan' THEN ABS(starting_balance)",
+    );
+    expect(params.filter((p: unknown) => p === "savings")).toHaveLength(3);
+  });
+
+  it("writes time-deposit details when updating a time deposit", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    await updateAccount({
+      id: "acc-1",
+      name: "TD 2 Years",
+      type: "time-deposit",
+      colorHex: "#6B8D58",
+      logoKey: null,
+      timeDeposit: {
+        interestRateBps: 300,
+        placementTermMonths: 24,
+        interestPayout: "annual",
+        note: "Branch 7",
+      },
+    });
+
+    const params = mockDbInstance.execute.mock.calls[0][1];
+    expect(params).toEqual(
+      expect.arrayContaining([300, 24, "annual", "Branch 7"]),
+    );
+  });
+
+  it("clears time-deposit details when the type is no longer a time deposit", async () => {
+    mockDbInstance.execute.mockResolvedValue({ rows: [] });
+
+    await updateAccount({
+      id: "acc-1",
+      name: "Now Savings",
+      type: "savings",
+      colorHex: "#7FA06B",
+      logoKey: null,
+    });
+
+    const params = mockDbInstance.execute.mock.calls[0][1];
+    expect(params).toEqual(expect.arrayContaining([null, null, null, null]));
   });
 });

@@ -9,7 +9,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -42,18 +42,42 @@ import { BANK_LOGOS } from "@/lib/logoResolver";
 import { FormField } from "@/components/ui/FormField";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { useToast } from "@/hooks/useToast";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Color from "color";
+import { TimeDepositFields } from "@/components/ui/TimeDepositFields";
+import {
+  type AccountFormData,
+  interestPayoutFieldSchema,
+  interestRateFieldSchema,
+  interestRateFromBps,
+  interestRateToBps,
+  parsePlacementTermMonths,
+  placementTermFieldSchema,
+} from "@/lib/timeDeposit";
+import type { InterestPayout } from "@/types";
 
 // ─── schema ────────────────────────────────────────────────────────────────
 
-const accountSchema = z.object({
-  name: z.string().min(1, "Enter an account name"),
-});
-
-type AccountFormData = z.infer<typeof accountSchema>;
+function buildAccountSchema(isTimeDeposit: boolean) {
+  if (!isTimeDeposit) {
+    return z.object({
+      name: z.string().min(1, "Enter an account name"),
+      interestRate: z.string().optional(),
+      placementTerm: z.string().optional(),
+      interestPayout: z.string().optional(),
+      note: z.string().optional(),
+    });
+  }
+  return z.object({
+    name: z.string().min(1, "Enter an account name"),
+    interestRate: interestRateFieldSchema,
+    placementTerm: placementTermFieldSchema,
+    interestPayout: interestPayoutFieldSchema,
+    note: z.string().optional(),
+  });
+}
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -66,6 +90,8 @@ const ACCOUNT_TYPES: {
   { type: "savings", label: "Savings", icon: "piggy-bank" },
   { type: "credit", label: "Credits", icon: "credit-card" },
   { type: "investment", label: "Investment", icon: "trending-up" },
+  { type: "loan", label: "Loan", icon: "hand-coins" },
+  { type: "time-deposit", label: "Time Deposit", icon: "calendar-clock" },
 ];
 
 const BADGE_MODES: {
@@ -134,6 +160,7 @@ export default function EditAccountScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedType, setSelectedType] = useState<AccountType>("wallet");
+  const isTimeDeposit = selectedType === "time-deposit";
   const [badgeMode, setBadgeMode] = useState<"logo" | "custom">("logo");
   const [storedColorHex, setStoredColorHex] = useState<string>(colors.brass);
   const [selectedLogoKey, setSelectedLogoKey] = useState<string | null>(null);
@@ -146,9 +173,19 @@ export default function EditAccountScreen() {
     reset,
     formState: { errors },
   } = useForm<AccountFormData>({
-    resolver: zodResolver(accountSchema),
+    resolver: useMemo(
+      () =>
+        zodResolver(
+          buildAccountSchema(isTimeDeposit),
+        ) as unknown as Resolver<AccountFormData>,
+      [isTimeDeposit],
+    ),
     defaultValues: {
       name: "",
+      interestRate: "",
+      placementTerm: "",
+      interestPayout: "",
+      note: "",
     },
   });
 
@@ -166,7 +203,13 @@ export default function EditAccountScreen() {
           return;
         }
 
-        reset({ name: account.name });
+        reset({
+          name: account.name,
+          interestRate: interestRateFromBps(account.interestRateBps),
+          placementTerm: account.placementTermMonths?.toString() ?? "",
+          interestPayout: account.interestPayout ?? "",
+          note: account.note ?? "",
+        });
         setSelectedType(account.type);
         setStoredColorHex(account.colorHex);
 
@@ -223,6 +266,16 @@ export default function EditAccountScreen() {
           type: selectedType,
           colorHex: storedColorHex,
           logoKey: resolvedLogoKey,
+          timeDeposit: isTimeDeposit
+            ? {
+                interestRateBps: interestRateToBps(data.interestRate ?? ""),
+                placementTermMonths: parsePlacementTermMonths(
+                  data.placementTerm ?? "",
+                ),
+                interestPayout: data.interestPayout as InterestPayout,
+                note: data.note,
+              }
+            : undefined,
         });
         router.back();
       } catch (err) {
@@ -234,7 +287,7 @@ export default function EditAccountScreen() {
         setIsSaving(false);
       }
     },
-    [id, selectedType, storedColorHex, resolvedLogoKey, toast],
+    [id, selectedType, storedColorHex, resolvedLogoKey, toast, isTimeDeposit],
   );
 
   const handleSave = handleSubmit(onSubmit, (fieldErrors) => {
@@ -441,6 +494,19 @@ export default function EditAccountScreen() {
             })}
           </View>
 
+          {/* ── Time-deposit details (conditional) ── */}
+          {isTimeDeposit && (
+            <View className="mb-5">
+              <Text
+                className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]"
+                style={{ color: c.brassText }}
+              >
+                Time deposit details
+              </Text>
+              <TimeDepositFields control={control} errors={errors} />
+            </View>
+          )}
+
           {/* ── Badge ── */}
           <Text
             className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]"
@@ -452,7 +518,13 @@ export default function EditAccountScreen() {
           {/* Preview badge */}
           <View className="mb-4 items-center">
             {previewSource ? (
-              <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-2xl">
+              // Distinct keys so React mounts/unmounts the branches instead of
+              // reusing one View whose className swaps CSS variables (which
+              // would reset state and re-mount children).
+              <View
+                key="badge-preview"
+                className="h-16 w-16 items-center justify-center overflow-hidden rounded-2xl"
+              >
                 <Image
                   source={previewSource}
                   style={{ width: 56, height: 56 }}
@@ -461,6 +533,7 @@ export default function EditAccountScreen() {
               </View>
             ) : (
               <View
+                key="badge-placeholder"
                 className="h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed"
                 style={{ borderColor: c.hairline }}
               >

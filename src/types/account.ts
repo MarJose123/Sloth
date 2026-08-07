@@ -11,7 +11,12 @@
 
 /** Account-related types. */
 
-export type AccountType = "wallet" | "savings" | "credit" | "investment";
+export type AccountType =
+  "wallet" | "savings" | "credit" | "investment" | "loan" | "time-deposit";
+
+/** When interest earned on a time deposit is credited. */
+export type InterestPayout =
+  "monthly" | "quarterly" | "semi-annual" | "annual" | "maturity";
 
 export interface AccountWithBalance {
   id: string;
@@ -21,6 +26,22 @@ export interface AccountWithBalance {
   logoKey: string | null;
   /** starting_balance + sum of all account transactions, in cents. */
   balanceCents: number;
+  /** Time-deposit only: interest rate in basis points (350 = 3.50%). */
+  interestRateBps: number | null;
+  /** Time-deposit only: placement term in months. */
+  placementTermMonths: number | null;
+  /** Time-deposit only: how/when interest is paid out. */
+  interestPayout: InterestPayout | null;
+  /** Time-deposit only: free-text note. */
+  note: string | null;
+}
+
+export interface TimeDepositFields {
+  /** Interest rate in basis points (350 = 3.50%). */
+  interestRateBps: number | null;
+  placementTermMonths: number | null;
+  interestPayout: InterestPayout | null;
+  note: string | null;
 }
 
 export interface InsertAccountInput {
@@ -28,8 +49,11 @@ export interface InsertAccountInput {
   type: AccountType;
   colorHex: string;
   logoKey?: string | null;
-  /** Signed cents. Positive for asset accounts; credit cards typically start at 0. */
+  /** Signed cents. Positive for asset accounts; credit cards typically start at 0.
+   *  For loan accounts the amount owed is stored negative (liability convention). */
   startingBalanceCents: number;
+  /** Time-deposit details; ignored for other account types. */
+  timeDeposit?: Partial<TimeDepositFields>;
 }
 
 export interface UpdateAccountInput {
@@ -38,4 +62,6 @@ export interface UpdateAccountInput {
   type: AccountType;
   colorHex: string;
   logoKey: string | null;
+  /** Time-deposit details; nulls when the account is not a time deposit. */
+  timeDeposit?: Partial<TimeDepositFields>;
 }

@@ -17,6 +17,7 @@ import type { MonthRange } from "@/types";
 import { mockDbInstance } from "@/__tests__/setup";
 import {
   deleteTransaction,
+  getDailyTotals,
   getExpenseByAccount,
   getIncomeByAccount,
   insertTransaction,
@@ -26,7 +27,32 @@ import {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // Guard tests stub execute with mockImplementation; reset it so stubs
+  // cannot leak into later tests (clearAllMocks keeps implementations).
+  mockDbInstance.execute.mockReset();
 });
+
+/** The execute() call that actually runs the INSERT (guards run before it). */
+function insertCall(): { sql: string; params: unknown[] } {
+  const call = mockDbInstance.execute.mock.calls.find(([sql]) =>
+    String(sql).includes("INSERT INTO transactions"),
+  );
+  expect(call).toBeDefined();
+  return { sql: String(call![0]), params: call![1] as unknown[] };
+}
+
+/** Makes the guard's account/category lookups return the given kinds. */
+function mockGuardLookups(accountType: string, categoryKind: string) {
+  mockDbInstance.execute.mockImplementation(async (sql: string) => {
+    if (sql.includes("SELECT type FROM accounts")) {
+      return { rows: [{ type: accountType }] };
+    }
+    if (sql.includes("SELECT kind FROM categories")) {
+      return { rows: [{ kind: categoryKind }] };
+    }
+    return { rows: [] };
+  });
+}
 
 describe("insertTransaction", () => {
   it("executes INSERT with correct parameters", async () => {
@@ -44,8 +70,9 @@ describe("insertTransaction", () => {
 
     expect(id).toBeTruthy();
     expect(typeof id).toBe("string");
-    expect(mockDbInstance.execute).toHaveBeenCalledWith(
-      expect.stringContaining("INSERT INTO transactions"),
+    const { sql, params } = insertCall();
+    expect(sql).toContain("INSERT INTO transactions");
+    expect(params).toEqual(
       expect.arrayContaining([
         id,
         "acc-1",
@@ -70,8 +97,7 @@ describe("insertTransaction", () => {
       occurredAt: Date.now(),
     });
 
-    const params = mockDbInstance.execute.mock.calls[0][1];
-    expect(params).toContain("manual");
+    expect(insertCall().params).toContain("manual");
   });
 
   it("accepts null note", async () => {
@@ -86,8 +112,69 @@ describe("insertTransaction", () => {
       note: null,
     });
 
-    const params = mockDbInstance.execute.mock.calls[0][1];
-    expect(params).toContain(null);
+    expect(insertCall().params).toContain(null);
+  });
+
+  it("rejects expense transactions on time-deposit accounts", async () => {
+    mockGuardLookups("time-deposit", "expense");
+
+    await expect(
+      insertTransaction({
+        accountId: "acc-1",
+        categoryId: "cat-1",
+        merchant: "Test",
+        amountCents: -1000,
+        occurredAt: Date.now(),
+      }),
+    ).rejects.toThrow("Time deposit accounts cannot have expense");
+    expect(
+      mockDbInstance.execute.mock.calls.some(([sql]) =>
+        String(sql).includes("INSERT INTO transactions"),
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects loan-payment categories on non-loan accounts", async () => {
+    mockGuardLookups("savings", "loan-payment");
+
+    await expect(
+      insertTransaction({
+        accountId: "acc-1",
+        categoryId: "cat-1",
+        merchant: "Test",
+        amountCents: 5000,
+        occurredAt: Date.now(),
+      }),
+    ).rejects.toThrow("Loan payment transactions require a loan account");
+  });
+
+  it("rejects income categories on loan accounts", async () => {
+    mockGuardLookups("loan", "income");
+
+    await expect(
+      insertTransaction({
+        accountId: "acc-1",
+        categoryId: "cat-1",
+        merchant: "Test",
+        amountCents: 5000,
+        occurredAt: Date.now(),
+      }),
+    ).rejects.toThrow("Use a loan-payment category to reduce a loan balance");
+  });
+
+  it("allows loan-payment transactions on loan accounts", async () => {
+    mockGuardLookups("loan", "loan-payment");
+
+    const id = await insertTransaction({
+      accountId: "acc-1",
+      categoryId: "cat-1",
+      merchant: "Payment",
+      amountCents: 5000,
+      occurredAt: Date.now(),
+    });
+
+    expect(id).toBeTruthy();
+    expect(insertCall().params).toContain(5000);
   });
 });
 
@@ -280,6 +367,7 @@ describe("getExpenseByAccount", () => {
     expect(sql).toContain("SUM(-t.amount_cents)");
     expect(sql).toContain("GROUP BY a.id");
     expect(sql).toContain("t.amount_cents < 0");
+    expect(sql).toContain("c.kind = 'expense'");
   });
 
   it("scopes to a single account when accountId is provided", async () => {
@@ -326,6 +414,7 @@ describe("getIncomeByAccount", () => {
     const sql = mockDbInstance.execute.mock.calls[0][0] as string;
     expect(sql).toContain("SUM(t.amount_cents)");
     expect(sql).toContain("t.amount_cents > 0");
+    expect(sql).toContain("c.kind = 'income'");
   });
 
   it("scopes to a single account when accountId is provided", async () => {
@@ -338,5 +427,40 @@ describe("getIncomeByAccount", () => {
       string | number
     )[];
     expect(params).toContain("acc-1");
+  });
+});
+
+describe("getDailyTotals", () => {
+  it("excludes loan-payment rows from both expense and income totals", async () => {
+    mockDbInstance.execute.mockResolvedValue({
+      rows: [
+        {
+          day: "2026-08-01",
+          kind: "expense",
+          total: 1500,
+        },
+        {
+          day: "2026-08-01",
+          kind: "income",
+          total: 9000,
+        },
+        {
+          day: "2026-08-01",
+          kind: "loan-payment",
+          total: 12000,
+        },
+      ],
+    });
+
+    const range: MonthRange = {
+      start: new Date(2026, 7, 1).getTime(),
+      end: new Date(2026, 8, 1).getTime(),
+    };
+    const totals = await getDailyTotals(range);
+
+    const day = totals.find((t) => t.dayStartEpochMs === range.start);
+    expect(day).toBeDefined();
+    expect(day!.expenseCents).toBe(1500);
+    expect(day!.incomeCents).toBe(9000);
   });
 });

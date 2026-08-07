@@ -38,6 +38,8 @@ const TYPE_LABELS: Record<string, string> = {
   savings: "SAVINGS",
   credit: "CREDITS",
   investment: "INVESTMENT",
+  loan: "LOAN",
+  "time-deposit": "TIME DEPOSIT",
 };
 
 // ─── Account row ─────────────────────────────────────────────────────────
@@ -56,7 +58,7 @@ function AccountRow({
   const typeLabel = TYPE_LABELS[account.type] ?? account.type.toUpperCase();
 
   const balanceColor =
-    account.type === "credit"
+    account.type === "credit" || account.type === "loan"
       ? account.balanceCents < 0
         ? colors.rust
         : colors.sage

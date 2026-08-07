@@ -106,6 +106,19 @@ export default function DashboardScreen() {
     router.replace("/lock");
   }, []);
 
+  if (state.status === "error") {
+    return (
+      <View
+        className="flex-1 items-center justify-center px-8 pt-safe"
+        style={{ backgroundColor: colors.surfaceBg }}
+      >
+        <Text className="text-center text-sm" style={{ color: colors.rust }}>
+          {state.message}
+        </Text>
+      </View>
+    );
+  }
+
   if (state.status !== "ready") return null;
 
   const {
@@ -121,11 +134,16 @@ export default function DashboardScreen() {
   const hasAccounts = accounts.length > 0;
   const selectedAccount =
     accounts.find((a) => a.id === selectedAccountId) ?? null;
+  // All-accounts total: sum positive (asset) balances and subtract loan
+  // balances. Loan balances are stored negative (liability convention), so
+  // they reduce the total. Credit-card debt stays excluded as before.
   const totalBalanceCents = selectedAccount
     ? selectedAccount.balanceCents
-    : accounts
-        .filter((a) => a.balanceCents > 0)
-        .reduce((sum, a) => sum + a.balanceCents, 0);
+    : accounts.reduce((sum, a) => {
+        if (a.balanceCents > 0) return sum + a.balanceCents;
+        if (a.type === "loan") return sum + a.balanceCents;
+        return sum;
+      }, 0);
 
   return (
     <View

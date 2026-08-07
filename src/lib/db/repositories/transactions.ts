@@ -13,6 +13,7 @@ import * as ExpoCrypto from "expo-crypto";
 import { getDb } from "../client";
 import type {
   AccountAmountSlice,
+  AccountType,
   DailyTotals,
   RecentTransaction,
   TransactionLedgerItem,
@@ -190,6 +191,31 @@ export async function insertTransaction(
   const now = Date.now();
   const source = input.source ?? "manual";
 
+  // Account/category compatibility guard — protects every caller, including
+  // the CSV/OFX import:
+  //  - time-deposit accounts hold a locked placement: no expense transactions.
+  //  - "loan-payment" categories only apply to loan accounts (they reduce the
+  //    loan balance; the positive sign is applied by the caller).
+  const [{ rows: accountRows }, { rows: categoryRows }] = await Promise.all([
+    db.execute("SELECT type FROM accounts WHERE id = ?;", [input.accountId]),
+    db.execute("SELECT kind FROM categories WHERE id = ?;", [input.categoryId]),
+  ]);
+  const accountType = (accountRows as unknown as { type: AccountType }[])[0]
+    ?.type;
+  const categoryKind = (categoryRows as unknown as { kind: CategoryKind }[])[0]
+    ?.kind;
+  if (accountType === "time-deposit" && categoryKind === "expense") {
+    throw new Error("Time deposit accounts cannot have expense transactions");
+  }
+  if (categoryKind === "loan-payment" && accountType !== "loan") {
+    throw new Error("Loan payment transactions require a loan account");
+  }
+  // Mirrors the picker: loan accounts record expenses (debt increases) or
+  // loan-payments (debt decreases), never plain income.
+  if (categoryKind === "income" && accountType === "loan") {
+    throw new Error("Use a loan-payment category to reduce a loan balance");
+  }
+
   await db.execute(
     `INSERT INTO transactions
        (id, account_id, category_id, merchant, amount_cents, occurred_at, note, source, created_at)
@@ -255,7 +281,9 @@ export async function getDailyTotals(
   }[]) {
     const entry = byDay.get(row.day) ?? { expenseCents: 0, incomeCents: 0 };
     if (row.kind === "income") entry.incomeCents += Number(row.total);
-    else entry.expenseCents += Number(row.total);
+    else if (row.kind === "expense") entry.expenseCents += Number(row.total);
+    // "loan-payment" rows are neither expense nor income — they reduce a
+    // loan balance and must not appear in either daily total.
     byDay.set(row.day, entry);
   }
 
@@ -298,7 +326,9 @@ export async function getExpenseByAccount(
             SUM(-t.amount_cents) AS total_cents
        FROM transactions t
        JOIN accounts a ON a.id = t.account_id
+       JOIN categories c ON c.id = t.category_id
       WHERE t.amount_cents < 0
+        AND c.kind = 'expense'
         AND t.occurred_at >= ?
         AND t.occurred_at < ?
         ${accountClause}
@@ -339,7 +369,9 @@ export async function getIncomeByAccount(
             SUM(t.amount_cents) AS total_cents
        FROM transactions t
        JOIN accounts a ON a.id = t.account_id
+       JOIN categories c ON c.id = t.category_id
       WHERE t.amount_cents > 0
+        AND c.kind = 'income'
         AND t.occurred_at >= ?
         AND t.occurred_at < ?
         ${accountClause}

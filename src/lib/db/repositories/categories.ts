@@ -121,7 +121,8 @@ export async function listAllCategoriesWithSpend(
 
   const { rows } = await db.execute(
     `SELECT c.id, c.name, c.icon, c.color_hex, c.kind,
-                IFNULL(SUM(ABS(t.amount_cents)), 0) AS spend_cents,
+                IFNULL(SUM(CASE WHEN c.kind IN ('expense','income')
+                                THEN ABS(t.amount_cents) ELSE 0 END), 0) AS spend_cents,
                 COUNT(t.id)                          AS transaction_count
          FROM categories c
          LEFT JOIN transactions t

@@ -9,7 +9,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -41,19 +41,51 @@ import { formatAmountOnBlur } from "@/lib/format";
 import { BANK_LOGOS } from "@/lib/logoResolver";
 import { FormField } from "@/components/ui/FormField";
 import { useToast } from "@/hooks/useToast";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Color from "color";
+import { TimeDepositFields } from "@/components/ui/TimeDepositFields";
+import {
+  type AccountFormData,
+  interestPayoutFieldSchema,
+  interestRateFieldSchema,
+  interestRateToBps,
+  parsePlacementTermMonths,
+  placementTermFieldSchema,
+} from "@/lib/timeDeposit";
+import type { InterestPayout } from "@/types";
 
 // ─── schema ────────────────────────────────────────────────────────────────
 
-const accountSchema = z.object({
-  name: z.string().min(1, "Enter an account name"),
-  balance: z.string().optional(),
-});
+/** Amount entered for a time deposit must be greater than zero. */
+const placementAmountFieldSchema = z
+  .string()
+  .refine(
+    (v) => parseBalanceCents(v) > 0,
+    "Enter a placement amount greater than 0",
+  );
 
-type AccountFormData = z.infer<typeof accountSchema>;
+function buildAccountSchema(isTimeDeposit: boolean) {
+  if (!isTimeDeposit) {
+    return z.object({
+      name: z.string().min(1, "Enter an account name"),
+      balance: z.string().optional(),
+      interestRate: z.string().optional(),
+      placementTerm: z.string().optional(),
+      interestPayout: z.string().optional(),
+      note: z.string().optional(),
+    });
+  }
+  return z.object({
+    name: z.string().min(1, "Enter an account name"),
+    balance: placementAmountFieldSchema,
+    interestRate: interestRateFieldSchema,
+    placementTerm: placementTermFieldSchema,
+    interestPayout: interestPayoutFieldSchema,
+    note: z.string().optional(),
+  });
+}
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -69,6 +101,8 @@ const ACCOUNT_TYPES: {
   { type: "savings", label: "Savings", icon: "piggy-bank" },
   { type: "credit", label: "Credits", icon: "credit-card" },
   { type: "investment", label: "Investment", icon: "trending-up" },
+  { type: "loan", label: "Loan", icon: "hand-coins" },
+  { type: "time-deposit", label: "Time Deposit", icon: "calendar-clock" },
 ];
 
 const BADGE_MODES: {
@@ -140,6 +174,7 @@ export default function AddAccountScreen() {
   const colors = useColors();
   const toast = useToast();
   const [selectedType, setSelectedType] = useState<AccountType>("wallet");
+  const isTimeDeposit = selectedType === "time-deposit";
   const [isSaving, setIsSaving] = useState(false);
 
   // Badge mode state
@@ -153,12 +188,25 @@ export default function AddAccountScreen() {
     control,
     formState: { errors },
   } = useForm<AccountFormData>({
-    resolver: zodResolver(accountSchema),
+    resolver: useMemo(
+      () =>
+        zodResolver(
+          buildAccountSchema(isTimeDeposit),
+        ) as unknown as Resolver<AccountFormData>,
+      [isTimeDeposit],
+    ),
     defaultValues: {
       name: "",
       balance: "0.00",
+      interestRate: "",
+      placementTerm: "",
+      interestPayout: "",
+      note: "",
     },
   });
+
+  const watched = useWatch({ control });
+  const placementAmountCents = parseBalanceCents(watched.balance ?? "0.00");
 
   // Resolve the final logoKey to save and preview source
   let resolvedLogoKey: string | null = null;
@@ -183,6 +231,16 @@ export default function AddAccountScreen() {
           colorHex: DEFAULT_ACCOUNT_COLOR,
           logoKey: resolvedLogoKey,
           startingBalanceCents: parseBalanceCents(data.balance ?? "0.00"),
+          timeDeposit: isTimeDeposit
+            ? {
+                interestRateBps: interestRateToBps(data.interestRate ?? ""),
+                placementTermMonths: parsePlacementTermMonths(
+                  data.placementTerm ?? "",
+                ),
+                interestPayout: data.interestPayout as InterestPayout,
+                note: data.note,
+              }
+            : undefined,
         });
         router.back();
       } catch (err) {
@@ -194,7 +252,7 @@ export default function AddAccountScreen() {
         setIsSaving(false);
       }
     },
-    [selectedType, resolvedLogoKey, toast],
+    [selectedType, resolvedLogoKey, toast, isTimeDeposit],
   );
 
   const handleSave = handleSubmit(onSubmit, (fieldErrors) => {
@@ -399,6 +457,23 @@ export default function AddAccountScreen() {
             })}
           </View>
 
+          {/* ── Time-deposit details (conditional) ── */}
+          {isTimeDeposit && (
+            <View className="mb-5">
+              <Text
+                className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]"
+                style={{ color: colors.brassText }}
+              >
+                Time deposit details
+              </Text>
+              <TimeDepositFields
+                control={control}
+                errors={errors}
+                placementAmountCents={placementAmountCents}
+              />
+            </View>
+          )}
+
           {/* ── Badge ── */}
           <Text
             className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.08em]"
@@ -410,7 +485,13 @@ export default function AddAccountScreen() {
           {/* Preview badge */}
           <View className="mb-4 items-center">
             {previewSource ? (
-              <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-2xl">
+              // Distinct keys so React mounts/unmounts the branches instead of
+              // reusing one View whose className swaps CSS variables (which
+              // would reset state and re-mount children).
+              <View
+                key="badge-preview"
+                className="h-16 w-16 items-center justify-center overflow-hidden rounded-2xl"
+              >
                 <Image
                   source={previewSource}
                   style={{ width: 56, height: 56 }}
@@ -419,6 +500,7 @@ export default function AddAccountScreen() {
               </View>
             ) : (
               <View
+                key="badge-placeholder"
                 className="h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed"
                 style={{ borderColor: colors.hairline }}
               >
@@ -562,7 +644,15 @@ export default function AddAccountScreen() {
           )}
 
           {/* ── Starting balance ── */}
-          <FormField label="Starting balance">
+          <FormField
+            label={
+              selectedType === "loan"
+                ? "Loan amount owed"
+                : isTimeDeposit
+                  ? "Placement amount"
+                  : "Starting balance"
+            }
+          >
             <Controller
               control={control}
               name="balance"

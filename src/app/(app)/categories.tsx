@@ -192,7 +192,8 @@ export default function CategoriesScreen() {
               className="mb-6 text-center text-sm leading-[1.55] "
               style={{ color: colors.textSecondary }}
             >
-              Create expense and income types to organize your transactions.
+              Create expense, income, and loan payment types to organize your
+              transactions.
             </Text>
             <Pressable
               onPress={() => router.push("/add-category")}
