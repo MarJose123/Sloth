@@ -4,6 +4,32 @@
 All notable changes to this project will be documented in this file.
 
 <!--- END HEADER -->
+## Release 1.3.0 (Build 145) - 2026-08-07
+
+**Version:** 1.3.0
+**Build:** 145
+**Date:** 2026-08-07T07:47:13Z
+
+### What's Changed
+
+* Enhance app UI and account features with privacy options by @MarJose123 in https://github.com/MarJose123/Sloth/pull/5
+* Enhance account display with badges, balance card, and interactive chart by @MarJose123 in https://github.com/MarJose123/Sloth/pull/6
+* feat(theme): readable theme colors via useColors() + inline style by @MarJose123 in https://github.com/MarJose123/Sloth/pull/7
+
+**Full Changelog**: https://github.com/MarJose123/Sloth/compare/v1.2.0...v1.3.0
+
+
+---
+
+### Installation
+
+1. Download the APK file below
+2. Transfer to your Android device
+3. Open file manager and tap the APK to install
+4. Or use `adb install app-release.apk` from Android SDK
+
+**Note:** You may need to enable "Install from Unknown Sources" in Settings > Security on your device.
+
 ## Release 1.2.0 (Build 144) - 2026-08-01
 
 **Version:** 1.2.0
